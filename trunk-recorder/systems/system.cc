@@ -77,7 +77,7 @@ System::System(int sys_num) {
   // Setup the unit tags from the CSV file
   unit_tags = new UnitTags();
   talkgroup_patches = {};
-  talkgroup_subscribers = {}
+  talkgroup_subscribers = {};
   d_delaycreateoutput = false;
   d_hideEncrypted = false;
   d_hideUnknown = false;
@@ -575,8 +575,12 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
   BOOST_FOREACH (auto& talkgroup, talkgroup_subscribers) {
     if (talkgroup.first == message.talkgroup){
       new_flag = false;
-      BOOST_LOG_TRIVIAL(error) << "Adding a new TG: " << talkgroup.first;
+      BOOST_LOG_TRIVIAL(error) << "Updating TG: " << talkgroup.first;
     }
+  }
+
+  if(new_flag){
+    BOOST_LOG_TRIVIAL(error) << "Adding TG: " << talkgroup.first;
   }
 
 }
