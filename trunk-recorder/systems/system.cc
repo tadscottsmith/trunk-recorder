@@ -580,7 +580,7 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
   }
 
   if(new_flag){
-    BOOST_LOG_TRIVIAL(error) << "Adding TG: " << talkgroup.first;
+    BOOST_LOG_TRIVIAL(error) << "Adding TG: " << message.talkgroup;
   }
 
 }
