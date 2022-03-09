@@ -77,6 +77,7 @@ System::System(int sys_num) {
   // Setup the unit tags from the CSV file
   unit_tags = new UnitTags();
   talkgroup_patches = {};
+  talkgroup_subscribers = {}
   d_delaycreateoutput = false;
   d_hideEncrypted = false;
   d_hideUnknown = false;
@@ -562,3 +563,21 @@ void System::clear_stale_talkgroup_patches(){
     BOOST_LOG_TRIVIAL(debug) << "Active Patch of TGIDs" << printstring;
   }
 }
+
+void System::update_active_talkgroup_subscribers(TrunkMessage message){
+  std::time_t update_time = std::time(nullptr);
+  bool new_flag = true;
+
+  if(message.source == -1) {
+    return;
+  }
+
+  BOOST_FOREACH (auto& talkgroup, talkgroup_subscribers) {
+    if (talkgroup.first == message.talkgroup){
+      new_flag = false;
+      BOOST_LOG_TRIVIAL(error) << "Adding a new TG: " << talkgroup.first;
+    }
+  }
+
+}
+

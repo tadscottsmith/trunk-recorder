@@ -100,6 +100,7 @@ public:
   p25_trunking_sptr p25_trunking;
   
   std::map<unsigned long,std::map<unsigned long,std::time_t>> talkgroup_patches;
+  std::map<unsigned long,std::map<unsigned long,std::time_t,std::time_t>> talkgroup_subscribers; // TGID <SUBCRIBERID,AFFILIATETIME,LASTACTIVITY>
 
   std::string get_short_name();
   void set_short_name(std::string short_name);
@@ -213,6 +214,11 @@ public:
   void update_active_talkgroup_patches(PatchData f_data);
   void delete_talkgroup_patch(PatchData f_data);
   void clear_stale_talkgroup_patches();
+
+  std::vector<unsigned long> get_talkgroup_subscribers(unsigned long talkgroup);
+  void update_active_talkgroup_subscribers(TrunkMessage message);
+  void delete_active_talkgroup_subscriber(TrunkMessage message);
+  void clear_stale_talkgroup_subscribers();
 
 private:
   TalkgroupDisplayFormat talkgroup_display_format;

@@ -1005,6 +1005,7 @@ void handle_message(std::vector<TrunkMessage> messages, System *sys) {
     case GRANT:
     case UPDATE:
       handle_call(message, sys);
+      update_active_talkgroup_subscribers(message);
       break;
 
     case CONTROL_CHANNEL:
@@ -1020,6 +1021,7 @@ void handle_message(std::vector<TrunkMessage> messages, System *sys) {
       break;
 
     case AFFILIATION:
+      update_active_talkgroup_subscribers(message);
       unit_group_affiliation( sys, message.source, message.talkgroup);
       break;
 
