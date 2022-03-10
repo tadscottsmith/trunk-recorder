@@ -2,6 +2,7 @@
 #define PARSE_H
 #include <iostream>
 #include <vector>
+#include <time.h>
 
 enum MessageType {
   GRANT = 0,
