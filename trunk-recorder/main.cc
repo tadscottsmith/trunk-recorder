@@ -825,7 +825,7 @@ void print_status() {
   
     BOOST_LOG_TRIVIAL(error) << "Talk Group Subscribers: ";
     BOOST_FOREACH (auto& talkgroup, sys->talkgroup_subscribers) {
-      BOOST_LOG_TRIVIAL(error) << "TGID: " << talkgroup.first << " Subscriber Count: " << talkgroup.second.size() << "."
+      BOOST_LOG_TRIVIAL(error) << "TGID: " << talkgroup.first << " Subscriber Count: " << talkgroup.second.size() << ".";
       string tgs = "";
       for (std::vector<SubscriberData>::iterator it = talkgroup.second.begin(); it != talkgroup.second.end();) {
         SubscriberData subscriber = *it;
