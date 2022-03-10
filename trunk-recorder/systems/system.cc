@@ -584,7 +584,7 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
         {
           new_subscriber = false;
           subscriber.last_activity = update_time;
-          BOOST_LOG_TRIVIAL(error) << "Updating TG: " << talkgroup.first << ". Setting " << new_subscriber.suid << " last activity time."; 
+          BOOST_LOG_TRIVIAL(error) << "Updating TG: " << talkgroup.first << ". Setting " << subscriber.suid << " last activity time."; 
         }
       }
 
