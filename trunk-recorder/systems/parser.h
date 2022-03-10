@@ -29,8 +29,8 @@ struct PatchData {
 
 struct SubscriberData {
   unsigned long suid;
-  std::time_t affiliation_time;
-  std::time_t last_activity;
+  std::time_t affiliation_time = std::time(nullptr);
+  std::time_t last_activity = std::time(nullptr);
 };
 
 struct TrunkMessage {
