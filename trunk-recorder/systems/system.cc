@@ -631,7 +631,6 @@ void System::delete_active_talkgroup_subscriber(TrunkMessage message){
           talkgroup.second.erase(it);
           BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << ". Removing " << subscriber.suid << "."; 
         }
-        count++;
       }
     }
   }
