@@ -831,7 +831,7 @@ void print_status() {
         SubscriberData subscriber = *it;
         tgs += subscriber.sudid + ","
       }
-      BOOST_LOG_TRIVIAL(error) << "TGID: " << talkgroup.first << " Subscribers " << tgs << "."
+      BOOST_LOG_TRIVIAL(error) << "TGID: " << talkgroup.first << " Subscribers " << tgs << ".";
     }
     sys_it++;
   }
