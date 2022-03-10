@@ -831,7 +831,7 @@ void print_status() {
         SubscriberData subscriber = *it;
         tgs = tgs + std::to_string(subscriber.suid) + ",";
         char buffer[32];
-        std::strncpy(buffer, std::ctime(&subscriber.last_activity), 26);
+        strcpy_s(buffer, std::ctime(&subscriber.last_activity), 26);
         assert('\n' == buffer[std::strlen(buffer)-1]);
         BOOST_LOG_TRIVIAL(error) << "SUID: " << subscriber.suid << " Last Activity: " << buffer << ".";
         it++;
