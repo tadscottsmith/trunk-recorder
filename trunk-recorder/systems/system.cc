@@ -625,9 +625,9 @@ void System::delete_active_talkgroup_subscriber(TrunkMessage message){
     if (talkgroup.first == message.talkgroup){
       BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first;
 
-      for (std::vector<int>::iterator it = talkgroup.second.begin(); it != talkgroup.second.end(); ) {
+      BOOST_FOREACH (auto& subscriber, talkgroup.second) {
         if(subscriber.suid == message.source){
-          talkgroup.second.erase(it);
+          talkgroup.second.erase(subscriber);
           BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << ". Removing " << subscriber.suid << "."; 
         }
       }
