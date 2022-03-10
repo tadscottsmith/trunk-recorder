@@ -583,7 +583,8 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
         if(subscriber.suid == message.source)
         {
           new_subscriber = false;
-          subscriber.last_activity = update_time; 
+          subscriber.last_activity = update_time;
+          BOOST_LOG_TRIVIAL(error) << "Updating TG: " << talkgroup.first << ". Setting " << new_subscriber.suid << " last activity time."; 
         }
       }
 
