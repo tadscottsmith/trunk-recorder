@@ -1018,11 +1018,11 @@ void handle_message(std::vector<TrunkMessage> messages, System *sys) {
 
     case DEREGISTRATION:
       unit_deregistration( sys, message.source);
-      sys->delete_active_talkgroup_subscribers(message);
+      sys->delete_active_talkgroup_subscriber(message);
       break;
 
     case AFFILIATION:
-      sys->delete_active_talkgroup_subscribers(message); // Remove them from old TGID if necessary.
+      sys->delete_active_talkgroup_subscriber(message); // Remove them from old TGID if necessary.
       sys->update_active_talkgroup_subscribers(message);
       unit_group_affiliation( sys, message.source, message.talkgroup);
       break;
