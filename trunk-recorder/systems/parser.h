@@ -2,7 +2,7 @@
 #define PARSE_H
 #include <iostream>
 #include <vector>
-#include <time.h>
+#include <ctime>
 
 enum MessageType {
   GRANT = 0,
@@ -29,8 +29,8 @@ struct PatchData {
 
 struct SubscriberData {
   unsigned long suid;
-  std::time_t affiliation_time = std::time(nullptr);
-  std::time_t last_activity = std::time(nullptr);
+  time_t affiliation_time;
+  time_t last_activity;
 };
 
 struct TrunkMessage {
