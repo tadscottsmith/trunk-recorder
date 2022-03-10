@@ -619,6 +619,8 @@ void System::delete_active_talkgroup_subscriber(TrunkMessage message){
   if(message.source == -1) {
     return;
   }
+  
+  bool subscriber_found = false;
 
   BOOST_FOREACH (auto& talkgroup, talkgroup_subscribers) {
     //talkgroup.first (map key) is TGID, patch.second is a vector of SubscriberData
@@ -627,13 +629,17 @@ void System::delete_active_talkgroup_subscriber(TrunkMessage message){
 
       for (std::vector<SubscriberData>::iterator it = talkgroup.second.begin(); it != talkgroup.second.end();) {
         SubscriberData subscriber = *it;
-        BOOST_LOG_TRIVIAL(error) << "Cleaning TG Trying To Find: " << subscriber.suid << ".";
+        BOOST_LOG_TRIVIAL(error) << "Cleaning TG Trying To Find: " << subscriber.suid << " | " << message.source;
         if(subscriber.suid == message.source){
           talkgroup.second.erase(it);
+          subscriber_found = true;
           break;
           BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << ". Removing " << subscriber.suid << "."; 
         }
       }
+
+      if(subscriber_found)
+
     }
   }
 
