@@ -833,7 +833,7 @@ void print_status() {
         //char buffer[32];
         //strcpy_s(buffer, std::ctime(&subscriber.last_activity), 26);
         //assert('\n' == buffer[std::strlen(buffer)-1]);
-        char* last_activity = ctime(&subscriber.last_activity);
+        char* last_activity = strtok(ctime(&subscriber.last_activity), "\n");
         BOOST_LOG_TRIVIAL(error) << "SUID: " << subscriber.suid << " Last Activity: " << last_activity << ".";
         it++;
       }
