@@ -587,11 +587,16 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
   if (new_flag == true){
     //TGIDs from the Message were not found in an existing patch, so add them to a new one
     //BOOST_LOG_TRIVIAL(debug) << "Adding a new patch";
+    std::map<unsigned long,SubscriberData> new_susbcriber_map;
+  
     SubscriberData new_subscriber;
     new_subscriber.suid = message.source;
     new_subscriber.affiliation_time = update_time;
     new_subscriber.last_activity = update_time;
-    talkgroup_subscribers[message.talkgroup] = new_subscriber;
+
+    new_susbcriber_map.first = message.talkgroup;
+    new_subscriber_map.second = new_subscriber;
+    talkgroup_subscribers[message.talkgroup] =  new_subscriber_map;
   }
 
 }
