@@ -832,7 +832,10 @@ void print_status() {
         tgs = tgs + std::to_string(subscriber.suid) + ",";
         it++;
       }
-      BOOST_LOG_TRIVIAL(error) << "TGID: " << talkgroup.first << " Subscribers " << tgs << ".";
+      if (!tgs.empty()){
+        tgs.pop_back();
+      }
+      BOOST_LOG_TRIVIAL(error) << "TGID: " << talkgroup.first << " Subscribers: " << tgs << ".";
     }
     sys_it++;
   }
