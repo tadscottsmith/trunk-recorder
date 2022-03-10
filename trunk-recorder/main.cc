@@ -829,7 +829,7 @@ void print_status() {
       string tgs = "";
       for (std::vector<SubscriberData>::iterator it = talkgroup.second.begin(); it != talkgroup.second.end();) {
         SubscriberData subscriber = *it;
-        tgs += subscriber.suid + ",";
+        tgs = tgs + subscriber.suid + ",";
         it++;
       }
       BOOST_LOG_TRIVIAL(error) << "TGID: " << talkgroup.first << " Subscribers " << tgs << ".";
@@ -1263,7 +1263,7 @@ void monitor_messages() {
 
     float statusTimeDiff = current_time - lastStatusTime;
 
-    if (statusTimeDiff > 200) {
+    if (statusTimeDiff > 20) {
       lastStatusTime = current_time;
       print_status();
     }
