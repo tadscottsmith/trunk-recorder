@@ -569,7 +569,7 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
   bool new_tgid = true;
 
   // Should be updated to not handle U2U calls
-  if(message.source == -1 || message.source > 100,000 || message.source == 18446744073709551615) {
+  if(message.source == -1 || message.source == 18446744073709551615) {
     return;
   }
 
@@ -617,7 +617,7 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
 
 void System::delete_active_talkgroup_subscriber(TrunkMessage message){
   // Should be updated to not handle U2U calls
-  if(message.source == -1 || message.source > 100,000 || message.source == 18446744073709551615) {
+  if(message.source == -1 || message.source == 18446744073709551615) {
     return;
   }
   
@@ -626,6 +626,10 @@ void System::delete_active_talkgroup_subscriber(TrunkMessage message){
     if (talkgroup.first == message.talkgroup){
       BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first;
       BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << "Size: " << talkgroup.second.size();
+      if(talkgroup.second.size() == 1 && talkgroup.second[0].suid == message.source){
+        talkgroup.second.clear();
+        return;
+      }
       for (std::vector<SubscriberData>::iterator it = talkgroup.second.begin(); it != talkgroup.second.end();) {
         SubscriberData subscriber = *it;
         BOOST_LOG_TRIVIAL(error) << "Cleaning TG Trying To Find: " << subscriber.suid << " | " << message.source;
