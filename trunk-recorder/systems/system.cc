@@ -569,7 +569,7 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
   bool new_tgid = true;
 
   // Should be updated to not handle U2U calls
-  if(message.source == -1 || message.source > 100,000) {
+  if(message.source == -1 || message.source > 100,000 || message.source == 18446744073709551615) {
     return;
   }
 
@@ -617,7 +617,7 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
 
 void System::delete_active_talkgroup_subscriber(TrunkMessage message){
   // Should be updated to not handle U2U calls
-  if(message.source == -1 || message.source > 100,000 ) {
+  if(message.source == -1 || message.source > 100,000 || message.source == 18446744073709551615) {
     return;
   }
   
