@@ -829,7 +829,7 @@ void print_status() {
       string tgs = "";
       for (std::vector<SubscriberData>::iterator it = talkgroup.second.begin(); it != talkgroup.second.end();) {
         SubscriberData subscriber = *it;
-        tgs += subscriber.sudid + ","
+        tgs += subscriber.suid + ","
       }
       BOOST_LOG_TRIVIAL(error) << "TGID: " << talkgroup.first << " Subscribers " << tgs << ".";
     }
