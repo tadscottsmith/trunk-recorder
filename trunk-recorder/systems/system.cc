@@ -566,7 +566,7 @@ void System::clear_stale_talkgroup_patches(){
 
 void System::update_active_talkgroup_subscribers(TrunkMessage message){
   std::time_t update_time = std::time(nullptr);
-  bool new_flag = true;
+  bool new_tgid = true;
 
   if(message.source == -1) {
     return;
@@ -574,12 +574,31 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
 
   BOOST_FOREACH (auto& talkgroup, talkgroup_subscribers) {
     if (talkgroup.first == message.talkgroup){
-      new_flag = false;
+      new_tgid = false;
       BOOST_LOG_TRIVIAL(error) << "Updating TG: " << talkgroup.first;
+
+      bool new_subscriber = true;
+      BOOST_FOREACH (auto& subscriber, talkgroup_subscribers) {
+        if(subscriber.suid == message.source)
+        {
+          new_subscriber = false;
+          subscriber.last_activity = update_time; 
+        }
+      }
+
+      if(new_subscriber == true){
+        SubscriberData new_subscriber;
+        new_subscriber.suid = message.source;
+        new_subscriber.affiliation_time = update_time;
+        new_subscriber.last_activity = update_time;
+        talkgroup_subscribers.push_back(new_subscriber);
+        BOOST_LOG_TRIVIAL(error) << "Updating TG: " << talkgroup.first << ". Adding " << new_subscriber.suid;
+      }
+
     }
   }
 
-  if (new_flag == true){
+  if (new_tgid == true){
     //TGID from the Message does not currently have subscribers tracked
     BOOST_LOG_TRIVIAL(error) << "Adding TG: " << message.talkgroup;
 
