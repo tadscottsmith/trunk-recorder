@@ -830,7 +830,9 @@ void print_status() {
       for (std::vector<SubscriberData>::iterator it = talkgroup.second.begin(); it != talkgroup.second.end();) {
         SubscriberData subscriber = *it;
         tgs = tgs + std::to_string(subscriber.suid) + ",";
-        BOOST_LOG_TRIVIAL(error) << "SUID: " << subscriber.suid << " Last Activity: " << localtime(&subscriber.last_activity) << ".";
+        char buffer[32];
+        std::strncpy(buffer, std::ctime(&subscriber.last_activity), 26);
+        BOOST_LOG_TRIVIAL(error) << "SUID: " << subscriber.suid << " Last Activity: " << buffer << ".";
         it++;
       }
       //Hack to remove last comma
