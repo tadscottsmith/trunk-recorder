@@ -579,24 +579,19 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
     }
   }
 
-  if(new_flag){
-    BOOST_LOG_TRIVIAL(error) << "Adding TG: " << message.talkgroup;
-  }
-
-
   if (new_flag == true){
-    //TGIDs from the Message were not found in an existing patch, so add them to a new one
-    //BOOST_LOG_TRIVIAL(debug) << "Adding a new patch";
-    std::map<unsigned long,SubscriberData> new_susbcriber_map;
+    //TGID from the Message does not currently have subscribers tracked
+    BOOST_LOG_TRIVIAL(error) << "Adding TG: " << message.talkgroup;
+    std::vector<SubscriberData> subscribers;
   
     SubscriberData new_subscriber;
     new_subscriber.suid = message.source;
     new_subscriber.affiliation_time = update_time;
     new_subscriber.last_activity = update_time;
 
-    new_susbcriber_map.first = message.talkgroup;
-    new_subscriber_map.second = new_subscriber;
-    talkgroup_subscribers[message.talkgroup] =  new_subscriber_map;
+    subscribers.push_back(new_subscriber);
+
+    talkgroup_subscribers[message.talkgroup] =  subscribers;
   }
 
 }
