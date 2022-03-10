@@ -631,20 +631,11 @@ void System::delete_active_talkgroup_subscriber(TrunkMessage message){
         SubscriberData subscriber = *it;
         BOOST_LOG_TRIVIAL(error) << "Cleaning TG Trying To Find: " << subscriber.suid << " | " << message.source;
         if(subscriber.suid == message.source){
-          talkgroup.second.erase(it);
-          subscriber_found = true;
-          // Break out of the for iterator
-          break;
           BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << ". Removing " << subscriber.suid << "."; 
+          talkgroup.second.erase(it);
+          return;
         }
       }
-
-      if(subscriber_found)
-      {
-        // Break out of the BOOST_FOREACH
-        break;
-      }
-
     }
   }
 
