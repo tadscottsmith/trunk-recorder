@@ -26,6 +26,12 @@ struct PatchData {
   unsigned long ga3;
 };
 
+struct SubscriberData {
+  unsigned long suid;
+  std::time_t affiliation_time;
+  std::time_t last_activity;
+};
+
 struct TrunkMessage {
   MessageType message_type;
   std::string meta;
