@@ -639,6 +639,7 @@ void System::delete_active_talkgroup_subscriber(TrunkMessage message){
           BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << "Size: " << talkgroup.second.size();
           return;
         }
+        it++;
       }
     }
   }
