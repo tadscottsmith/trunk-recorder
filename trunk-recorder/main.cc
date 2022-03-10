@@ -820,17 +820,21 @@ void print_status() {
     source->print_recorders();
   }
 
-  BOOST_LOG_TRIVIAL(error) << "Talk Group Subscribers: ";
-  BOOST_FOREACH (auto& talkgroup, talkgroup_subscribers) {
-    BOOST_LOG_TRIVIAL(error) << "TGID: " << talkgroup.first << " Subscriber Count: " << talkgroup.second.size() << "."
-    string tgs = "";
-    for (std::vector<SubscriberData>::iterator it = talkgroup.second.begin(); it != talkgroup.second.end();) {
-      SubscriberData subscriber = *it;
-      tgs += subscriber.sudid + ","
+  for (std::vector<System>::iterator sys_it = systems.begin(); it != systems.end(); ++it) {
+    System sys = *sys_it;
+  
+    BOOST_LOG_TRIVIAL(error) << "Talk Group Subscribers: ";
+    BOOST_FOREACH (auto& talkgroup, sys->talkgroup_subscribers) {
+      BOOST_LOG_TRIVIAL(error) << "TGID: " << talkgroup.first << " Subscriber Count: " << talkgroup.second.size() << "."
+      string tgs = "";
+      for (std::vector<SubscriberData>::iterator it = talkgroup.second.begin(); it != talkgroup.second.end();) {
+        SubscriberData subscriber = *it;
+        tgs += subscriber.sudid + ","
+      }
+      BOOST_LOG_TRIVIAL(error) << "TGID: " << talkgroup.first << " Subscribers " << tgs << "."
     }
-    BOOST_LOG_TRIVIAL(error) << "TGID: " << talkgroup.first << " Subscribers " << tgs << "."
+    sys_it++;
   }
-
 
 }
 
