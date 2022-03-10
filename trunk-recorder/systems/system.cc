@@ -577,7 +577,7 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
     //talkgroup.first (map key) is TGID, patch.second is a vector of SubscriberData
     if (talkgroup.first == message.talkgroup){
       new_tgid = false;
-      BOOST_LOG_TRIVIAL(error) << "Updating TG: " << talkgroup.first;
+      //BOOST_LOG_TRIVIAL(error) << "Updating TG: " << talkgroup.first;
 
       bool new_subscriber = true;
       BOOST_FOREACH (auto& subscriber, talkgroup.second) {
@@ -624,15 +624,15 @@ void System::delete_active_talkgroup_subscriber(TrunkMessage message){
   BOOST_FOREACH (auto& talkgroup, talkgroup_subscribers) {
     //talkgroup.first (map key) is TGID, patch.second is a vector of SubscriberData
     if (talkgroup.first == message.talkgroup){
-      BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first;
-      BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << "Size: " << talkgroup.second.size();
+      //BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first;
+      //BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << "Size: " << talkgroup.second.size();
       if(talkgroup.second.size() == 1 && talkgroup.second[0].suid == message.source){
         talkgroup.second.clear();
         return;
       }
       for (std::vector<SubscriberData>::iterator it = talkgroup.second.begin(); it != talkgroup.second.end();) {
         SubscriberData subscriber = *it;
-        BOOST_LOG_TRIVIAL(error) << "Cleaning TG Trying To Find: " << subscriber.suid << " | " << message.source;
+        //BOOST_LOG_TRIVIAL(error) << "Cleaning TG Trying To Find: " << subscriber.suid << " | " << message.source;
         if(subscriber.suid == message.source){
           BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << ". Removing " << subscriber.suid << "."; 
           talkgroup.second.erase(it);
