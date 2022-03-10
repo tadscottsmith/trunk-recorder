@@ -582,16 +582,13 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
   if (new_flag == true){
     //TGID from the Message does not currently have subscribers tracked
     BOOST_LOG_TRIVIAL(error) << "Adding TG: " << message.talkgroup;
-    std::vector<SubscriberData> subscribers;
-  
+
     SubscriberData new_subscriber;
     new_subscriber.suid = message.source;
     new_subscriber.affiliation_time = update_time;
     new_subscriber.last_activity = update_time;
 
-    subscribers.push_back(new_subscriber);
-
-    talkgroup_subscribers[message.talkgroup] =  subscribers;
+    talkgroup_subscribers[message.talkgroup].push_back(new_subscriber)
   }
 
 }
