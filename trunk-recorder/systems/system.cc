@@ -625,11 +625,13 @@ void System::delete_active_talkgroup_subscriber(TrunkMessage message){
     if (talkgroup.first == message.talkgroup){
       BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first;
 
+      int count = 0;
       BOOST_FOREACH (auto& subscriber, talkgroup.second) {
         if(subscriber.suid == message.source){
-          talkgroup.second.erase(subscriber);
+          talkgroup.second.erase(count);
           BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << ". Removing " << subscriber.suid << "."; 
         }
+        count++;
       }
     }
   }
