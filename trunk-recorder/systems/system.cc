@@ -616,6 +616,9 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
 
 void delete_active_talkgroup_subscriber(TrunkMessage message){
 
+BOOST_LOG_TRIVIAL(error) << "Removing registration.";
+
+/*
   if(message.source == -1) {
     return;
   }
@@ -633,6 +636,7 @@ void delete_active_talkgroup_subscriber(TrunkMessage message){
       }
     }
   }
+  */
 }
 
 
