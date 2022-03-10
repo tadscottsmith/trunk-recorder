@@ -588,7 +588,7 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
     new_subscriber.affiliation_time = update_time;
     new_subscriber.last_activity = update_time;
 
-    talkgroup_subscribers[message.talkgroup].push_back(new_subscriber)
+    talkgroup_subscribers[message.talkgroup].push_back(new_subscriber);
   }
 
 }
