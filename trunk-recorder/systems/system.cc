@@ -585,7 +585,7 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
         {
           new_subscriber = false;
           subscriber.last_activity = update_time;
-          BOOST_LOG_TRIVIAL(error) << "Updating TG: " << talkgroup.first << ". Setting " << subscriber.suid << " last activity time."; 
+          //BOOST_LOG_TRIVIAL(error) << "Updating TG: " << talkgroup.first << ". Setting " << subscriber.suid << " last activity time."; 
         }
       }
 
@@ -595,7 +595,7 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
         new_subscriber.affiliation_time = update_time;
         new_subscriber.last_activity = update_time;
         talkgroup.second.push_back(new_subscriber);
-        BOOST_LOG_TRIVIAL(error) << "Updating TG: " << talkgroup.first << ". Adding " << new_subscriber.suid;
+        //BOOST_LOG_TRIVIAL(error) << "Updating TG: " << talkgroup.first << ". Adding " << new_subscriber.suid;
       }
 
     }
@@ -634,9 +634,9 @@ void System::delete_active_talkgroup_subscriber(TrunkMessage message){
         SubscriberData subscriber = *it;
         //BOOST_LOG_TRIVIAL(error) << "Cleaning TG Trying To Find: " << subscriber.suid << " | " << message.source;
         if(subscriber.suid == message.source){
-          BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << ". Removing " << subscriber.suid << "."; 
+          //BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << ". Removing " << subscriber.suid << "."; 
           talkgroup.second.erase(it);
-          BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << "Size: " << talkgroup.second.size();
+          //BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << " Size: " << talkgroup.second.size();
           return;
         }
         it++;
