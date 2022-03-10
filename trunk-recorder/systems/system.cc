@@ -568,7 +568,8 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
   std::time_t update_time = std::time(nullptr);
   bool new_tgid = true;
 
-  if(message.source == -1) {
+  // Should be updated to not handle U2U calls
+  if(message.source == -1 || message.source > 100,000) {
     return;
   }
 
@@ -615,24 +616,23 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
 }
 
 void System::delete_active_talkgroup_subscriber(TrunkMessage message){
-
-  if(message.source == -1) {
+  // Should be updated to not handle U2U calls
+  if(message.source == -1 || message.source > 100,000 ) {
     return;
   }
   
-  bool subscriber_found = false;
-
   BOOST_FOREACH (auto& talkgroup, talkgroup_subscribers) {
     //talkgroup.first (map key) is TGID, patch.second is a vector of SubscriberData
     if (talkgroup.first == message.talkgroup){
       BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first;
-
+      BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << "Size: " << talkgroup.second.size();
       for (std::vector<SubscriberData>::iterator it = talkgroup.second.begin(); it != talkgroup.second.end();) {
         SubscriberData subscriber = *it;
         BOOST_LOG_TRIVIAL(error) << "Cleaning TG Trying To Find: " << subscriber.suid << " | " << message.source;
         if(subscriber.suid == message.source){
           BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << ". Removing " << subscriber.suid << "."; 
           talkgroup.second.erase(it);
+          BOOST_LOG_TRIVIAL(error) << "Cleaning TG: " << talkgroup.first << "Size: " << talkgroup.second.size();
           return;
         }
       }
