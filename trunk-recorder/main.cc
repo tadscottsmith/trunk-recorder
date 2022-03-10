@@ -820,7 +820,7 @@ void print_status() {
     source->print_recorders();
   }
 
-  for (std::vector<System *>::iterator sys_it = systems.begin(); it != systems.end(); ++it) {
+  for (std::vector<System *>::iterator sys_it = systems.begin(); sys_it != systems.end(); ++sys_it) {
     System *sys = (System *)*sys_it;
   
     BOOST_LOG_TRIVIAL(error) << "Talk Group Subscribers: ";
