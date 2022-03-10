@@ -573,12 +573,13 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
   }
 
   BOOST_FOREACH (auto& talkgroup, talkgroup_subscribers) {
+    //talkgroup.first (map key) is TGID, patch.second is a vector of SubscriberData
     if (talkgroup.first == message.talkgroup){
       new_tgid = false;
       BOOST_LOG_TRIVIAL(error) << "Updating TG: " << talkgroup.first;
 
       bool new_subscriber = true;
-      BOOST_FOREACH (auto& subscriber, talkgroup_subscribers) {
+      BOOST_FOREACH (auto& subscriber, talkgroup.second) {
         if(subscriber.suid == message.source)
         {
           new_subscriber = false;
@@ -591,7 +592,7 @@ void System::update_active_talkgroup_subscribers(TrunkMessage message){
         new_subscriber.suid = message.source;
         new_subscriber.affiliation_time = update_time;
         new_subscriber.last_activity = update_time;
-        talkgroup_subscribers.push_back(new_subscriber);
+        talkgroup.second.push_back(new_subscriber);
         BOOST_LOG_TRIVIAL(error) << "Updating TG: " << talkgroup.first << ". Adding " << new_subscriber.suid;
       }
 
