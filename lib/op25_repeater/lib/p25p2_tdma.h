@@ -41,7 +41,7 @@ class p25p2_tdma
 {
 public:
 	p25p2_tdma(const op25_audio& udp, int slotid, int debug, bool do_msgq, gr::msg_queue::sptr queue, std::deque<int16_t> &qptr, bool do_audio_output, bool do_nocrypt, int msgq_id = 0) ;	// constructor
-	int handle_packet(const uint8_t dibits[]) ;
+	int handle_packet(uint8_t dibits[], const uint64_t fs) ;
 	void set_slotid(int slotid);
 	uint8_t* tdma_xormask;
 	uint32_t symbols_received;
@@ -53,6 +53,7 @@ public:
 	bool rx_sym(uint8_t sym);
 	int handle_frame(void) ;
   	bool get_call_terminated();
+	long get_ptt_src_id();
 private:
 	p25p2_sync sync;
 	p25p2_duid duid;
@@ -75,6 +76,7 @@ private:
 	bool d_do_audio_output;
         bool d_do_nocrypt;
 		bool terminate_call;
+		long src_id;
         const op25_audio& op25audio;
 	log_ts logts;
     int d_nac;

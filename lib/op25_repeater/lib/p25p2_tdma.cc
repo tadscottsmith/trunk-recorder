@@ -122,6 +122,7 @@ bool p25p2_tdma::rx_sym(uint8_t sym)
 {
 	symbols_received++;
 	terminate_call = false;
+	src_id = -1;
 	return p2framer.rx_sym(sym);
 }
 
@@ -133,6 +134,10 @@ void p25p2_tdma::set_slotid(int slotid)
 
 bool p25p2_tdma::get_call_terminated() {
 	return terminate_call;
+}
+
+long p25p2_tdma::get_ptt_src_id() {
+	return src_id;
 }
 
 p25p2_tdma::~p25p2_tdma()	// destructor
@@ -152,7 +157,7 @@ int p25p2_tdma::process_mac_pdu(const uint8_t byte_buf[], const unsigned int len
 	unsigned int offset = (byte_buf[0] >> 2) & 0x7;
 
 #if 0
-        if (d_debug >= 0) {
+        if (d_debug >= 10) {
                 fprintf(stderr, "%s process_mac_pdu: opcode %d len %d\n", logts.get(d_msgq_id), opcode, len);
         }
 #endif
@@ -213,6 +218,7 @@ void p25p2_tdma::handle_mac_ptt(const uint8_t byte_buf[], const unsigned int len
 		}
 		send_msg(pdu, M_P25_MAC_PTT);
         uint32_t srcaddr = (byte_buf[13] << 16) + (byte_buf[14] << 8) + byte_buf[15];
+		src_id = srcaddr;
         uint16_t grpaddr = (byte_buf[16] << 8) + byte_buf[17];
         std::string s = "{\"srcaddr\" : " + std::to_string(srcaddr) + ", \"grpaddr\": " + std::to_string(grpaddr) + "}";
         send_msg(s, -3);
@@ -572,13 +578,14 @@ int p25p2_tdma::handle_frame(void)
 	int rc;
 	for (size_t i=0; i<sizeof(dibits); i++)
 		dibits[i] = p2framer.d_frame_body[i*2+1] + (p2framer.d_frame_body[i*2] << 1);
-	rc = handle_packet(dibits);
+	rc = handle_packet(dibits, p2framer.get_fs());
 	return rc;
 }
 
 /* returns true if in sync and slot matches current active slot d_slotid */
-int p25p2_tdma::handle_packet(const uint8_t dibits[]) 
+int p25p2_tdma::handle_packet(uint8_t dibits[], const uint64_t fs) 
 {
+	// descramble and process the frame
 	int rc = -1;
 	static const int which_slot[] = {0,1,0,1,0,1,0,1,0,1,1,0};
 	packets++;

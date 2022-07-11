@@ -9,7 +9,8 @@
 #include <gnuradio/msg_queue.h>
 
 #include <op25_repeater/fsk4_slicer_fb.h>
-#include <op25_repeater/gardner_costas_cc.h>
+#include <op25_repeater/costas_loop_cc.h>
+#include <op25_repeater/gardner_cc.h>
 #include <op25_repeater/include/op25_repeater/fsk4_demod_ff.h>
 #include <op25_repeater/include/op25_repeater/p25_frame_assembler.h>
 #include <op25_repeater/include/op25_repeater/rx_status.h>
@@ -56,6 +57,7 @@ public:
   void set_tdma_slot(int slot);
   std::vector<Transmission> get_transmission_list();
   void set_record_more_transmissions(bool more);
+  void set_source(long src);
   void set_xor_mask(const char *mask);
   void switch_tdma(bool phase2_tdma);
   void start(Call *call);
