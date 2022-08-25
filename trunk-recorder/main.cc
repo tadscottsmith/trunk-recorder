@@ -972,6 +972,11 @@ void handle_call_grant(TrunkMessage message, System *sys) {
       continue;
     }
 
+
+    if ((call->get_talkgroup() == message.talkgroup) && (call->get_system()->get_wacn() == message.wacn) && (call->get_phase2_tdma() == message.phase2_tdma)) {
+      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Duplicate Call GRANT on same WACN.\u001b[0m";
+    }
+
     if ((call->get_talkgroup() == message.talkgroup) && (call->get_sys_num() == message.sys_num) && (call->get_freq() == message.freq) && (call->get_tdma_slot() == message.tdma_slot) && (call->get_phase2_tdma() == message.phase2_tdma)) {
       call_found = true;
 
