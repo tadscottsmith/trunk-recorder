@@ -985,8 +985,8 @@ void handle_call_grant(TrunkMessage message, System *sys) {
 
     //BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Call WACN: " << call->get_system()->get_wacn() << " Message WACN: " << message_sys->get_wacn() << ".\u001b[0m";
 
-    if ((call->get_talkgroup() == message.talkgroup) && (call->get_sys_num() != message.sys_num) && (call->get_system()->get_wacn() == message_sys->get_wacn()) && (call->get_phase2_tdma() == message.phase2_tdma)) {
-      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Duplicate Call GRANT on same WACN.\u001b[0m";
+    if ((call->get_talkgroup() == message.talkgroup) && (call->get_sys_num() != message.sys_num) && (call->get_system()->get_wacn() == message_sys->get_wacn()) && (call->get_system()->get_nac() != message_sys->get_nac()) && (call->get_phase2_tdma() == message.phase2_tdma)) {
+      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Duplicate Call on on same WACN. Call NAC: " <<call->get_system()->get_nac() << " Message NAC: " << message_sys->get_nac() << "\u001b[0m";
       call_found = true;
     }
 
