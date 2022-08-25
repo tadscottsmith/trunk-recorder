@@ -951,7 +951,9 @@ void unit_location(System *sys, long source_id, long talkgroup_num) {
 
 void handle_call_grant(TrunkMessage message, System *sys) {
   bool call_found = false;
+  bool duplicate_grant = false;
   bool recording_started [[maybe_unused]] = false;
+  Call *original_call;
 
   /* Notes: it is possible for 2 Calls to exist for the same talkgroup on different freq. This happens when a Talkgroup starts on a freq
   that current recorder can't retune to. In this case, the current orig Talkgroup reocrder will keep going on the old freq, while a new
@@ -985,12 +987,13 @@ void handle_call_grant(TrunkMessage message, System *sys) {
 
     //BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Call WACN: " << call->get_system()->get_wacn() << " Message WACN: " << message_sys->get_wacn() << ".\u001b[0m";
 
+    // Grant is on a different NAC but same WACN
     if ((call->get_talkgroup() == message.talkgroup) && (call->get_sys_num() != message.sys_num) && (call->get_system()->get_wacn() == message_sys->get_wacn()) && (call->get_system()->get_nac() != message_sys->get_nac()) && (call->get_phase2_tdma() == message.phase2_tdma)) {
-      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Duplicate Call on on same WACN. Call NAC: " <<call->get_system()->get_nac() << " Message NAC: " << message_sys->get_nac() << "\u001b[0m";
-      call_found = true;
+      duplicate_grant = true;
+      original_call = call;
     }
 
-    else if ((call->get_talkgroup() == message.talkgroup) && (call->get_sys_num() == message.sys_num) && (call->get_freq() == message.freq) && (call->get_tdma_slot() == message.tdma_slot) && (call->get_phase2_tdma() == message.phase2_tdma)) {
+    if ((call->get_talkgroup() == message.talkgroup) && (call->get_sys_num() == message.sys_num) && (call->get_freq() == message.freq) && (call->get_tdma_slot() == message.tdma_slot) && (call->get_phase2_tdma() == message.phase2_tdma)) {
       call_found = true;
 
       // BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m GRANT Message for existing Call\u001b[0m";
@@ -1046,7 +1049,14 @@ void handle_call_grant(TrunkMessage message, System *sys) {
 
   if (!call_found) {
     Call *call = Call::make(message, sys, config);
-    recording_started = start_recorder(call, message, sys);
+
+    if(!duplicate_call) {
+      recording_started = start_recorder(call, message, sys);
+    }
+    else{
+      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Duplicate Call on on same WACN. Call NAC: " <<call->get_system()->get_nac() << " Message NAC: " << message_sys->get_nac() << "\u001b[0m";      
+    }
+
     calls.push_back(call);
     plugman_call_start(call);
     plugman_calls_active(calls);
