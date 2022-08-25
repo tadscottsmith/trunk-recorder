@@ -1050,7 +1050,7 @@ void handle_call_grant(TrunkMessage message, System *sys) {
   if (!call_found) {
     Call *call = Call::make(message, sys, config);
 
-    if(!duplicate_call) {
+    if(!duplicate_grant) {
       recording_started = start_recorder(call, message, sys);
     }
     else{
