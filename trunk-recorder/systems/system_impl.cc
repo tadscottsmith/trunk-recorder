@@ -590,4 +590,12 @@ void System_impl::clear_stale_talkgroup_patches() {
     }
     BOOST_LOG_TRIVIAL(debug) << "Active Patch of TGIDs" << printstring;
   }
+
+}
+
+bool System_impl::get_multiSite() {
+  return d_multiSite;
+}
+void System_impl::set_multiSite(bool multiSite) {
+  d_multiSite = multiSite;
 }

@@ -385,6 +385,9 @@ bool load_config(string config_file) {
       BOOST_LOG_TRIVIAL(info) << "Maximum Call Duration (in seconds): " << system->get_max_duration();
       system->set_min_tx_duration(node.second.get<double>("minTransmissionDuration", 0));
       BOOST_LOG_TRIVIAL(info) << "Minimum Transmission Duration (in seconds): " << system->get_min_tx_duration();
+      
+      system->set_multiSite(node.second.get<bool>("multiSite", false));
+      BOOST_LOG_TRIVIAL(info) << "Multiple Site System: " << system->get_multiSite();
 
       if (!system->get_compress_wav()) {
         if ((system->get_api_key().length() > 0) || (system->get_bcfy_api_key().length() > 0)) {
