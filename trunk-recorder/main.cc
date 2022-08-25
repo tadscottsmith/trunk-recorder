@@ -1054,7 +1054,7 @@ void handle_call_grant(TrunkMessage message, System *sys) {
       recording_started = start_recorder(call, message, sys);
     }
     else{
-      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Duplicate Call on on same WACN. Call NAC: " <<call->get_system()->get_nac() << " Message NAC: " << message_sys->get_nac() << "\u001b[0m";      
+      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36mDuplicate Grant on on same WACN. Original Call NAC: " <<original_call->get_system()->get_nac() << " Grant Message NAC: " << message_sys->get_nac() << "\u001b[0m";      
     }
 
     calls.push_back(call);
