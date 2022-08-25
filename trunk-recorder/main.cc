@@ -990,10 +990,17 @@ void handle_call_grant(TrunkMessage message, System *sys) {
 
     //BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Call WACN: " << call->get_system()->get_wacn() << " Message WACN: " << message_sys->get_wacn() << ".\u001b[0m";
 
-    // Grant is on a different NAC but same WACN
-    if ((call->get_talkgroup() == message.talkgroup) && (call->get_sys_num() != message.sys_num) && (call->get_system()->get_wacn() == message_sys->get_wacn()) && (call->get_system()->get_nac() != message_sys->get_nac()) && (call->get_phase2_tdma() == message.phase2_tdma)) {
-      duplicate_grant = true;
-      original_call = call;
+    if ((call->get_talkgroup() == message.talkgroup) && (call->get_phase2_tdma() == message.phase2_tdma)){
+      if(call->get_sys_num() != message.sys_num){
+        if(call->get_system()->get_multiSite() && message_sys->get_multiSite()){
+          if(call->get_system()->get_wacn() == message_sys->get_wacn()){
+            if(call->get_system()->get_nac() != message_sys->get_nac()){
+              duplicate_grant = true;
+              original_call = call;
+            }
+          }
+        }
+      }
     }
 
     if ((call->get_talkgroup() == message.talkgroup) && (call->get_sys_num() == message.sys_num) && (call->get_freq() == message.freq) && (call->get_tdma_slot() == message.tdma_slot) && (call->get_phase2_tdma() == message.phase2_tdma)) {
