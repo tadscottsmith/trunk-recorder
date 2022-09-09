@@ -297,7 +297,7 @@ pngen23(uint32_t& Pr)
  */
 
 static inline size_t
-imbe_header_decode(const voice_codeword& cw, uint32_t& u0, uint32_t& u1, uint32_t& u2, uint32_t& u3, uint32_t& u4, uint32_t& u5, uint32_t& u6, uint32_t& u7, uint32_t& E0, uint32_t& ET)
+imbe_header_decode(const voice_codeword& cw, uint32_t& u0, uint32_t& u1, uint32_t& u2, uint32_t& u3, uint32_t& u4, uint32_t& u5, uint32_t& u6, uint32_t& u7, uint32_t& E0, uint32_t& ET, uint32_t& E4)
 {
    size_t errs = 0;
    uint32_t v0 = extract(cw, 0, 23);
@@ -323,7 +323,8 @@ imbe_header_decode(const voice_codeword& cw, uint32_t& u0, uint32_t& u1, uint32_
 
    uint32_t m4 = pngen15(pn);
    uint16_t v4 = extract(cw, 92, 107) ^ m4;
-   errs += hamming_15_decode(v4);
+   E4 = hamming_15_decode(v4);
+   errs += E4;
    u4 = v4;
 
    uint32_t m5 = pngen15(pn);
@@ -339,6 +340,13 @@ imbe_header_decode(const voice_codeword& cw, uint32_t& u0, uint32_t& u1, uint32_
    u7 = extract(cw, 137, 144);
    u7 <<= 1; /* so that bit0 is free (see note about BOT bit */
    ET = errs;
+
+   if(ET != 0 || E4 !=0){
+      fprintf(stderr, "Setting ET: %02d\t E4: %02d\n", errs, E4);
+   }
+
+   
+
    return errs;
 }
 
@@ -461,9 +469,10 @@ imbe_regenerate_frame(bit_vector& cw) {
         unsigned int u1,u2,u3,u4,u5,u6,u7;
         unsigned int E0 = 0;
         unsigned int ET = 0;
+        unsigned int E4 = 0;
 
         // PN/Hamming/Golay - etc.
-        imbe_header_decode(cw, u0, u1, u2, u3, u4, u5, u6, u7, E0, ET) ;
+        imbe_header_decode(cw, u0, u1, u2, u3, u4, u5, u6, u7, E0, ET, E4) ;
 #if DEBUG
 	printf("u_0: %x\r\nu_1: %x\r\nu_2: %x\r\nu_3: %x\r\nu_4: %x\r\nu_5: %x\r\nu_6: %x\r\nu_7: %x\r\n\r\n", u0, u1, u2, u3, u4, u5, u6, u7>>1);
 #endif

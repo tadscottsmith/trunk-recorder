@@ -261,6 +261,9 @@ list(APPEND trunk_recorder_sources
   trunk-recorder/plugin_manager/plugin_manager.cc
   trunk-recorder/call_concluder/call_concluder.cc
 
+  trunk-recorder/cjmbe/codec/imbe/IMBEFrame.cc
+ 
+
   lib/lfsr/lfsr.cxx
   trunk-recorder/gr_blocks/freq_xlating_fft_filter.cc
   trunk-recorder/gr_blocks/transmission_sink.cc

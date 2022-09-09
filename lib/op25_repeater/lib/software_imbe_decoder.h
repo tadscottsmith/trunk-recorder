@@ -51,7 +51,7 @@ public:
 	 */
 	virtual void decode(const voice_codeword& cw);
 
-	void decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7, uint32_t E0, uint32_t ET);
+	void decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7, uint32_t E0, uint32_t ET, uint32_t E4);
 	void decode_tap(int _L, int _K, float _w0, const int * _v, const float * _mu);
 	void decode_tone(int _ID, int _AD, int * _n);
 private:
@@ -60,6 +60,11 @@ private:
 	//				  case if needed is spelled. e.g. L, ell
 
 	float ER;					// BER Estimate
+	uint32_t ET;
+	
+	uint32_t E4;					
+	int OldE4;
+
 	int rpt_ctr;				// Frame repeat counter
 
 	int bee[58];				// Encoded Spectral Amplitudes
@@ -92,7 +97,7 @@ private:
 	uint32_t next_u(uint32_t u);
 	void decode_spectral_amplitudes(int, int );
 	void decode_vuv(int );
-	void adaptive_smoothing(float, float );
+	void adaptive_smoothing(float);
 	void fft(float i[], float q[]);
 	void enhance_spectral_amplitudes(float&);
 	void ifft(float i[], float q[], float[]);

@@ -37,8 +37,10 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector)
 
 	imbe_param->b_vec[0] = (shr(frame_vector[0], 4) & 0xFC) | (shr(frame_vector[7], 1) & 0x3);	
 
-	if (imbe_param->b_vec[0] < 0 || imbe_param->b_vec[0] > 207)
+	if (imbe_param->b_vec[0] < 0 || imbe_param->b_vec[0] > 207){
+		//fprintf(stderr, "WE SHOULD BE FRAME REPEATING/MUTING.\n");
 		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)
+	}
 
 	tmp = ((imbe_param->b_vec[0] & 0xFF) << 1) + 0x4F;                                      // Convert b_vec[0] to unsigned Q15.1 format and add 39.5
 

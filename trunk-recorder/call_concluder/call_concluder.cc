@@ -280,7 +280,13 @@ Call_Data_t Call_Concluder::create_call_data(Call *call, System *sys, Config con
     }
     snprintf(formattedTalkgroup, 61, "%c[%dm%10ld%c[0m", 0x1B, 35, call_info.talkgroup, 0x1B);
     std::string talkgroup_display = boost::lexical_cast<std::string>(formattedTalkgroup);
-    BOOST_LOG_TRIVIAL(info) << "[" << call_info.short_name << "]\t\033[0;34m" << call_info.call_num << "C\033[0m\tTG: " << talkgroup_display << "\tFreq: " << format_freq(call_info.freq) << "\t- Transmission src: " << t.source << " pos: " << total_length << " length: " << t.length;
+
+    bool multi15 = false;
+    if((t.error_count % 15) == 0){
+      multi15 = true;
+    }
+
+    BOOST_LOG_TRIVIAL(info) << "[" << call_info.short_name << "]\t\033[0;34m" << call_info.call_num << "C\033[0m\tTG: " << talkgroup_display << "\tFreq: " << format_freq(call_info.freq) << "\t- Transmission src: " << t.source << "\tlength: " << t.length << "\tError Count: " << t.error_count << "\tSpike Count: " << t.spike_count << "\tMultiple15: " << multi15;
 
     if (it == call_info.transmission_list.begin()) {
       call_info.start_time = t.start_time;

@@ -774,27 +774,37 @@ software_imbe_decoder::decode(const voice_codeword& cw)
 	unsigned int u0 = 0;
 	unsigned int u1,u2,u3,u4,u5,u6,u7;
 	unsigned int E0 = 0;
-	unsigned int ET = 0;
+	ET = 0;
+	E4 = 0;
 
 	// PN/Hamming/Golay - etc.
-	imbe_header_decode(cw, u0, u1, u2, u3, u4, u5, u6, u7, E0, ET) ;
+	//fprintf(stderr, "BEFORE - E4: %02d\tET: %02d\n",E4,ET);	
+	imbe_header_decode(cw, u0, u1, u2, u3, u4, u5, u6, u7, E0, ET, E4);
+	//fprintf(stderr, "AFTER - E4: %02d\tET: %02d\n",E4,ET);	
 
 	//replace the sync bit(LSB of u7) with the BOT flag
 	u7 = u7 | 0x01; //ECC procedure called above always returns u7 LSB = 0
 
-	decode_fullrate(u0, u1, u2, u3, u4, u5, u6, u7, E0, ET); // process 88-bit frame
+	//fprintf(stderr, "About to decode_fullrate. E4: %02d\tET: %02d\n",E4,ET);
+	decode_fullrate(u0, u1, u2, u3, u4, u5, u6, u7, E0, ET, E4); // process 88-bit frame
 }
 
 void
-software_imbe_decoder::adaptive_smoothing(float SE, float ET)
+software_imbe_decoder::adaptive_smoothing(float SE)
 {
    float VM;
    float YM;
    int ell;
 
+	//fprintf(stderr, "Deciding on Adaptive Smoothing. E4: %2d\tET: %2d\n",E4,ET);
+
+	if((ER <= .0125) && ((E4 == 0) && (ET != 0))) {
+		fprintf(stderr, "Adaptive smoothing when not required. E4: %02d\tET: %02d\n",E4,ET);	
+	}
+
    if(ER <= .005 && ET <= 4) {
       VM = 1E+38; //infinity
-   } else if( ER <= .0125 && ET == 0) {  //(guessing typo in std)
+	} else if((ER <= .0125) && (E4 == 0)) {
       VM = 45.255 * powf(SE, .375) / exp(277.6 * ER);
    } else {
       VM = 1.414 * powf(SE, .375);
@@ -861,13 +871,18 @@ software_imbe_decoder::fft(float REX[], float IMX[])
 }
 
 void
-software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7, uint32_t E0, uint32_t ET)
+software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7, uint32_t E0, uint32_t ET_IN, uint32_t E4_IN)
 {
 	int K;
 	float SE = 0;
 	int en, tmp_f;
 	bool muted = false;
     int b0 = ((u0 >> 4) & 0xfc) | ((u7 >> 1) & 0x3);
+
+	//fprintf(stderr, "About to decode_fullrate. E4: %02d\tET: %02d\n",E4,ET);
+
+	ET = ET_IN;
+	E4 = E4_IN;
 
 	ER = (0.95 * ER) + (0.000365 * ET);
 	if( ER > 0.0875) {                                           // Frame Muting per TIA-102-BABA-A section 7.8
@@ -891,7 +906,7 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 		enhance_spectral_amplitudes(SE);
 	}
 	if (!muted) {
-		adaptive_smoothing(SE, ET);
+		adaptive_smoothing(SE);
 
 		// (8000 samp/sec) * (1 sec / 50 compressed voice frames) = 160 samples/frame
 
@@ -943,7 +958,7 @@ software_imbe_decoder::decode_tap(int _L, int _K, float _w0, const int * _v, con
 	}
 	// decode_spectral_amplitudes(Start3, Start8);
 	enhance_spectral_amplitudes(SE);
-	adaptive_smoothing(SE, ET);
+	adaptive_smoothing(SE);
 
 	// (8000 samp/sec) * (1 sec / 50 compressed voice frames) = 160 samples/frame
 
@@ -1140,6 +1155,7 @@ software_imbe_decoder::repeat_last()
    // Reload parameters from previous frame
    w0 = Oldw0;
    L = OldL;
+   E4 = OldE4;
    for (int i = 0; i < 57; i++) {
       vee[i][New]    = vee[i][Old]; 
       Mu[i][New]     = Mu[i][Old];
@@ -1249,12 +1265,22 @@ software_imbe_decoder::decode_vuv(int K)
    bee1 = bee[1];
    for(ell = 1; ell <= L; ell++) {
       if(ell <= 36)
-         kay =(ell + 2) / 3;
+         kay =floor((ell + 2) / 3);
       else
          kay = 12;
 
       //vee(ell, New) = (bee1 \(2 ^(K - kay))) - 2 *(bee1 \(2 ^(K + 1 - kay)))
+
+	//fprintf(stderr, "K: %02d\tBee1: %02d\tell: %02d\tkay: %20d\n", K,bee1,ell,kay);
+
       vee[ell][ New] = ((bee1 & (1 << (K - kay))) > 0) ? 1 : 0;
+	  //vee[ell][ New] = floor(bee1 / (2 ^(K - kay))) - 2 * floor((bee1 / (2 ^(K + 1 - kay)))) ? 1 : 0;
+	  int result = (int)floor(bee1 / pow(2,(K - kay))) - 2 * floor((bee1 / pow(2,(K + 1 - kay))));
+	  if (vee[ell][ New] != result){
+		fprintf(stderr, "Old Result: %02d\t New Result: %02d\n", vee[ell][ New],result);
+	  }
+	  
+	  //fprintf(stderr, "Passed setting vee[ell]\n");
    }
 }
 
@@ -1387,7 +1413,10 @@ software_imbe_decoder::rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t
 
    w0 = 4 * M_PI /(bee[0] + 39.5);
 
-   L =(int)(.9254 * floorf((M_PI / w0) + .25)); if(L < 9 || L > 56) exit(2);
+   L =(int)(.9254 * floorf((M_PI / w0) + .25)); 
+   int newL = (int)floorf(.9254 * floorf((M_PI / w0) + .25));
+
+   if(L < 9 || L > 56) exit(2);
 
    if( L > 36) {
       K = 12;
@@ -1396,6 +1425,12 @@ software_imbe_decoder::rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t
       //if(K > 12) exit(3);
 			if(K > 12) return 3;
    }
+
+	if(newL != L){
+		fprintf(stderr, "Old Fundamental Frequency - L: %02d\tK: %02d\n", L,K);
+		fprintf(stderr, "New Fundamental Frequency - L: %02d\tK: %02d\n", newL,K);
+	}
+
 
    for(I = 1; I <= L + 1; I++) { bee[I] = 0; }
 
@@ -1537,7 +1572,7 @@ software_imbe_decoder::synth_unvoiced()
          }
          // 0.91652 is my best guess at what the unvoiced scaling
          // coefficient is supposed to be
-         Tmp = 0.91652 * M[ell][New] / sqrt(Tmp /(bl - al));
+         Tmp = 0.91652  * M[ell][New] / sqrt(Tmp /(bl - al));
          //now do the rest of b.h.e.
          for(em = al; em <= bl - 1; em++) {
             Uwi[em] =(Uwi[em]) * Tmp;

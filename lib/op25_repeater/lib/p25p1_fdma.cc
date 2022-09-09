@@ -273,7 +273,7 @@ namespace gr {
         }
 
         void p25p1_fdma::process_HDU(const bit_vector& A) {
-            if (d_debug >= 10) {
+            if (false) {
                 fprintf (stderr, "%s NAC 0x%03x HDU:  ", logts.get(d_msgq_id), framer->nac);
             }
 
@@ -305,14 +305,14 @@ namespace gr {
                 ess_keyid = ((HB[j+2] & 0x03) << 14) + (HB[j+3] << 8) + (HB[j+4] << 2) + (HB[j+5] >> 4);	// 16 bit KeyId
                 vf_tgid   = ((HB[j+5] & 0x0f) << 12) + (HB[j+6] << 6) +  HB[j+7];				// 16 bit TGID
 
-                if (d_debug >= 10) {
+                if (false) {
                     fprintf (stderr, "ESS: tgid=%d, mfid=%x, algid=%x, keyid=%x, mi=%02x %02x %02x %02x %02x %02x %02x %02x %02x",
                             vf_tgid, MFID, ess_algid, ess_keyid,
                             ess_mi[0], ess_mi[1], ess_mi[2], ess_mi[3], ess_mi[4], ess_mi[5],ess_mi[6], ess_mi[7], ess_mi[8]);
                 }
             }
 
-            if (d_debug >= 10) {
+            if (false) {
                 fprintf (stderr, ", gly_errs=%lu, rs_errs=%d\n", gly_errs, ec);
             }
         }
@@ -332,7 +332,7 @@ namespace gr {
         }
 
         void p25p1_fdma::process_LDU1(const bit_vector& A) {
-            if (d_debug >= 10) {
+            if (false) {
                 fprintf (stderr, "%s NAC 0x%03x LDU1: ", logts.get(d_msgq_id), framer->nac);
             }
 
@@ -340,7 +340,7 @@ namespace gr {
             process_LLDU(A, HB);
             process_LCW(HB);
 
-            if (d_debug >= 10) {
+            if (false) {
                 fprintf (stderr, "\n");
             }
 
@@ -348,7 +348,7 @@ namespace gr {
         }
 
         void p25p1_fdma::process_LDU2(const bit_vector& A) {
-            if (d_debug >= 10) {
+            if (false) {
                 fprintf (stderr, "%s NAC 0x%03x LDU2: ", logts.get(d_msgq_id), framer->nac);
             }
 
@@ -368,12 +368,16 @@ namespace gr {
                 ess_algid =  (HB[j  ]         <<  2) + (HB[j+1] >> 4);					// 8 bit AlgId
                 ess_keyid = ((HB[j+1] & 0x0f) << 12) + (HB[j+2] << 6) + HB[j+3];			// 16 bit KeyId
 
-                if (d_debug >= 10) {
+                if (false) {
                     fprintf (stderr, "ESS: algid=%x, keyid=%x, mi=%02x %02x %02x %02x %02x %02x %02x %02x %02x, rs_errs=%d\n",
                             ess_algid, ess_keyid,
                             ess_mi[0], ess_mi[1], ess_mi[2], ess_mi[3], ess_mi[4], ess_mi[5],ess_mi[6], ess_mi[7], ess_mi[8],
                             ec); 
                 }
+            }
+            else{
+                    fprintf (stderr, "Upper Limit Error Correction Exceded Uknown AlgID or KeyID. Continuing to process voice. rs_errs=%d\n",ec); 
+
             }
             process_voice(A);
         }
@@ -388,19 +392,19 @@ namespace gr {
         }
 
         void p25p1_fdma::process_TDU3() {
-            if (d_debug >= 10) {
+            if (false) {
                 fprintf (stderr, "%s NAC 0x%03x TDU3:  ", logts.get(d_msgq_id), framer->nac);
             }
 
             process_TTDU();
 
-            if (d_debug >= 10) {
+            if (false) {
                 fprintf (stderr, "\n");
             }
         }
 
         void p25p1_fdma::process_TDU15(const bit_vector& A) {
-            if (d_debug >= 10) {
+            if (false) {
                 fprintf (stderr, "%s NAC 0x%03x TDU15:  ", logts.get(d_msgq_id), framer->nac);
             }
 
@@ -422,7 +426,7 @@ namespace gr {
             }
             process_LCW(HB);
 
-            if (d_debug >= 10) {
+            if (false) {
                 fprintf (stderr, ", gly_errs=%lu\n", gly_errs);
             }
         }
@@ -454,7 +458,7 @@ namespace gr {
             int lco =   lcw[0] & 0x3f;
             std::string s = "";
 
-            if (d_debug >= 10) {
+            if (false) {
                 fprintf(stderr, "LCW: ec=%d, pb=%d, sf=%d, lco=%d : %02x %02x %02x %02x %02x %02x %02x %02x %02x",
                         ec, pb, sf, lco, lcw[0], lcw[1], lcw[2], lcw[3], lcw[4], lcw[5], lcw[6], lcw[7], lcw[8]);
             }
@@ -469,7 +473,7 @@ namespace gr {
                             curr_src_id = srcaddr;
                             s = "{\"srcaddr\" : " + std::to_string(srcaddr) + ", \"grpaddr\": " + std::to_string(grpaddr) + "}";
                             send_msg(s, -3);
-                            if (d_debug >= 10)
+                            if (false)
                                 fprintf(stderr, ", srcaddr=%d, grpaddr=%d", srcaddr, grpaddr);
                             break;
                         }
@@ -482,7 +486,7 @@ namespace gr {
                             uint16_t grp_A = (lcw[3] << 8) + lcw[4];
                             uint16_t ch_B  = (lcw[5] << 8) + lcw[6];
                             uint16_t grp_B = (lcw[7] << 8) + lcw[8];
-                            if (d_debug >= 10)
+                            if (false)
                                 fprintf(stderr, ", ch_A=%d, grp_A=%d, ch_B=%d, grp_B=%d", ch_A, grp_A, ch_B, grp_B);
                             tsbk[0] = 0xff; tsbk[1] = 0xff;
                             tsbk[2] = 0x82;
@@ -500,7 +504,7 @@ namespace gr {
                             uint16_t grpaddr = (lcw[3] << 8) + lcw[4];
                             uint16_t ch_T    = (lcw[5] << 8) + lcw[6];
                             uint16_t ch_R    = (lcw[7] << 8) + lcw[8];
-                            if (d_debug >= 10)
+                            if (false)
                                 fprintf(stderr, ", svcopts=0x%02x, grpaddr=%d, ch_T=%d, ch_R=%d", svcopts, grpaddr, ch_T, ch_R);
                             tsbk[0] = 0xff; tsbk[1] = 0xff;
                             tsbk[2] = 0x83;
@@ -532,7 +536,7 @@ namespace gr {
                     op = deinterleave_buf[j][0] & 0x3f;	// opcode
                     process_duid(framer->duid, framer->nac, deinterleave_buf[j].data(), 10);
 
-                    if (d_debug >= 10) {
+                    if (false) {
                         fprintf (stderr, "%s NAC 0x%03x TSBK: op=%02x : %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
                                 logts.get(d_msgq_id), framer->nac, op,
                                 deinterleave_buf[j][0], deinterleave_buf[j][1], deinterleave_buf[j][2], deinterleave_buf[j][3],
@@ -568,7 +572,7 @@ namespace gr {
 
                     process_duid(framer->duid, framer->nac, deinterleave_buf[0].data(), ((blks + 1) * 12) - 4);
 
-                    if (d_debug >= 10) {
+                    if (true) {
                         if (fmt == 0x15) {
                             op =   deinterleave_buf[1][0] & 0x3f; // Unconfirmed MBT format
                         } else if (fmt == 0x17) {
@@ -595,7 +599,7 @@ namespace gr {
                         fprintf (stderr, "%s NAC 0x%03x PDU:  fmt=%02x, op=0x%02x : %s %s %s %s\n",
                                 logts.get(d_msgq_id), framer->nac, fmt, op, s0, s1, s2, s3);
                     }
-                } else if (d_debug >= 10) {
+                } else if (true) {
                     fprintf(stderr, "%s NAC 0x%03x PDU:  non-MBT message ignored\n", logts.get(d_msgq_id), framer->nac);
                 }
 
@@ -628,16 +632,21 @@ namespace gr {
             if (d_do_imbe || d_do_audio_output) {
                 for(size_t i = 0; i < nof_voice_codewords; ++i) {
                     voice_codeword cw(voice_codeword_sz);
-                    uint32_t E0, ET;
+                    uint32_t E0, ET, E4 = 0;
                     uint32_t u[8];
+
+                    int16_t snd_new[SND_FRAME];
+                    int16_t snd_original[SND_FRAME];
+
                     char s[128];
                     size_t errs = 0;
                     imbe_deinterleave(A, cw, i);
                     uint16_t imbe_error = 0;
 
-                    errs = imbe_header_decode(cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, ET);
+                    errs = imbe_header_decode(cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, ET, E4);
+                    //errs = 0;
 
-                    if (d_debug >= 9) {
+                    if (errs > 10) {
                         packed_codeword p_cw;
                         imbe_pack(p_cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7]);
                         sprintf(s,"%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
@@ -687,37 +696,46 @@ namespace gr {
                             std::string encr = "{\"encrypted\": " + std::to_string(0) + ", \"algid\": " + std::to_string(ess_algid) + ", \"keyid\": " + std::to_string(ess_keyid) + "}";
                             send_msg(encr, M_P25_JSON_DATA);
                             // This is the Vocoder that OP25 currently uses.
-                            /*software_decoder.decode_fullrate(u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, ET);
+                            if(ET != 0 || E4 !=0){
+                                fprintf(stderr, "P25P1 - E4: %02d\tET: %02d\n",E4,ET);
+                            }
+                            
+                            software_decoder.decode(cw);
                             audio_samples *samples = software_decoder.audio();
                             for (int i=0; i < SND_FRAME; i++) {
                            	    if (samples->size() > 0) {
-                       		        snd[i] = (int16_t)(samples->front());
+                       		        snd_new[i] = (int16_t)(samples->front());
                                     samples->pop_front();
                                 } else {
-                                    snd[i] = 0;
+                                    snd_new[i] = 0;
                                 }
-                            }*/
-
+                            }
+                            
+                            
+                            //fprintf(stderr, "%05d %05d %05d %05d %05d %05d %05d %05d %05d %05d %05d %05d %05d %05d %05d %05d\n", snd_new[0], snd_new[1], snd_new[2], snd_new[3], snd_new[4], snd_new[5], snd_new[6], snd_new[7], snd_new[8], snd_new[9], snd_new[10], snd_new[11], snd_new[12], snd_new[13], snd_new[14], snd_new[15]);
+                            /*
                             // This is the older, fullrate vocoder
                             // it was copied from p25p1_voice_decode.cc
                             int16_t frame_vector[8];
 
                             for (int i=0; i < 8; i++) { // Ugh. For compatibility convert imbe params from uint32_t to int16_t
                                 frame_vector[i] = u[i];
+                                if(frame_vector[i] != u[i]){
+                                    fprintf(stderr, "Conversion Error!! Frame_Vector: %d \tU: %d\n\n\n",frame_vector[i], u[i]);
+                                }
+
                             }
                             frame_vector[7] >>= 1;
                             vocoder.imbe_decode(frame_vector, snd);
-
-
-
-
-
+                            */
+                            
+                            //fprintf(stderr, "U: %03x %03x %03x %03x %03x %03x %03x %03x\n\n", frame_vector[0], frame_vector[1], frame_vector[2], frame_vector[3], frame_vector[4], frame_vector[5], frame_vector[6], frame_vector[7]);
 
                             if (op25audio.enabled()) {      // decoded audio goes out via UDP (normal code path)
                                 op25audio.send_audio(snd, SND_FRAME * sizeof(int16_t));
                             } else {                        // decoded audio back to gnuradio (still supported?)
                                 for (int i = 0; i < SND_FRAME; i++) {
-                                    output_queue.push_back(snd[i]);
+                                    output_queue.push_back(snd_new[i]);
                                 }
                             }
                         } else {
