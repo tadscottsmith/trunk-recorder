@@ -34,6 +34,7 @@
 #include "imbe_vocoder.h"
 
 #include <string.h>
+#include <math.h>
 
 
 
