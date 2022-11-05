@@ -12,6 +12,7 @@
 static bool already_printed = false;
 
 void imbe_vocoder::clear() {
+	fprintf(stderr,"Clearing IMBE Vocoder.\n");
 	memset(wr_array, 0, sizeof(wr_array));
 	memset(wi_array, 0, sizeof(wi_array));
 	memset(pitch_est_buf, 0, sizeof(pitch_est_buf));

@@ -57,7 +57,7 @@ void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *
 	Word16 snd_tmp[FRAME];
 	Word16 j;
 
-	decode_frame_vector(imbe_param, frame_vector);
+	decode_frame_vector(imbe_param, frame_vector, prev_frame_vector);
 	v_uv_decode(imbe_param);
 	sa_decode(imbe_param);
 	sa_enh(imbe_param);
@@ -66,4 +66,8 @@ void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *
 
 	for(j = 0; j < FRAME; j++)
 		snd[j] = add(snd[j], snd_tmp[j]);
+
+	for (int i=0; i < 8; i++) { 
+		prev_frame_vector[i] = frame_vector[i];
+	}
 }

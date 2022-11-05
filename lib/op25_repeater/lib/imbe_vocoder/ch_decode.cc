@@ -28,17 +28,26 @@
 #include <iostream>
 
 
-void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector)
+void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *previous_frame_vector)
 {
 	Word16 bit_stream[BIT_STREAM_LEN];
 	Word16 i, vec_num, tmp, tmp1, tmp2, bit_thr, shift;
 	Word16 *b_ptr, *ba_ptr, index0;
 	Word32 L_tmp;
 
+	// TSS
 	imbe_param->b_vec[0] = (shr(frame_vector[0], 4) & 0xFC) | (shr(frame_vector[7], 1) & 0x3);	
 
-	if (imbe_param->b_vec[0] < 0 || imbe_param->b_vec[0] > 207)
-		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)
+	if (imbe_param->b_vec[0] < 0 || imbe_param->b_vec[0] > 207){
+
+		for (int i=0; i < 8; i++) { 
+			frame_vector[i] = previous_frame_vector[i] ;
+		}
+
+		fprintf(stderr,"We whould be frame repeating.\n");
+		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
+	}
+
 
 	tmp = ((imbe_param->b_vec[0] & 0xFF) << 1) + 0x4F;                                      // Convert b_vec[0] to unsigned Q15.1 format and add 39.5
 
