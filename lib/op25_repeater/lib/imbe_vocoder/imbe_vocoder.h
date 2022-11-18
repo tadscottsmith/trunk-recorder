@@ -36,12 +36,12 @@ public:
 	// hack to enable ambe encoder read access to speech parameters
 	const IMBE_PARAM* param(void) {return &my_imbe_param;}
 	void set_gain_adjust(float gain_adjust) {d_gain_adjust = gain_adjust;}
-	void set_errorCoset0(int errorCoset0) {my_imbe_param->errorCoset0 = errorCoset0;}
-	void set_errorCoset4(int errorCoset4) {my_imbe_param->errorCoset4 = errorCoset4;}
-	void set_errorRate(float errorRate) {my_imbe_param->errorRate = errorRate;}
-	int get_errorCoset0() {return my_imbe_param->errorCoset0;}
-	int get_errorCoset4() {return my_imbe_param->errorCoset4;}
-	float get_errorRate() {return my_imbe_param->errorRate;}
+	void set_errorCoset0(int errorCoset0) {&mmy_imbe_param->errorCoset0 = errorCoset0;}
+	void set_errorCoset4(int errorCoset4) {&mmy_imbe_param->errorCoset4 = errorCoset4;}
+	void set_errorRate(float errorRate) {&mmy_imbe_param->errorRate = errorRate;}
+	int get_errorCoset0() {return &mmy_imbe_param->errorCoset0;}
+	int get_errorCoset4() {return &mmy_imbe_param->errorCoset4;}
+	float get_errorRate() {return &mmy_imbe_param->errorRate;}
 private:
 	IMBE_PARAM my_imbe_param;
 
