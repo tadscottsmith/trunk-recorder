@@ -57,6 +57,7 @@ typedef struct
 	int errorCoset4 = 0;
 	int errorTotal = 0;
 	float errorRate = 0.0;
+	int repeatCount = 0;
 } IMBE_PARAM;
 
 typedef struct  

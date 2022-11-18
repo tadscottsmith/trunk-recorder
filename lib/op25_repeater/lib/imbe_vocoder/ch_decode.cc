@@ -36,10 +36,16 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 	Word32 L_tmp;
 
 	// TSS
-	imbe_param->b_vec[0] = (shr(frame_vector[0], 4) & 0xFC) | (shr(frame_vector[7], 1) & 0x3);	
+	imbe_param->b_vec[0] = (shr(frame_vector[0], 4) & 0xFC) | (shr(frame_vector[7], 1) & 0x3);
+
+	if (imbe_param->repeatCount > 3)
+	{
+		fprintf(stderr,"CH_DECODE - Too many repeats. What should we do?\n");
+	}
 
 	if (imbe_param->b_vec[0] < 0 || imbe_param->b_vec[0] > 207){
 
+		imbe_param->repeatCount++;
 		for (int i=0; i < 8; i++) { 
 			frame_vector[i] = previous_frame_vector[i] ;
 		}
@@ -50,6 +56,7 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 
 	if (imbe_param->errorCoset0 >= 2 && imbe_param->errorTotal >= 10 + 40 * imbe_param->errorRate){
 
+		imbe_param->repeatCount++;
 		for (int i=0; i < 8; i++) { 
 			frame_vector[i] = previous_frame_vector[i] ;
 		}
@@ -67,6 +74,8 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 		fprintf(stderr,"CH_DECODE - Frame Muting. Error Rate.\n");
 		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
 	}
+
+	imbe_param->repeatCount = 0;
 
 	tmp = ((imbe_param->b_vec[0] & 0xFF) << 1) + 0x4F;                                      // Convert b_vec[0] to unsigned Q15.1 format and add 39.5
 
