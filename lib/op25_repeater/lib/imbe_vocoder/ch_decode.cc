@@ -40,6 +40,7 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 
 	if (imbe_param->repeatCount > 3)
 	{
+		imbe_param->repeatCount = 0;
 		fprintf(stderr,"CH_DECODE - Too many repeats. Clearing audio?\n");
 		for (int i=0; i < 8; i++) { 
 			frame_vector[i] = 0;
