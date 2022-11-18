@@ -68,7 +68,7 @@ void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *
 	uv_synt(imbe_param, snd_tmp);
 
 	for(j = 0; j < FRAME; j++){
-		snd[j] = add(snd[j], snd_tmp[j]); // Attempting to increase volume. 
+		snd[j] = add(snd[j] * 4, snd_tmp[j]); // Attempting to increase volume. 
 	}
 
 	for (int i=0; i < 8; i++) { 
