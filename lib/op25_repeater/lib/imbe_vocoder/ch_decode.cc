@@ -58,6 +58,15 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
 	}
 
+	if (imbe_param->errorRate >= .0875){
+
+		for (int i=0; i < 8; i++) { 
+			frame_vector[i] = 0;
+		}
+
+		fprintf(stderr,"CH_DECODE - Frame Muting. Error Rate.\n");
+		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
+	}
 
 	tmp = ((imbe_param->b_vec[0] & 0xFF) << 1) + 0x4F;                                      // Convert b_vec[0] to unsigned Q15.1 format and add 39.5
 
