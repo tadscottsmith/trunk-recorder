@@ -38,9 +38,11 @@ public:
 	void set_gain_adjust(float gain_adjust) {d_gain_adjust = gain_adjust;}
 	void set_errorCoset0(int errorCoset0) {my_imbe_param.errorCoset0 = errorCoset0;}
 	void set_errorCoset4(int errorCoset4) {my_imbe_param.errorCoset4 = errorCoset4;}
+	void set_errorTotal(int errorTotal) {my_imbe_param.errorTotal = errorTotal;}
 	void set_errorRate(float errorRate) {my_imbe_param.errorRate = errorRate;}
 	int get_errorCoset0() {return my_imbe_param.errorCoset0;}
 	int get_errorCoset4() {return my_imbe_param.errorCoset4;}
+	int get_errorTotal() {return my_imbe_param.errorTotal;}
 	float get_errorRate() {return my_imbe_param.errorRate;}
 private:
 	IMBE_PARAM my_imbe_param;

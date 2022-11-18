@@ -55,6 +55,7 @@ typedef struct
 	Word16 div_one_by_num_harm_sh;
 	int errorCoset0 = 0;
 	int errorCoset4 = 0;
+	int errorTotal = 0;
 	float errorRate = 0.0;
 } IMBE_PARAM;
 
