@@ -640,9 +640,11 @@ namespace gr {
                     errs = imbe_header_decode(cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, ET);
                     vocoder.set_errorCoset0(E0);
                     vocoder.set_errorTotal(ET);
+                    //TSS
                     //fprintf(stderr, "P25P1 - Error Total: %d\n", ET);
                     float errorRate = .95 * vocoder.get_errorRate() + .000365 * vocoder.get_errorTotal();
                     vocoder.set_errorRate(errorRate);
+                    //TSS
                     //fprintf(stderr, "P25P1 - Error Rate: %f\n", errorRate);
 
                     if (d_debug >= 9) {
