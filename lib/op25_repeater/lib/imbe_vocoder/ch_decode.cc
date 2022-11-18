@@ -44,7 +44,17 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 			frame_vector[i] = previous_frame_vector[i] ;
 		}
 
-		fprintf(stderr,"CH_DECODE - Frame Repeating.\n");
+		fprintf(stderr,"CH_DECODE - Frame Repeating. Invalid Frame.\n");
+		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
+	}
+
+	if (imbe_param->errorCoset0 >= 2 && imbe_param->errorTotal >= 10 + 40 * imbe_param->errorRate){
+
+		for (int i=0; i < 8; i++) { 
+			frame_vector[i] = previous_frame_vector[i] ;
+		}
+
+		fprintf(stderr,"CH_DECODE - Frame Repeating. Errors.\n");
 		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
 	}
 
