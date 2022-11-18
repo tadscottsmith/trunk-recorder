@@ -44,7 +44,7 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 			frame_vector[i] = previous_frame_vector[i] ;
 		}
 
-		fprintf(stderr,"We whould be frame repeating.\n");
+		fprintf(stderr,"CH_DECODE - Frame Repeating.\n");
 		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
 	}
 

@@ -471,6 +471,8 @@ Source::Source(double c, double r, double e, std::string drv, std::string dev, C
       BOOST_LOG_TRIVIAL(info) << "Gain Stage: " << gain_name << " supported values: " << gain_opt_str;
     }
 
+    osmosdr::source::sptr osmo_src;
+
     source_block = osmo_src;
   }
 
