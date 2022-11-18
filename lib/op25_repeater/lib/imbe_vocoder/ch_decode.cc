@@ -44,6 +44,7 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 		for (int i=0; i < 8; i++) { 
 			frame_vector[i] = 0;
 		}
+		return;
 	}
 
 	if (imbe_param->b_vec[0] < 0 || imbe_param->b_vec[0] > 207){
