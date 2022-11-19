@@ -18,7 +18,7 @@
  * Software Foundation, Inc., 51 Franklin Street, Boston, MA
  * 02110-1301, USA.
  */
-
+#include "typedef.h"
 #include "aux_sub.h"
 #include "basic_op.h"
 #include "ch_decode.h"
