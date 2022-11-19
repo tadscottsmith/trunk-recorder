@@ -32,6 +32,7 @@
 #include "typedef.h"
 #include "uv_synt.h"
 #include "v_synt.h"
+#include <iostream>
 
 #include <string.h>
 
