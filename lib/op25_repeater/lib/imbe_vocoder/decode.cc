@@ -19,20 +19,18 @@
  * 02110-1301, USA.
  */
 #include "typedef.h"
-#include "aux_sub.h"
-#include "basic_op.h"
-#include "ch_decode.h"
-#include "dsp_sub.h"
-#include "encode.h"
 #include "globals.h"
 #include "imbe.h"
-#include "imbe_vocoder.h"
+#include "ch_decode.h"
 #include "sa_decode.h"
 #include "sa_enh.h"
-#include "typedef.h"
-#include "uv_synt.h"
 #include "v_synt.h"
-#include <iostream>
+#include "uv_synt.h"
+#include "basic_op.h"
+#include "aux_sub.h"
+#include "encode.h"
+#include "dsp_sub.h"
+#include "imbe_vocoder.h"
 
 #include <string.h>
 
