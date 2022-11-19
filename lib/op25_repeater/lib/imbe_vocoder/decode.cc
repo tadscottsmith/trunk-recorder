@@ -33,6 +33,7 @@
 #include "imbe_vocoder.h"
 
 #include <string.h>
+#include <iostream>
 
 void imbe_vocoder::decode_init(IMBE_PARAM *imbe_param) {
   v_synt_init();
