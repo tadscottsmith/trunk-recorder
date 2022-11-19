@@ -35,9 +35,7 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 	Word16 *b_ptr, *ba_ptr, index0;
 	Word32 L_tmp;
 
-	// TSS
-	// Moved outside of this function.
-	// imbe_param->b_vec[0] = (shr(frame_vector[0], 4) & 0xFC) | (shr(frame_vector[7], 1) & 0x3);
+	imbe_param->b_vec[0] = (shr(frame_vector[0], 4) & 0xFC) | (shr(frame_vector[7], 1) & 0x3);
 
 	if (imbe_param->b_vec[0] < 0 || imbe_param->b_vec[0] > 207){
 
@@ -61,7 +59,21 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
 	}
 
+	if (imbe_param->repeatCount > 3) {
+		fprintf(stderr, "CH_DECODE - Frame Muting. Too many repeats.\n");
+		imbe_param->muteAudio = true;
+		return; // If we return here IMBE parameters from previous frame will be used and frame will be muted.	
+	}
+
+	if (imbe_param->errorRate >= .0875) {
+		fprintf(stderr, "CH_DECODE - Frame Muting. Error Rate.\n");
+		imbe_param->muteAudio = true;
+		return; // If we return here IMBE parameters from previous frame will be used and frame will be muted.	
+	}
+
+	// If we make it hear, we have a good frame. Clean up the variables.
 	imbe_param->repeatCount = 0;
+	imbe_param->muteAudio = false;
 
 	tmp = ((imbe_param->b_vec[0] & 0xFF) << 1) + 0x4F;                                      // Convert b_vec[0] to unsigned Q15.1 format and add 39.5
 

@@ -58,6 +58,7 @@ typedef struct
 	int errorTotal = 0;
 	float errorRate = 0.0;
 	int repeatCount = 0;
+	bool muteAudio = false;
 } IMBE_PARAM;
 
 typedef struct  

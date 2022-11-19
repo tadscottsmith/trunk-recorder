@@ -49,26 +49,12 @@ void imbe_vocoder::decode_init(IMBE_PARAM *imbe_param) {
   imbe_param->errorCoset4 = 0;
   imbe_param->errorRate = 0.0;
   imbe_param->repeatCount = 0;
+  imbe_param->muteAudio = false;
 }
 
 void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *snd) {
   Word16 snd_tmp[FRAME];
   Word16 j;
-  bool muteAudio = false;
-
-  // TSS
-  // Moved out of decode_frame_vector
-  imbe_param->b_vec[0] = (shr(frame_vector[0], 4) & 0xFC) | (shr(frame_vector[7], 1) & 0x3);
-
-  if (imbe_param->repeatCount > 3) {
-    fprintf(stderr, "CH_DECODE - Frame Muting. Too many repeats.\n");
-    muteAudio = true;
-  }
-
-  if (imbe_param->errorRate >= .0875) {
-    fprintf(stderr, "CH_DECODE - Frame Muting. Error Rate.\n");
-    muteAudio = true;
-  }
 
   decode_frame_vector(imbe_param, frame_vector, prev_frame_vector);
   v_uv_decode(imbe_param);
@@ -77,7 +63,7 @@ void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *
   v_synt(imbe_param, snd);
   uv_synt(imbe_param, snd_tmp);
 
-  if (muteAudio) {
+  if (imbe_param->muteAudio) {
     for (j = 0; j < FRAME; j++) {
       snd[j] = 0;
     }
