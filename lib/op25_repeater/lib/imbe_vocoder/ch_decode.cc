@@ -36,17 +36,8 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 	Word32 L_tmp;
 
 	// TSS
-	imbe_param->b_vec[0] = (shr(frame_vector[0], 4) & 0xFC) | (shr(frame_vector[7], 1) & 0x3);
-
-	if (imbe_param->repeatCount > 3)
-	{
-		imbe_param->repeatCount = 0;
-		fprintf(stderr,"CH_DECODE - Too many repeats. Clearing audio?\n");
-		for (int i=0; i < 8; i++) { 
-			frame_vector[i] = 0;
-		}
-		return;
-	}
+	// Moved outside of this function.
+	// imbe_param->b_vec[0] = (shr(frame_vector[0], 4) & 0xFC) | (shr(frame_vector[7], 1) & 0x3);
 
 	if (imbe_param->b_vec[0] < 0 || imbe_param->b_vec[0] > 207){
 
@@ -67,16 +58,6 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 		}
 		// TSS
 		// fprintf(stderr,"CH_DECODE - Frame Repeating. Errors.\n");
-		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
-	}
-
-	if (imbe_param->errorRate >= .0875){
-
-		for (int i=0; i < 8; i++) { 
-			frame_vector[i] = 0;
-		}
-
-		fprintf(stderr,"CH_DECODE - Frame Muting. Error Rate.\n");
 		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
 	}
 
