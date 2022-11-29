@@ -22,7 +22,7 @@
 ########################################################################
 
 cmake_minimum_required(VERSION 3.2)
-project(Trunk-Recorder LANGUAGES CXX C VERSION "4.4.1")
+project(Trunk-Recorder LANGUAGES CXX C VERSION "4.4.2")
 
 configure_file(cmake.h.in "${PROJECT_SOURCE_DIR}/cmake.h" @ONLY)
 ADD_COMPILE_DEFINITIONS(MANUAL_GITINFO="${MANUAL_GITINFO}")
@@ -53,7 +53,7 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake/Modules)
 # Set the version information here
 set(VERSION_MAJOR 4)
 set(VERSION_API   4)
-set(VERSION_ABI   0)
+set(VERSION_ABI   2)
 set(VERSION_PATCH git)
 
 
