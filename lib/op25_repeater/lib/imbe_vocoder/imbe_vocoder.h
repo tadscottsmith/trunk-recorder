@@ -44,6 +44,7 @@ public:
 	int get_errorCoset4() {return my_imbe_param.errorCoset4;}
 	int get_errorTotal() {return my_imbe_param.errorTotal;}
 	float get_errorRate() {return my_imbe_param.errorRate;}
+	int get_repeatCount() {return my_imbe_param.repeatCount;}
 private:
 	IMBE_PARAM my_imbe_param;
 

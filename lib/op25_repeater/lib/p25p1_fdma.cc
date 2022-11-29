@@ -645,7 +645,7 @@ namespace gr {
                     float errorRate = .95 * vocoder.get_errorRate() + .000365 * vocoder.get_errorTotal();
                     vocoder.set_errorRate(errorRate);
                     //TSS
-                    fprintf(stderr, "P25P1 - Error Rate: %f\n", errorRate);
+                    fprintf(stderr, "P25P1 - Error Rate: %f\tError Total: %d\tRepeat Count: %d\n", errorRate,vocoder.get_errorTotal(), vocoder.get_repeatCount());
 
                     if (true) {
                         packed_codeword p_cw;
