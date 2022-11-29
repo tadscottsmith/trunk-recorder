@@ -63,6 +63,12 @@ void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *
   v_synt(imbe_param, snd);
   uv_synt(imbe_param, snd_tmp);
 
+  if (imbe_param->repeatCount > 3) {
+		fprintf(stderr, "DECODE - Frame Muting. Too many repeats.\n");
+		imbe_param->muteAudio = true;
+		return; // If we return here IMBE parameters from previous frame will be used and frame will be muted.	
+	}
+
   if (imbe_param->muteAudio) {
     for (j = 0; j < FRAME; j++) {
       snd[j] = 0;
