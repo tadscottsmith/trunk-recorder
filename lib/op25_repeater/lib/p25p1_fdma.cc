@@ -390,19 +390,19 @@ namespace gr {
         }
 
         void p25p1_fdma::process_TDU3() {
-            if (true) {
+            if (d_debug >= 10) {
                 fprintf (stderr, "%s NAC 0x%03x TDU3:  ", logts.get(d_msgq_id), framer->nac);
             }
 
             process_TTDU();
 
-            if (true) {
+            if (d_debug >= 10) {
                 fprintf (stderr, "\n");
             }
         }
 
         void p25p1_fdma::process_TDU15(const bit_vector& A) {
-            if (true) {
+            if (d_debug >= 10) {
                 fprintf (stderr, "%s NAC 0x%03x TDU15:  ", logts.get(d_msgq_id), framer->nac);
             }
 
@@ -424,7 +424,7 @@ namespace gr {
             }
             process_LCW(HB);
 
-            if (true) {
+            if (d_debug >= 10) {
                 fprintf (stderr, ", gly_errs=%lu\n", gly_errs);
             }
         }
@@ -645,9 +645,9 @@ namespace gr {
                     float errorRate = .95 * vocoder.get_errorRate() + .000365 * vocoder.get_errorTotal();
                     vocoder.set_errorRate(errorRate);
                     //TSS
-                    fprintf(stderr, "P25P1 - Error Rate: %f\tError Total: %d\tRepeat Count: %d\n", errorRate,vocoder.get_errorTotal(), vocoder.get_repeatCount());
+                    //fprintf(stderr, "P25P1 - Error Rate: %f\tError Total: %d\tRepeat Count: %d\n", errorRate,vocoder.get_errorTotal(), vocoder.get_repeatCount());
 
-                    if (true) {
+                    if (d_debug >= 10) {
                         packed_codeword p_cw;
                         imbe_pack(p_cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7]);
                         sprintf(s,"%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",

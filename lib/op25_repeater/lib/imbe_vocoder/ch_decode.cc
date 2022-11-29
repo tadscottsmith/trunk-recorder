@@ -44,7 +44,7 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 		//	frame_vector[i] = previous_frame_vector[i] ;
 		//}
 		// TSS
-		fprintf(stderr,"CH_DECODE - Frame Repeating. Invalid Frame.\n");
+		//fprintf(stderr,"CH_DECODE - Frame Repeating. Invalid Frame.\n");
 		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
 	}
 
@@ -55,13 +55,13 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 		//	frame_vector[i] = previous_frame_vector[i] ;
 		//}
 		// TSS
-		fprintf(stderr,"CH_DECODE - Frame Repeating. Errors.\n");
+		//fprintf(stderr,"CH_DECODE - Frame Repeating. Errors.\n");
 		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
 	}
 
 
 	if (imbe_param->errorRate >= .0875) {
-		fprintf(stderr, "CH_DECODE - Frame Muting. Error Rate.\n");
+		//fprintf(stderr, "CH_DECODE - Frame Muting. Error Rate.\n");
 		imbe_param->muteAudio = true;
 		return; // If we return here IMBE parameters from previous frame will be used and frame will be muted.	
 	}
