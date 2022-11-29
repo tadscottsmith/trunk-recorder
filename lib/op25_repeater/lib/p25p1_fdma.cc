@@ -390,19 +390,19 @@ namespace gr {
         }
 
         void p25p1_fdma::process_TDU3() {
-            if (d_debug >= 10) {
+            if (true) {
                 fprintf (stderr, "%s NAC 0x%03x TDU3:  ", logts.get(d_msgq_id), framer->nac);
             }
 
             process_TTDU();
 
-            if (d_debug >= 10) {
+            if (true) {
                 fprintf (stderr, "\n");
             }
         }
 
         void p25p1_fdma::process_TDU15(const bit_vector& A) {
-            if (d_debug >= 10) {
+            if (true) {
                 fprintf (stderr, "%s NAC 0x%03x TDU15:  ", logts.get(d_msgq_id), framer->nac);
             }
 
@@ -424,7 +424,7 @@ namespace gr {
             }
             process_LCW(HB);
 
-            if (d_debug >= 10) {
+            if (true) {
                 fprintf (stderr, ", gly_errs=%lu\n", gly_errs);
             }
         }
