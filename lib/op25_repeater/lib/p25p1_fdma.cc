@@ -645,9 +645,9 @@ namespace gr {
                     float errorRate = .95 * vocoder.get_errorRate() + .000365 * vocoder.get_errorTotal();
                     vocoder.set_errorRate(errorRate);
                     //TSS
-                    //fprintf(stderr, "P25P1 - Error Rate: %f\n", errorRate);
+                    fprintf(stderr, "P25P1 - Error Rate: %f\n", errorRate);
 
-                    if (d_debug >= 9) {
+                    if (true) {
                         packed_codeword p_cw;
                         imbe_pack(p_cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7]);
                         sprintf(s,"%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
