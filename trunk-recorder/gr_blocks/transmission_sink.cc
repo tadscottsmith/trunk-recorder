@@ -296,7 +296,7 @@ State transmission_sink::get_state() {
 
 int transmission_sink::work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) {
 
-  BOOST_LOG_TRIVIAL(error) << "noutput_items: " << noutput_items;
+  //BOOST_LOG_TRIVIAL(error) << "noutput_items: " << noutput_items;
 
   gr::thread::scoped_lock guard(d_mutex); // hold mutex for duration of this
 
