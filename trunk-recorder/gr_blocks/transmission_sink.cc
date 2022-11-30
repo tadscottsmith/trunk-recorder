@@ -325,7 +325,7 @@ int transmission_sink::work(int noutput_items, gr_vector_const_void_star &input_
     return noutput_items;
   }
 
-  std::vector<gr::tag_t> old_tags;
+
   std::vector<gr::tag_t> tags;
   pmt::pmt_t src_id_key(pmt::intern("src_id"));
   pmt::pmt_t ptt_src_id_key(pmt::intern("ptt_src_id"));
@@ -333,16 +333,30 @@ int transmission_sink::work(int noutput_items, gr_vector_const_void_star &input_
   pmt::pmt_t spike_count_key(pmt::intern("spike_count"));
   pmt::pmt_t error_count_key(pmt::intern("error_count"));
 
+  std::vector<gr::tag_t> old_tags;
   // pmt::pmt_t squelch_key(pmt::intern("squelch_eob"));
   get_tags_in_range(old_tags, 0, nitems_read(0), nitems_read(0) + noutput_items);
   get_tags_in_window(tags, 0, 0, noutput_items);
 
-  if(old_tags != tags)
+  bool old_terminate = false;
+  bool new_terminate = false;
+  for (unsigned int i = 0; i < old_tags.size(); i++) {
+    if (pmt::eq(terminate_key, old_tags[i].key)) {
+      bool old_terminate = true;
+    }
+  }
+  for (unsigned int i = 0; i < tags.size(); i++) {
+    if (pmt::eq(terminate_key, tags[i].key)) {
+      bool new_terminate = true;
+    }
+  }
+
+  if(old_terminate != new_terminate)
   {
     char formattedTalkgroup[62];
     snprintf(formattedTalkgroup, 61, "%c[%dm%10ld%c[0m", 0x1B, 35, d_current_call_talkgroup, 0x1B);
     std::string talkgroup_display = boost::lexical_cast<std::string>(formattedTalkgroup);
-    BOOST_LOG_TRIVIAL(error) << "[" << d_current_call_short_name << "]\t\033[0;34m" << d_current_call_num << "C\033[0m\tTG: " << formattedTalkgroup << "\tTAG MISMATCH";
+    BOOST_LOG_TRIVIAL(error) << "[" << d_current_call_short_name << "]\t\033[0;34m" << d_current_call_num << "C\033[0m\tTG: " << formattedTalkgroup << "\tTAG MISMATCH - Old Terminate: " << old_terminate << " New Terminate: " << new_terminate;
   }
 
   unsigned pos = 0;
