@@ -297,7 +297,7 @@ State transmission_sink::get_state() {
 int transmission_sink::work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) {
 
   BOOST_LOG_TRIVIAL(error) << "noutput_items: " << noutput_items;
-  
+
   gr::thread::scoped_lock guard(d_mutex); // hold mutex for duration of this
 
   // it is possible that we could get part of a transmission after a call has stopped. We shouldn't do any recording if this happens.... this could mean that we miss part of the recording though
@@ -325,6 +325,7 @@ int transmission_sink::work(int noutput_items, gr_vector_const_void_star &input_
     return noutput_items;
   }
 
+  std::vector<gr::tag_t> old_tags;
   std::vector<gr::tag_t> tags;
   pmt::pmt_t src_id_key(pmt::intern("src_id"));
   pmt::pmt_t ptt_src_id_key(pmt::intern("ptt_src_id"));
@@ -333,8 +334,14 @@ int transmission_sink::work(int noutput_items, gr_vector_const_void_star &input_
   pmt::pmt_t error_count_key(pmt::intern("error_count"));
 
   // pmt::pmt_t squelch_key(pmt::intern("squelch_eob"));
-  // get_tags_in_range(tags, 0, nitems_read(0), nitems_read(0) + noutput_items);
+  get_tags_in_range(old_tags, 0, nitems_read(0), nitems_read(0) + noutput_items);
   get_tags_in_window(tags, 0, 0, noutput_items);
+
+  if(old_tags != tags)
+  {
+    BOOST_LOG_TRIVIAL(error) << "[" << d_current_call_short_name << "]\t\033[0;34m" << d_current_call_num << "C\033[0m\tTG: " << formattedTalkgroup << "\tTAG MISMATCH";
+  }
+
   unsigned pos = 0;
   // long curr_src_id = 0;
 
