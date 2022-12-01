@@ -85,7 +85,7 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 	else
 		imbe_param->num_bands = NUM_BANDS_MAX;
 
-	fprintf(stderr, "Made it past NUM BANDS.\n");
+	fprintf(stderr, "Made it past NUM BANDS. %d\n", imbe_param->num_bands);
 	
 	// Convert input vector (from b_3 to b_L+1) to bit stream
 	bit_stream[0] = (frame_vector[0] & 0x4)?1:0;
