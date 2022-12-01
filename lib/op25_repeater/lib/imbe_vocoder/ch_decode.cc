@@ -63,6 +63,8 @@ static int voicingDecisions[208] = {
 12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
 12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12};
 
+bool v_uv_decisions[57] = {false};
+
 
 void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *previous_frame_vector)
 {
