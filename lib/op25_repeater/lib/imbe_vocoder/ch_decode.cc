@@ -243,7 +243,7 @@ void v_uv_decode(IMBE_PARAM *imbe_param)
 		else
 			kayl = 12;
 		int vl = floor(vu_vec / pow(2,(num_bands-kayl))) - 2 * floor(vu_vec / pow(2,(num_bands + 1 - kayl)));
-		v_uv_decisions = vl;
+		v_uv_decisions[i] = vl;
 
 	}
 	fprintf(stderr, "\n");
