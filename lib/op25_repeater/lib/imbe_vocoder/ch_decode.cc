@@ -236,7 +236,7 @@ void v_uv_decode(IMBE_PARAM *imbe_param)
 	//imbe_param->num_bands = voiceDecisions; Ktilde
 	//bool v_uv_decisions[57] = {false};
 
-	for(int i = 0; i<=num_harms;i++){
+	for(int i = 1; i<=num_harms;i++){
 		int kayl = 0;
 		if(i <= 36)
 			kayl = floor((i+2)/3);
