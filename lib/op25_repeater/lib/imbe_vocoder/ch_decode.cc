@@ -277,4 +277,7 @@ void v_uv_decode(IMBE_PARAM *imbe_param)
 		}
 	}
 	imbe_param->l_uv = uv_cnt;
+
+	fprintf(stderr, "%d,", imbe_param->v_uv_dsn;);
+	
 }
