@@ -121,7 +121,7 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 	L_tmp = L_shr(L_deposit_l(tmp2), 11 - shift - 2);
 	imbe_param->fund_freq = L_add(imbe_param->fund_freq, L_tmp);
 
-	word32 old_fund_freq = L_add(imbe_param->fund_freq, L_tmp);
+	Word32 old_fund_freq = L_add(imbe_param->fund_freq, L_tmp);
 	// 6.1 FUNDAMENTAL FREQUENCY ENCODING AND DECODING
 	// ALGORITHM 46
 	float fundFrequency = fundamentalFrequency[imbe_param->b_vec[0]];
