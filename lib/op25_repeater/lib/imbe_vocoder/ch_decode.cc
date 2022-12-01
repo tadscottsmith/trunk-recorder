@@ -75,8 +75,10 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 	imbe_param->fund_freq = (UWord32)((4 * M_PI) / imbe_param->b_vec[0]) + 39.5;
 	fprintf(stderr, "Made it past the FF.\n");
 
-	tmp = (tmp + 0x2) >> 3;                                                                 // Calculate (b0 + 39.5 + 1)/4
-	imbe_param->num_harms   = ((UWord32)CNST_0_9254_Q0_16 * tmp) >> 16;
+	// 6.1 FUNDAMENTAL FREQUENCY ENCODING AND DECODING
+	// ALGORITHM 47
+	imbe_param->num_harms = (UWord32)floor(.9254 * floor((M_PI/imbe_param->fund_freq)+.25));
+	fprintf(stderr, "Made it past the num harms.\n");
 
 	if(imbe_param->num_harms <= 36)
 		imbe_param->num_bands = extract_h((UWord32)(imbe_param->num_harms + 2) * CNST_0_33_Q0_16);   // fix((L+2)/3)
