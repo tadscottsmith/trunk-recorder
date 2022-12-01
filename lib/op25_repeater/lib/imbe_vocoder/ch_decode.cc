@@ -26,6 +26,7 @@
 #include "ch_decode.h"
 #include "aux_sub.h"
 #include <iostream>
+#include <math.h>
 
 
 void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *previous_frame_vector)
@@ -69,21 +70,9 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 	imbe_param->repeatCount = 0;
 	imbe_param->muteAudio = false;
 
-	tmp = ((imbe_param->b_vec[0] & 0xFF) << 1) + 0x4F;                                      // Convert b_vec[0] to unsigned Q15.1 format and add 39.5
-
-	imbe_param->ff = 4./((double)imbe_param->b_vec[0] + 39.5);
-
-	// Calculate fundamental frequency with higher precession
-	shift = norm_s(tmp);
-	tmp1  = tmp << shift;
-
-	tmp2 = div_s(0x4000, tmp1);
-	imbe_param->fund_freq = L_shr(L_deposit_h(tmp2), 11 - shift);    
-
-	L_tmp = L_sub(0x40000000, L_mult(tmp1, tmp2));
-	tmp2  = div_s(extract_l(L_shr(L_tmp, 2)), tmp1);
-	L_tmp = L_shr(L_deposit_l(tmp2), 11 - shift - 2);
-	imbe_param->fund_freq = L_add(imbe_param->fund_freq, L_tmp);
+	// 6.1 FUNDAMENTAL FREQUENCY ENCODING AND DECODING
+	// ALGORITHM 46
+	imbe_param->fund_freq = ((4 * M_PI) / b_vec[0]) + 39.5;
 
 	printf("%X %X \n", imbe_param->fund_freq, (Word32)(imbe_param->ff * (double)((UWord32)1<<31)));
 
