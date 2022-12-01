@@ -247,6 +247,7 @@ void v_uv_decode(IMBE_PARAM *imbe_param)
 
 	}
 	fprintf(stderr, "\n");
+	fprintf(stderr, "BVEC: %d\n", vu_vec);
 
 	p_v_uv_dsn = imbe_param->v_uv_dsn;
 
