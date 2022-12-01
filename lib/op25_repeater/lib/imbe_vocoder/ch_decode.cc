@@ -238,7 +238,7 @@ void v_uv_decode(IMBE_PARAM *imbe_param)
 
 	std::fill(std::begin(v_uv_decisions), std::end(v_uv_decisions), 0);
 
-	for(int i = 0; i<num_harms;i++){
+	for(int i = 1; i<+num_harms;i++){
 		int kayl = 0;
 		if(i <= 36)
 			kayl = floor((i+2)/3);
