@@ -234,7 +234,9 @@ void v_uv_decode(IMBE_PARAM *imbe_param)
 	//Ktilde = number of v/uv decisions
 	//Ltitlde = number of spectral amplitudes.
 	//imbe_param->num_bands = voiceDecisions; Ktilde
-	v_uv_decisions[56] = {false};
+	//v_uv_decisions[56] = {false};
+
+	std::fill(std::begin(v_uv_decisions), std::end(v_uv_decisions), 0);
 
 	for(int i = 0; i<num_harms;i++){
 		int kayl = 0;
