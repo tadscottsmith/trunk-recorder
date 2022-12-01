@@ -119,25 +119,33 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 	L_tmp = L_sub(0x40000000, L_mult(tmp1, tmp2));
 	tmp2  = div_s(extract_l(L_shr(L_tmp, 2)), tmp1);
 	L_tmp = L_shr(L_deposit_l(tmp2), 11 - shift - 2);
-	//imbe_param->fund_freq = L_add(imbe_param->fund_freq, L_tmp);
+	imbe_param->fund_freq = L_add(imbe_param->fund_freq, L_tmp);
 
-	Word32 old_fund_freq = L_add(imbe_param->fund_freq, L_tmp);
+	tmp = (tmp + 0x2) >> 3;                                                                 // Calculate (b0 + 39.5 + 1)/4
+	imbe_param->num_harms   = ((UWord32)CNST_0_9254_Q0_16 * tmp) >> 16;
+
+	if(imbe_param->num_harms <= 36)
+		imbe_param->num_bands = extract_h((UWord32)(imbe_param->num_harms + 2) * CNST_0_33_Q0_16);   // fix((L+2)/3)
+	else
+		imbe_param->num_bands = NUM_BANDS_MAX;
+		
+	//Word32 old_fund_freq = L_add(imbe_param->fund_freq, L_tmp);
 	// 6.1 FUNDAMENTAL FREQUENCY ENCODING AND DECODING
 	// ALGORITHM 46
-	float fundFrequency = fundamentalFrequency[imbe_param->b_vec[0]];
-	imbe_param->fund_freq = fundFrequency;
-	fprintf(stderr, "Made it past the FF. Mine: %f\t Theirs: %f\tB0: %d\n", fundFrequency,old_fund_freq,imbe_param->b_vec[0]);
+	//float fundFrequency = fundamentalFrequency[imbe_param->b_vec[0]];
+	//imbe_param->fund_freq = fundFrequency;
+	//fprintf(stderr, "Made it past the FF. Mine: %f\t Theirs: %f\tB0: %d\n", fundFrequency,old_fund_freq,imbe_param->b_vec[0]);
 
 	// 6.1 FUNDAMENTAL FREQUENCY ENCODING AND DECODING
 	// ALGORITHM 47
-	int spectAmplitudes = spectralAmplitudes[imbe_param->b_vec[0]];
-	imbe_param->num_harms = spectAmplitudes;
-	fprintf(stderr, "Made it past the num harms. %d\n", spectAmplitudes);
+	//int spectAmplitudes = spectralAmplitudes[imbe_param->b_vec[0]];
+	//imbe_param->num_harms = spectAmplitudes;
+	//fprintf(stderr, "Made it past the num harms. %d\n", spectAmplitudes);
 
-	int voiceDecisions = voicingDecisions[imbe_param->b_vec[0]];
-	imbe_param->num_bands = voiceDecisions;
+	//int voiceDecisions = voicingDecisions[imbe_param->b_vec[0]];
+	//imbe_param->num_bands = voiceDecisions;
 
-	fprintf(stderr, "Made it past NUM BANDS. %d\n", imbe_param->num_bands);
+	//fprintf(stderr, "Made it past NUM BANDS. %d\n", imbe_param->num_bands);
 	
 	// Convert input vector (from b_3 to b_L+1) to bit stream
 	bit_stream[0] = (frame_vector[0] & 0x4)?1:0;
