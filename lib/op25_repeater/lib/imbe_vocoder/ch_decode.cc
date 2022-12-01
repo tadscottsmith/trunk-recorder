@@ -94,7 +94,7 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 
 	// 6.1 FUNDAMENTAL FREQUENCY ENCODING AND DECODING
 	// ALGORITHM 47
-	int numHarms = floor(.9254 * floor((M_PI/imbe_param->fund_freq)+.25));
+	int numHarms = floor(.9254 * floor((M_PI/fundamentalFrequency)+.25));
 	imbe_param->num_harms = floor(.9254 * floor((M_PI/imbe_param->fund_freq)+.25));
 	fprintf(stderr, "Made it past the num harms. %d\n", numHarms);
 
