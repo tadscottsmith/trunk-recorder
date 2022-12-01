@@ -88,8 +88,9 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 
 	// 6.1 FUNDAMENTAL FREQUENCY ENCODING AND DECODING
 	// ALGORITHM 46
+	float fundamentalFrequency = (4 * M_PI) / (imbe_param->b_vec[0] + 39.5);
 	imbe_param->fund_freq = (4 * M_PI) / (imbe_param->b_vec[0] + 39.5);
-	fprintf(stderr, "Made it past the FF. Mine: %d\t Theirs: %d\tB0: %d\n", imbe_param->fund_freq,L_add(imbe_param->fund_freq, L_tmp),imbe_param->b_vec[0]);
+	fprintf(stderr, "Made it past the FF. Mine: %f\t Theirs: %d\tB0: %d\n", fundamentalFrequency,L_add(imbe_param->fund_freq, L_tmp),imbe_param->b_vec[0]);
 
 	// 6.1 FUNDAMENTAL FREQUENCY ENCODING AND DECODING
 	// ALGORITHM 47
