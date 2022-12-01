@@ -49,6 +49,20 @@ static float fundamentalFrequency[208] ={
 0.055480665,0.055236794,0.054995057,0.054755428,0.054517877,0.054282378,0.054048906,0.053817433,0.053587934,0.053360385,0.053134759,
 0.052911034,0.052689185,0.052469188,0.052251021,0.052034661,0.051820085,0.051607272,0.051396199,0.051186846,0.050979191};
 
+static int spectralAmplitudes[208] ={
+09,09,09,09,10,10,10,10,11,11,11,11,12,12,12,12,12,12,12,12,13,13,13,13,14,14,14,14,15,15,15,15,16,16,16,16,17,17,17,17,18,18,18,18,
+19,19,19,19,20,20,20,20,21,21,21,21,22,22,22,22,23,23,23,23,24,24,24,24,24,24,24,24,25,25,25,25,26,26,26,26,27,27,27,27,28,28,28,28,
+29,29,29,29,30,30,30,30,31,31,31,31,32,32,32,32,33,33,33,33,34,34,34,34,35,35,35,35,36,36,36,36,37,37,37,37,37,37,37,37,38,38,38,38,
+39,39,39,39,40,40,40,40,41,41,41,41,42,42,42,42,43,43,43,43,44,44,44,44,45,45,45,45,46,46,46,46,47,47,47,47,48,48,48,48,49,49,49,49,
+49,49,49,49,50,50,50,50,51,51,51,51,52,52,52,52,53,53,53,53,54,54,54,54,55,55,55,55,56,56,56,56};
+
+static int voicingDecisions[208] = {
+03,03,03,03,04,04,04,04,04,04,04,04,04,04,04,04,04,04,04,04,05,05,05,05,05,05,05,05,05,05,05,05,06,06,06,06,06,06,06,06,06,06,06,06,
+07,07,07,07,07,07,07,07,07,07,07,07,08,08,08,08,08,08,08,08,08,08,08,08,08,08,08,08,09,09,09,09,09,09,09,09,09,09,09,09,10,10,10,10,
+10,10,10,10,10,10,10,10,11,11,11,11,11,11,11,11,11,11,11,11,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
+12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
+12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12};
+
 
 void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *previous_frame_vector)
 {
@@ -93,8 +107,6 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 
 	tmp = ((imbe_param->b_vec[0] & 0xFF) << 1) + 0x4F;                                      // Convert b_vec[0] to unsigned Q15.1 format and add 39.5
 
-	//imbe_param->ff = 4./((double)imbe_param->b_vec[0] + 39.5);
-
 	// Calculate fundamental frequency with higher precession
 	shift = norm_s(tmp);
 	tmp1  = tmp << shift;
@@ -110,19 +122,17 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 	// 6.1 FUNDAMENTAL FREQUENCY ENCODING AND DECODING
 	// ALGORITHM 46
 	float fundFrequency = fundamentalFrequency[imbe_param->b_vec[0]];
-	imbe_param->fund_freq = (4 * M_PI) / (imbe_param->b_vec[0] + 39.5);
+	imbe_param->fund_freq = fundFrequency;
 	fprintf(stderr, "Made it past the FF. Mine: %f\t Theirs: %d\tB0: %d\n", fundFrequency,L_add(imbe_param->fund_freq, L_tmp),imbe_param->b_vec[0]);
 
 	// 6.1 FUNDAMENTAL FREQUENCY ENCODING AND DECODING
 	// ALGORITHM 47
-	int numHarms = floor(.9254 * floor((M_PI/fundFrequency)+.25));
-	imbe_param->num_harms = numHarms;
+	int spectAmplitudes = spectralAmplitudes[imbe_param->b_vec[0]];
+	imbe_param->num_harms = spectAmplitudes;
 	fprintf(stderr, "Made it past the num harms. %d\n", numHarms);
 
-	if(imbe_param->num_harms <= 36)
-		imbe_param->num_bands = extract_h((UWord32)(imbe_param->num_harms + 2) * CNST_0_33_Q0_16);   // fix((L+2)/3)
-	else
-		imbe_param->num_bands = NUM_BANDS_MAX;
+	int voiceDecisions = voicingDecisions[imbe_param->b_vec[0]];
+	imbe_param->num_bands = voiceDecisions;
 
 	fprintf(stderr, "Made it past NUM BANDS. %d\n", imbe_param->num_bands);
 	
