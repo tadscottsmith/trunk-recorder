@@ -195,7 +195,18 @@ void sa_enh(IMBE_PARAM *imbe_param)
 		tmp = shr(extract_h(L_tmp), tot_nm);
 		for(i = 0; i < num_harm; i++)
 			sa[i] = mult_r(sa[i], tmp); 
-	}	
+	}
+
+	//TSS Attempt to get Spectral Energy
+	float d_spectralEnergy = ((.95 * imbe_param->spectralEngery) + (.05 * extract_h(Rm0)));
+	if(d_spectralEnergy>=10000){
+		imbe_param->spectralEngery = d_spectralEnergy
+	}
+	else{
+		imbe_param->spectralEngery = 10000;
+	}
+
+	fprintf(stderr, "Spectral Energy: %f\n",d_spectralEnergy);	
 }
 
 
