@@ -129,7 +129,7 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 	// ALGORITHM 47
 	int spectAmplitudes = spectralAmplitudes[imbe_param->b_vec[0]];
 	imbe_param->num_harms = spectAmplitudes;
-	fprintf(stderr, "Made it past the num harms. %d\n", numHarms);
+	fprintf(stderr, "Made it past the num harms. %d\n", spectAmplitudes);
 
 	int voiceDecisions = voicingDecisions[imbe_param->b_vec[0]];
 	imbe_param->num_bands = voiceDecisions;
