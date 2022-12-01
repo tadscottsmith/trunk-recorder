@@ -119,7 +119,7 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 	L_tmp = L_sub(0x40000000, L_mult(tmp1, tmp2));
 	tmp2  = div_s(extract_l(L_shr(L_tmp, 2)), tmp1);
 	L_tmp = L_shr(L_deposit_l(tmp2), 11 - shift - 2);
-	imbe_param->fund_freq = L_add(imbe_param->fund_freq, L_tmp);
+	//imbe_param->fund_freq = L_add(imbe_param->fund_freq, L_tmp);
 
 	Word32 old_fund_freq = L_add(imbe_param->fund_freq, L_tmp);
 	// 6.1 FUNDAMENTAL FREQUENCY ENCODING AND DECODING
