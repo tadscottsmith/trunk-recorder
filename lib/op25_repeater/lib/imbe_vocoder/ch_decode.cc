@@ -37,31 +37,30 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 
 	imbe_param->b_vec[0] = (shr(frame_vector[0], 4) & 0xFC) | (shr(frame_vector[7], 1) & 0x3);
 
+	// 7.7 FRAME REPEATS
+	// INVALID PITCH ESTIMATE
 	if (imbe_param->b_vec[0] < 0 || imbe_param->b_vec[0] > 207){
-
 		imbe_param->repeatCount++;
-		//for (int i=0; i < 8; i++) { 
-		//	frame_vector[i] = previous_frame_vector[i] ;
-		//}
-		// TSS
-		//fprintf(stderr,"CH_DECODE - Frame Repeating. Invalid Frame.\n");
 		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
 	}
 
-	if (imbe_param->errorCoset0 >= 2 && imbe_param->errorTotal >= 10 + 40 * imbe_param->errorRate){
-
+	// 7.7 FRAME REPEATS
+	// ALGORITHM 97
+	if (imbe_param->errorCoset0 >= 2){
 		imbe_param->repeatCount++;
-		//for (int i=0; i < 8; i++) { 
-		//	frame_vector[i] = previous_frame_vector[i] ;
-		//}
-		// TSS
-		//fprintf(stderr,"CH_DECODE - Frame Repeating. Errors.\n");
 		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
 	}
 
+	// 7.7 FRAME REPEATS
+	// ALGORITHM 98
+	if (imbe_param->errorTotal >= (10 + 40 * imbe_param->errorRate)){
+		imbe_param->repeatCount++;
+		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
+	}
 
+	// 7.7 FRAME MUTING
+	// SEVER BIT ERRORS
 	if (imbe_param->errorRate >= .0875) {
-		//fprintf(stderr, "CH_DECODE - Frame Muting. Error Rate.\n");
 		imbe_param->muteAudio = true;
 		return; // If we return here IMBE parameters from previous frame will be used and frame will be muted.	
 	}
@@ -72,7 +71,7 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 
 	tmp = ((imbe_param->b_vec[0] & 0xFF) << 1) + 0x4F;                                      // Convert b_vec[0] to unsigned Q15.1 format and add 39.5
 
-	//imbe_param->ff = 4./((double)imbe_param->b_vec[0] + 39.5);
+	imbe_param->ff = 4./((double)imbe_param->b_vec[0] + 39.5);
 
 	// Calculate fundamental frequency with higher precession
 	shift = norm_s(tmp);
@@ -86,7 +85,7 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 	L_tmp = L_shr(L_deposit_l(tmp2), 11 - shift - 2);
 	imbe_param->fund_freq = L_add(imbe_param->fund_freq, L_tmp);
 
-	//printf("%X %X \n", imbe_param->fund_freq, (Word32)(imbe_param->ff * (double)((UWord32)1<<31)));
+	printf("%X %X \n", imbe_param->fund_freq, (Word32)(imbe_param->ff * (double)((UWord32)1<<31)));
 
 	tmp = (tmp + 0x2) >> 3;                                                                 // Calculate (b0 + 39.5 + 1)/4
 	imbe_param->num_harms   = ((UWord32)CNST_0_9254_Q0_16 * tmp) >> 16;

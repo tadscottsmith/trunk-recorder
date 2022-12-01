@@ -57,6 +57,7 @@ void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *
   Word16 j;
 
   decode_frame_vector(imbe_param, frame_vector, prev_frame_vector);
+  
   v_uv_decode(imbe_param);
   sa_decode(imbe_param);
   sa_enh(imbe_param);
