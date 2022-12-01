@@ -234,7 +234,7 @@ void v_uv_decode(IMBE_PARAM *imbe_param)
 	//Ktilde = number of v/uv decisions
 	//Ltitlde = number of spectral amplitudes.
 	//imbe_param->num_bands = voiceDecisions; Ktilde
-	//bool v_uv_decisions[57] = {false};
+	v_uv_decisions[56] = {false};
 
 	for(int i = 0; i<num_harms;i++){
 		int kayl = 0;
@@ -243,7 +243,7 @@ void v_uv_decode(IMBE_PARAM *imbe_param)
 		else
 			kayl = 12;
 		int vl = floor(vu_vec / pow(2,(num_bands-kayl))) - 2 * floor(vu_vec / pow(2,(num_bands + 1 - kayl)));
-		fprintf(stderr, "%d,", vl);
+		v_uv_decisions = vl;
 
 	}
 	fprintf(stderr, "\n");
@@ -278,6 +278,14 @@ void v_uv_decode(IMBE_PARAM *imbe_param)
 	}
 	imbe_param->l_uv = uv_cnt;
 
-	fprintf(stderr, "%d,", imbe_param->v_uv_dsn);
+	for(int i = 0; i<56; i++){
+		fprintf(stderr, "%d,", v_uv_decisions[i]);
+	}
+	fprintf(stderr, "\n");
+
+	for(int i = 0; i<56; i++){
+		fprintf(stderr, "%d,", imbe_param->v_uv_dsn[i]);
+	}
+	fprintf(stderr, "\n");
 	
 }
