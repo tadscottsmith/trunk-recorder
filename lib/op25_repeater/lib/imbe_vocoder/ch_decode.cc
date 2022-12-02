@@ -128,7 +128,7 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *p
 		imbe_param->num_bands = extract_h((UWord32)(imbe_param->num_harms + 2) * CNST_0_33_Q0_16);   // fix((L+2)/3)
 	else
 		imbe_param->num_bands = NUM_BANDS_MAX;
-		
+
 	//Word32 old_fund_freq = L_add(imbe_param->fund_freq, L_tmp);
 	// 6.1 FUNDAMENTAL FREQUENCY ENCODING AND DECODING
 	// ALGORITHM 46
@@ -247,7 +247,7 @@ void v_uv_decode(IMBE_PARAM *imbe_param)
 
 	std::fill(std::begin(v_uv_decisions), std::end(v_uv_decisions), 0);
 
-	for(int i = 1; i<+num_harms;i++){
+	for(int i = 1; i<=num_harms;i++){
 		int kayl = 0;
 		if(i <= 36)
 			kayl = floor((i+2)/3);
