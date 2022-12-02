@@ -1,3 +1,6 @@
+/*
+*/
+
 #ifndef _ADAPTIVE_SMOOTHING
 #define _ADAPTIVE_SMOOTHING
 

@@ -5,6 +5,7 @@ SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${MORE_FLAGS}" )
 
 #list(APPEND imbe_vocoder_sources
 list(APPEND op25_repeater_sources
+    adaptive_smoothing.cc
     aux_sub.cc
     basicop2.cc
     ch_decode.cc
