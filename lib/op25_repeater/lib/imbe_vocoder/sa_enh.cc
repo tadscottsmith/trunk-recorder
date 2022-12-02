@@ -198,12 +198,12 @@ void sa_enh(IMBE_PARAM *imbe_param)
 	}
 
 	//TSS Attempt to get Spectral Energy
-	float d_spectralEnergy = ((.95 * imbe_param->spectralEngery) + (.05 * extract_h(Rm0)));
+	float d_spectralEnergy = ((.95 * imbe_param->spectralEnergy) + (.05 * extract_h(Rm0)));
 	if(d_spectralEnergy>=10000){
-		imbe_param->spectralEngery = d_spectralEnergy;
+		imbe_param->spectralEnergy = d_spectralEnergy;
 	}
 	else{
-		imbe_param->spectralEngery = 10000;
+		imbe_param->spectralEnergy = 10000;
 	}
 
 	fprintf(stderr, "Spectral Energy: %f\n",d_spectralEnergy);	

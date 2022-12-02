@@ -59,7 +59,7 @@ typedef struct
 	float errorRate = 0.0;
 	int repeatCount = 0;
 	bool muteAudio = false;
-	float spectralEngery = 75000.0;
+	float spectralEnergy = 75000.0;
 } IMBE_PARAM;
 
 typedef struct  

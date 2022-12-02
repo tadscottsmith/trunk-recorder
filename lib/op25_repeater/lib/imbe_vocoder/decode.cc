@@ -51,7 +51,7 @@ void imbe_vocoder::decode_init(IMBE_PARAM *imbe_param) {
   imbe_param->errorRate = 0.0;
   imbe_param->repeatCount = 0;
   imbe_param->muteAudio = false;
-  imbe_param->spectralEngery = 75000.0;
+  imbe_param->spectralEnergy = 75000.0;
 }
 
 void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *snd) {
