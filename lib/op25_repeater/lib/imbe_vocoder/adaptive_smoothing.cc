@@ -44,9 +44,8 @@ void adaptive_smoothing(IMBE_PARAM *imbe_param)
 		adaptiveThreshold = (45.255 * pow(imbe_param->spectralEngery,.375)) / exp(277.26 * imbe_param->errorRate);
 	}
 	else{
-		adaptiveThreshold = 1.414 pow(imbe_param->spectralEnergy, .375);
+		adaptiveThreshold = 1.414 * pow(imbe_param->spectralEnergy, .375);
 	}
-
 	
 }
 
