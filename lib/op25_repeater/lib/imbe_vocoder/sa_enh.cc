@@ -206,7 +206,7 @@ void sa_enh(IMBE_PARAM *imbe_param)
 		imbe_param->spectralEnergy = 10000;
 	}
 
-	fprintf(stderr, "Spectral Energy: %f\n",d_spectralEnergy);	
+	//fprintf(stderr, "Spectral Energy: %f\n",d_spectralEnergy);	
 }
 
 

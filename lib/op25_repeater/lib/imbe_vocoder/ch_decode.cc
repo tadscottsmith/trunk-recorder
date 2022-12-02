@@ -245,6 +245,7 @@ void v_uv_decode(IMBE_PARAM *imbe_param)
 	//imbe_param->num_bands = voiceDecisions; Ktilde
 	//v_uv_decisions[56] = {false};
 
+	/*
 	std::fill(std::begin(v_uv_decisions), std::end(v_uv_decisions), 0);
 
 	for(int i = 1; i<=num_harms;i++){
@@ -257,8 +258,8 @@ void v_uv_decode(IMBE_PARAM *imbe_param)
 		v_uv_decisions[i] = vl;
 
 	}
-	fprintf(stderr, "\n");
-	fprintf(stderr, "BVEC: %d\n", vu_vec);
+	*/
+
 
 	p_v_uv_dsn = imbe_param->v_uv_dsn;
 
