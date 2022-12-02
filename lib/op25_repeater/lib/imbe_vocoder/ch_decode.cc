@@ -289,7 +289,8 @@ void v_uv_decode(IMBE_PARAM *imbe_param)
 		}
 	}
 	imbe_param->l_uv = uv_cnt;
-
+	
+	/*
 	for(int i = 0; i<56; i++){
 		fprintf(stderr, "%d,", v_uv_decisions[i]);
 	}
@@ -299,5 +300,6 @@ void v_uv_decode(IMBE_PARAM *imbe_param)
 		fprintf(stderr, "%d,", imbe_param->v_uv_dsn[i]);
 	}
 	fprintf(stderr, "\n");
+	*/
 	
 }
