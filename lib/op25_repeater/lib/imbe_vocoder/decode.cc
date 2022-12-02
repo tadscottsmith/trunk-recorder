@@ -24,6 +24,7 @@
 #include "ch_decode.h"
 #include "sa_decode.h"
 #include "sa_enh.h"
+#include "adaptive_smoothing.h"
 #include "v_synt.h"
 #include "uv_synt.h"
 #include "basic_op.h"
