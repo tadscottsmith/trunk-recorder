@@ -47,7 +47,7 @@ void adaptive_smoothing(IMBE_PARAM *imbe_param)
 			adaptiveThreshold = 1.414 * pow(imbe_param->spectralEnergy, .375);
 		}
 	
-		for(int i = 0; i<num_harms;i++){
+		for(int i = 0; i<imbe_param->num_harms;i++){
 			float spectralAmplitude = imbe_param->sa[i];
 			if(spectralAmplitude > adaptiveThreshold){
 				imbe_param->v_uv_dsn[i] = 1;
