@@ -60,6 +60,7 @@ typedef struct
 	int repeatCount = 0;
 	bool muteAudio = false;
 	float spectralEnergy = 75000.0;
+	float amplitudeThreshold = 20480;
 } IMBE_PARAM;
 
 typedef struct  

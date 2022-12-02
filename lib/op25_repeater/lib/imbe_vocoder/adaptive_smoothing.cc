@@ -35,6 +35,7 @@ void adaptive_smoothing(IMBE_PARAM *imbe_param)
 {
 
 	float adaptiveThreshold;
+	float amplitudeMeasure = 0;
 
 	if((imbe_param->errorRate <= .005) && (imbe_param->errorTotal <=4)){
 		adaptiveThreshold = FLT_MAX;
@@ -49,12 +50,34 @@ void adaptive_smoothing(IMBE_PARAM *imbe_param)
 	
 		for(int i = 0; i<imbe_param->num_harms;i++){
 			float spectralAmplitude = imbe_param->sa[i];
+			amplitudeMeasure += spectralAmplitude; // Compute Algorithm 114 early to possibly save cycles.
 			if(spectralAmplitude > adaptiveThreshold){
 				imbe_param->v_uv_dsn[i] = 1;
 			}
 		}
 	}
 
+	// This only needs to run now if errorTotal = 5 or 6.
+	if ((imbe_param->errorRate <= .005) && (4 < imbe_param->errorTotal <= 6)){
+		for(int i = 0; i<imbe_param->num_harms;i++){
+			amplitudeMeasure += imbe_param->sa[i];
+		}
+	}
+
+	if ((imbe_param->errorRate <= .005) && (imbe_param->errorTotal <= 6)){
+		imbe_param->amplitudeThreshold = 20480;
+	}
+	else{
+		imbe_param->amplitudeThreshold = 6000 - (300 * imbe_param->errorTotal) + imbe_param->amplitudeThreshold;
+	}
+
+	if(amplitudeMeasure > imbe_param->amplitudeThreshold)
+	{
+		float scaleFactor = imbe_param->amplitudeThreshold / amplitudeMeasure;
+		for(int i = 0; i<imbe_param->num_harms;i++){
+			imbe_param->sa[i] = imbe_param->sa[i] * scaleFactor;
+		}
+	}
 }
 
 
