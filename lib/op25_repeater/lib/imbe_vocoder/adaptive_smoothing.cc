@@ -25,6 +25,7 @@
 #include "qnt_sub.h"
 #include "aux_sub.h"
 #include "math_sub.h"
+#include <cmath.h>
 #include "adaptive_smoothing.h"
 
 #include <iostream>
