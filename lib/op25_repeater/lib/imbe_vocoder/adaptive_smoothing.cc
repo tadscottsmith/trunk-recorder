@@ -52,7 +52,7 @@ void adaptive_smoothing(IMBE_PARAM *imbe_param)
 			if(spectralAmplitude > adaptiveThreshold){
 				imbe_param->v_uv_dsn[i] = 1;
 			}
-			 
+		}
 	}
 
 }
