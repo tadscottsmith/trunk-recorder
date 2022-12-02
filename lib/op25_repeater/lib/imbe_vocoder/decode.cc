@@ -59,26 +59,17 @@ void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *
   Word16 snd_tmp[FRAME];
   Word16 j;
 
-  decode_frame_vector(imbe_param, frame_vector, prev_frame_vector);
+  decode_frame_vector(imbe_param, frame_vector);
   
   v_uv_decode(imbe_param);
   sa_decode(imbe_param);
   sa_enh(imbe_param);
-
-  // V/UV Smoothing
-  // Spectral Amplitude Smoothing
-  // Spectral Amplitude Enhancemens.
-
   adaptive_smoothing(imbe_param);
-
-
   v_synt(imbe_param, snd);
   uv_synt(imbe_param, snd_tmp);
 
   if (imbe_param->repeatCount > 3) {
-		//fprintf(stderr, "DECODE - Frame Muting. Too many repeats.\n");
 		imbe_param->muteAudio = true;
-		return; // If we return here IMBE parameters from previous frame will be used and frame will be muted.	
 	}
 
   if (imbe_param->muteAudio) {
@@ -89,9 +80,5 @@ void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *
     for (j = 0; j < FRAME; j++) {
       snd[j] = add(snd[j], snd_tmp[j]);
     }
-  }
-
-  for (int i = 0; i < 8; i++) {
-    prev_frame_vector[i] = frame_vector[i];
   }
 }

@@ -49,7 +49,6 @@ private:
 	IMBE_PARAM my_imbe_param;
 
 	/* data items originally static (moved from individual c++ sources) */
-	int16_t prev_frame_vector[8];
 	Word16 prev_pitch, prev_prev_pitch, prev_e_p, prev_prev_e_p;
 	UWord32 seed ;
 	Word16 num_harms_prev1;
