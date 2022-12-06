@@ -25,6 +25,7 @@
 #include "ch_decode.h"
 #include "sa_decode.h"
 #include "sa_enh.h"
+#include "adaptive_smoothing.h"
 #include "v_synt.h"
 #include "uv_synt.h"
 #include "basic_op.h"
@@ -48,7 +49,13 @@ void imbe_vocoder::decode_init(IMBE_PARAM *imbe_param)
 	imbe_param->fund_freq = 0x0cf6474a;
 	imbe_param->num_harms = 9;
 	imbe_param->num_bands = 3;
-
+	imbe_param->errorCoset0 = 0;
+	imbe_param->errorCoset4 = 0;
+	imbe_param->errorRate = 0.0;
+	imbe_param->repeatCount = 0;
+	imbe_param->muteAudio = false;
+	imbe_param->spectralEnergy = 75000.0;
+	imbe_param->amplitudeThreshold = 20480;
 }
 
 
@@ -61,9 +68,21 @@ void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *
 	v_uv_decode(imbe_param);
 	sa_decode(imbe_param);
 	sa_enh(imbe_param);
+	adaptive_smoothing(imbe_param);
 	v_synt(imbe_param, snd);
 	uv_synt(imbe_param, snd_tmp);
 
-	for(j = 0; j < FRAME; j++)
-		snd[j] = add(snd[j], snd_tmp[j]);
+	if (imbe_param->repeatCount > 3) {
+			imbe_param->muteAudio = true;
+		}
+
+	if (imbe_param->muteAudio) {
+		for (j = 0; j < FRAME; j++) {
+			snd[j] = 0;
+		}
+	} else {
+		for (j = 0; j < FRAME; j++) {
+			snd[j] = add(snd[j], snd_tmp[j]);
+		}
+	}
 }

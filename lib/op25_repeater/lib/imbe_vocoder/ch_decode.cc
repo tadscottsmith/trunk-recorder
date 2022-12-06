@@ -37,8 +37,37 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector)
 
 	imbe_param->b_vec[0] = (shr(frame_vector[0], 4) & 0xFC) | (shr(frame_vector[7], 1) & 0x3);	
 
-	if (imbe_param->b_vec[0] < 0 || imbe_param->b_vec[0] > 207)
-		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)
+	// 7.7 FRAME REPEATS
+	// INVALID PITCH ESTIMATE
+	if (imbe_param->b_vec[0] < 0 || imbe_param->b_vec[0] > 207){
+		imbe_param->repeatCount++;
+		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
+	}
+
+	// 7.7 FRAME REPEATS
+	// ALGORITHM 97
+	if (imbe_param->errorCoset0 >= 2){
+		imbe_param->repeatCount++;
+		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
+	}
+
+	// 7.7 FRAME REPEATS
+	// ALGORITHM 98
+	if (imbe_param->errorTotal >= (10 + 40 * imbe_param->errorRate)){
+		imbe_param->repeatCount++;
+		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
+	}
+
+	// 7.7 FRAME MUTING
+	// SEVER BIT ERRORS
+	if (imbe_param->errorRate >= .0875) {
+		imbe_param->muteAudio = true;
+		return; // If we return here IMBE parameters from previous frame will be used and frame will be muted.	
+	}
+
+	// If we make it hear, we have a good frame. Clean up the variables.
+	imbe_param->repeatCount = 0;
+	imbe_param->muteAudio = false;
 
 	tmp = ((imbe_param->b_vec[0] & 0xFF) << 1) + 0x4F;                                      // Convert b_vec[0] to unsigned Q15.1 format and add 39.5
 

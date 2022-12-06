@@ -84,6 +84,7 @@ list(APPEND op25_repeater_sources
 )
 
 list(APPEND op25_repeater_sources
+    imbe_vocoder/adaptive_smoothing.cc
     imbe_vocoder/aux_sub.cc
     imbe_vocoder/basicop2.cc
     imbe_vocoder/ch_decode.cc

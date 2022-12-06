@@ -53,6 +53,14 @@ typedef struct
 	Word16 l_uv;
 	Word16 div_one_by_num_harm;
 	Word16 div_one_by_num_harm_sh;
+	int errorCoset0 = 0;
+	int errorCoset4 = 0;
+	int errorTotal = 0;
+	float errorRate = 0.0;
+	int repeatCount = 0;
+	bool muteAudio = false;
+	float spectralEnergy = 75000.0;
+	float amplitudeThreshold = 20480;
 } IMBE_PARAM;
 
 typedef struct  

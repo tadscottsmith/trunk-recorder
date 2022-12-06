@@ -277,6 +277,8 @@ namespace gr {
                 fprintf (stderr, "%s NAC 0x%03x HDU:  ", logts.get(d_msgq_id), framer->nac);
             }
 
+            vocoder.clear();
+
             uint32_t MFID;
             int i, j, k, ec;
             size_t errs = 0, gly_errs = 0;
@@ -636,6 +638,12 @@ namespace gr {
                     uint16_t imbe_error = 0;
 
                     errs = imbe_header_decode(cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, ET);
+                    
+                    vocoder.set_errorCoset0(E0);
+                    vocoder.set_errorTotal(ET);
+
+                    float errorRate = .95 * vocoder.get_errorRate() + .000365 * vocoder.get_errorTotal();
+                    vocoder.set_errorRate(errorRate);
 
                     if (d_debug >= 9) {
                         packed_codeword p_cw;
