@@ -630,16 +630,17 @@ namespace gr {
             if (d_do_imbe || d_do_audio_output) {
                 for(size_t i = 0; i < nof_voice_codewords; ++i) {
                     voice_codeword cw(voice_codeword_sz);
-                    uint32_t E0, ET;
+                    uint32_t E0, E4, ET;
                     uint32_t u[8];
                     char s[128];
                     size_t errs = 0;
                     imbe_deinterleave(A, cw, i);
                     uint16_t imbe_error = 0;
 
-                    errs = imbe_header_decode(cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, ET);
+                    errs = imbe_header_decode(cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, E4, ET);
                     
                     vocoder.set_errorCoset0(E0);
+                    vocoder.set_errorCoset4(E4);
                     vocoder.set_errorTotal(ET);
 
                     float errorRate = .95 * vocoder.get_errorRate() + .000365 * vocoder.get_errorTotal();
