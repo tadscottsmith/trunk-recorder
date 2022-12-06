@@ -461,10 +461,11 @@ imbe_regenerate_frame(bit_vector& cw) {
         unsigned int u0 = 0;
         unsigned int u1,u2,u3,u4,u5,u6,u7;
         unsigned int E0 = 0;
+        unsigned int E4 = 0;
         unsigned int ET = 0;
 
         // PN/Hamming/Golay - etc.
-        imbe_header_decode(cw, u0, u1, u2, u3, u4, u5, u6, u7, E0, ET) ;
+        imbe_header_decode(cw, u0, u1, u2, u3, u4, u5, u6, u7, E0, E4, ET) ;
 #if DEBUG
 	printf("u_0: %x\r\nu_1: %x\r\nu_2: %x\r\nu_3: %x\r\nu_4: %x\r\nu_5: %x\r\nu_6: %x\r\nu_7: %x\r\n\r\n", u0, u1, u2, u3, u4, u5, u6, u7>>1);
 #endif
