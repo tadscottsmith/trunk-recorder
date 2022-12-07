@@ -40,7 +40,8 @@ void decode_frame_vector(IMBE_PARAM *imbe_param, Word16 *frame_vector)
 	// 7.7 FRAME REPEATS
 	// INVALID PITCH ESTIMATE
 	if (imbe_param->b_vec[0] < 0 || imbe_param->b_vec[0] > 207){
-		imbe_param->repeatCount++;
+		//imbe_param->repeatCount++;
+		imbe_param->muteAudio = true;
 		return; // If we return here IMBE parameters from previous frame will be used (frame repeating)		
 	}
 
