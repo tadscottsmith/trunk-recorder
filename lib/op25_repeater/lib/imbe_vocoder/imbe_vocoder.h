@@ -45,6 +45,8 @@ public:
 	int get_errorTotal() {return my_imbe_param.errorTotal;}
 	float get_errorRate() {return my_imbe_param.errorRate;}
 	int get_repeatCount() {return my_imbe_param.repeatCount;}
+	bool isValidFrame() {return !(my_imbe_param.b_vec[0] < 0 || my_imbe_param.b_vec[0] > 207);}
+	
 private:
 	IMBE_PARAM my_imbe_param;
 
