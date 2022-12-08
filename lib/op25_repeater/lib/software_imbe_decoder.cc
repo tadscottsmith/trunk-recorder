@@ -1295,7 +1295,9 @@ software_imbe_decoder::enhance_spectral_amplitudes(float& SE)
 
    Tmp = 0;
    for(ell = 1; ell <= L; ell++) {
-      W = sqrt(Mu[ell][ New]) * powf((K1 *(K2 - K3 * cos(w0 * ell))) , .25);
+	float numerator = .96 * M_PI * (K2 - (K3 * cos(w0 * ell)));
+	float denominator = w0 * RM0 * (powf(RM0,2) - powf(RM1,2));
+      W = sqrt(Mu[ell][ New]) * powf(numerator/denominator, .25);
       if((8 * ell) <= L)
          M[ell][ New] = Mu[ell][ New];
       else if(W > 1.2)
