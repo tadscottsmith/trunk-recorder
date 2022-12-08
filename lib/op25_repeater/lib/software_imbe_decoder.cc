@@ -787,7 +787,7 @@ software_imbe_decoder::decode(const voice_codeword& cw)
 }
 
 void
-software_imbe_decoder::adaptive_smoothing(float SE, float ET)
+software_imbe_decoder::adaptive_smoothing(float SE, float E4, float ET)
 {
    float VM;
    float YM;
@@ -900,7 +900,7 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 		enhance_spectral_amplitudes(SE);
 	}
 	if (!muted) {
-		adaptive_smoothing(SE, ET);
+		adaptive_smoothing(SE, E4, ET);
 
 		// (8000 samp/sec) * (1 sec / 50 compressed voice frames) = 160 samples/frame
 
@@ -937,6 +937,7 @@ software_imbe_decoder::decode_tap(int _L, int _K, float _w0, const int * _v, con
 {
 	int ell;
 	uint32_t ET=0;
+	uint32_t E4=0;
 	float SE = 0;
 	int en, tmp_f;
 
@@ -952,7 +953,7 @@ software_imbe_decoder::decode_tap(int _L, int _K, float _w0, const int * _v, con
 	}
 	// decode_spectral_amplitudes(Start3, Start8);
 	enhance_spectral_amplitudes(SE);
-	adaptive_smoothing(SE, ET);
+	adaptive_smoothing(SE, E4, ET);
 
 	// (8000 samp/sec) * (1 sec / 50 compressed voice frames) = 160 samples/frame
 

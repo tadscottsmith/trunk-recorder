@@ -92,7 +92,7 @@ private:
 	uint32_t next_u(uint32_t u);
 	void decode_spectral_amplitudes(int, int );
 	void decode_vuv(int );
-	void adaptive_smoothing(float, float );
+	void adaptive_smoothing(float, float, float );
 	void fft(float i[], float q[]);
 	void enhance_spectral_amplitudes(float&);
 	void ifft(float i[], float q[], float[]);
