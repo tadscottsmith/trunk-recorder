@@ -873,7 +873,16 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 	ER = (0.95 * ER) + (0.000365 * ET);
 	if( ER > 0.0875) {                                           // Frame Muting per TIA-102-BABA-A section 7.8
 		muted = true;
-	} else if(b0 > 207 || E0 >= 2 || ET >=(10 + 40 * ER)) {      // Frame Repeat per TIA-102-BABA-A section 7.7
+	} else if(b0 > 207) {      									 // Frame Repeat per TIA-102-BABA-A section 7.7
+		if (repeat_last()) {                                     // mute if repeat not allowed
+			muted = true;
+		}
+	} else if(E0 >= 2) {      									 // Frame Repeat per TIA-102-BABA-A section 7.7. Algorithm 97.
+		if (repeat_last()) {                                     // mute if repeat not allowed
+			muted = true;
+		}
+	} 
+	} else if(ET >=(10 + 40 * ER)) {      						 // Frame Repeat per TIA-102-BABA-A section 7.7. Algorithm 98.
 		if (repeat_last()) {                                     // mute if repeat not allowed
 			muted = true;
 		}
@@ -1388,12 +1397,12 @@ software_imbe_decoder::rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t
 
    w0 = 4 * M_PI /(bee[0] + 39.5);
 
-   L =(int)(.9254 * floorf((M_PI / w0) + .25)); if(L < 9 || L > 56) exit(2);
+   L =(int)floorf(.9254 * floorf((M_PI / w0) + .25)); if(L < 9 || L > 56) exit(2);
 
    if( L > 36) {
       K = 12;
    } else {
-      K =((L + 2) / 3);
+      K =(int)floorf((L + 2) / 3);
       //if(K > 12) exit(3);
 			if(K > 12) return 3;
    }
