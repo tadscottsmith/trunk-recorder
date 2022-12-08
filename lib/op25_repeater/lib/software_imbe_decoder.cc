@@ -774,10 +774,11 @@ software_imbe_decoder::decode(const voice_codeword& cw)
 	unsigned int u0 = 0;
 	unsigned int u1,u2,u3,u4,u5,u6,u7;
 	unsigned int E0 = 0;
+	unsigned int E4 = 0;
 	unsigned int ET = 0;
 
 	// PN/Hamming/Golay - etc.
-	imbe_header_decode(cw, u0, u1, u2, u3, u4, u5, u6, u7, E0, ET) ;
+	imbe_header_decode(cw, u0, u1, u2, u3, u4, u5, u6, u7, E0, E4, ET) ;
 
 	//replace the sync bit(LSB of u7) with the BOT flag
 	u7 = u7 | 0x01; //ECC procedure called above always returns u7 LSB = 0
@@ -861,7 +862,7 @@ software_imbe_decoder::fft(float REX[], float IMX[])
 }
 
 void
-software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7, uint32_t E0, uint32_t ET)
+software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7, uint32_t E0, uint32_t E4, uint32_t ET)
 {
 	int K;
 	float SE = 0;

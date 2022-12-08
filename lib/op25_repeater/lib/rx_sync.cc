@@ -304,7 +304,7 @@ void rx_sync::codeword(const uint8_t* cw, const enum codeword_types codeword_typ
 	int U[4];
 	uint8_t buf[4*26];
 	uint8_t tmp_codeword [144];
-	uint32_t E0, ET;
+	uint32_t E0, E4, ET;
 	uint32_t u[8];
 	size_t errs = 0;
     int rc = 0;
@@ -400,7 +400,7 @@ void rx_sync::codeword(const uint8_t* cw, const enum codeword_types codeword_typ
 	case CODEWORD_YSF_FULLRATE:	// 144 bits
 		for (int i=0; i<144; i++)
 			fullrate_cw[i] = cw[ysf_permutation[i]];
-		imbe_header_decode(fullrate_cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, ET);
+		imbe_header_decode(fullrate_cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, E4, ET);
 		do_fullrate = true;
 		break;
 	}
