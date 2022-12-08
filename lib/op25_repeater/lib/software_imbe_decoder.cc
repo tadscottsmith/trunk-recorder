@@ -795,7 +795,7 @@ software_imbe_decoder::adaptive_smoothing(float SE, float ET)
 
    if(ER <= .005 && ET <= 4) {
       VM = 1E+38; //infinity
-   } else if( ER <= .0125 && ET == 0) {  //(guessing typo in std)
+   } else if( ER <= .0125 && E4 == 0) {  //(guessing typo in std)
       VM = 45.255 * powf(SE, .375) / exp(277.6 * ER);
    } else {
       VM = 1.414 * powf(SE, .375);
