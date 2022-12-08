@@ -1258,12 +1258,13 @@ software_imbe_decoder::decode_vuv(int K)
    bee1 = bee[1];
    for(ell = 1; ell <= L; ell++) {
       if(ell <= 36)
-         kay =(ell + 2) / 3;
+         kay =(int)floorf((ell + 2) / 3);
       else
          kay = 12;
 
       //vee(ell, New) = (bee1 \(2 ^(K - kay))) - 2 *(bee1 \(2 ^(K + 1 - kay)))
-      vee[ell][ New] = ((bee1 & (1 << (K - kay))) > 0) ? 1 : 0;
+      //vee[ell][ New] = ((bee1 & (1 << (K - kay))) > 0) ? 1 : 0;
+	  vee[ell][ New] = (int)floorf(bee1 / pow(2,K-kay)) - 2 * floor(bee1 / pow(2,K+1-kay))
    }
 }
 
