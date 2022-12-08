@@ -881,7 +881,6 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 		if (repeat_last()) {                                     // mute if repeat not allowed
 			muted = true;
 		}
-	} 
 	} else if(ET >=(10 + 40 * ER)) {      						 // Frame Repeat per TIA-102-BABA-A section 7.7. Algorithm 98.
 		if (repeat_last()) {                                     // mute if repeat not allowed
 			muted = true;
