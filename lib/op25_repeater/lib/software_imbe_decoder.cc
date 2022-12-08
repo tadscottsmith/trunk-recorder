@@ -783,7 +783,7 @@ software_imbe_decoder::decode(const voice_codeword& cw)
 	//replace the sync bit(LSB of u7) with the BOT flag
 	u7 = u7 | 0x01; //ECC procedure called above always returns u7 LSB = 0
 
-	decode_fullrate(u0, u1, u2, u3, u4, u5, u6, u7, E0, ET); // process 88-bit frame
+	decode_fullrate(u0, u1, u2, u3, u4, u5, u6, u7, E0, E4, ET); // process 88-bit frame
 }
 
 void
