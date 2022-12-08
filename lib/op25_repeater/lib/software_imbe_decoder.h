@@ -82,6 +82,9 @@ private:
 	float Oldw0;
 	float Luv;						//number of unvoiced spectral amplitudes
 
+	float TM = 20480;						//Amplitude threshold of current frame;
+	float OldTM = 20480;					//Amplitude threshold of previous frame;
+
 	char sym_b[4096];
 	char RxData[4096];
 	int sym_bp;

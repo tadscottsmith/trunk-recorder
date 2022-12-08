@@ -807,7 +807,7 @@ software_imbe_decoder::adaptive_smoothing(float SE, float E4, float ET)
       AM = AM + M[ell][ New];          //smoothed vee(ell) replaces unsmoothed!
    }
 
-   float TM = (ER <= .005 && ET <= 6) ? 20480 : 6000 - 300 * ET; // + TM; /* ToDo: uninitialized! */
+   TM = (ER <= .005 && ET <= 6) ? 20480 : 6000 - 300 * ET + OldTM; /* ToDo: uninitialized! */
    if(TM <= AM) {
       YM = TM / AM;
       for(ell = 1; ell <= L; ell++) {
@@ -929,6 +929,7 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 	}
 	OldL = L;
 	Oldw0 = w0;
+	OldTM = TM;
 	tmp_f = Old; Old = New; New = tmp_f;
 }
 
