@@ -1402,7 +1402,7 @@ software_imbe_decoder::rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t
 
    w0 = 4 * M_PI /(bee[0] + 39.5);
    L = (int) floorf(.9254 * floorf((M_PI / w0) + .25));
-   K = (int) min(floorf((L + 2) / 3), 12); 
+   K = (int) std::min(floorf((L + 2) / 3), 12); 
 
 
    for(I = 1; I <= L + 1; I++) { bee[I] = 0; }
