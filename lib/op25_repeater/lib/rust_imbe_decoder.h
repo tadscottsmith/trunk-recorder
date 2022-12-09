@@ -11,13 +11,13 @@ public:
   rust_imbe_decoder();
   virtual ~rust_imbe_decoder();
 
-  constant int SAMPLE_RATE = 8000;
-  constant int SAMPLES_PER_FRAME = 160;
-  constant int MIN_HARMONICS = 9;
-  constant int MAX_HARMONICS = 56;
-  constant int NUM_HARMONICS = MAX_HARMONICS - MIN_HARMONICS + 1;
-  constant int MAX_QUANTIZED_AMPS = MAX_HARMONICS - 1;
-  
+  const int SAMPLE_RATE = 8000;
+  const int SAMPLES_PER_FRAME = 160;
+  const int MIN_HARMONICS = 9;
+  const int MAX_HARMONICS = 56;
+  const int NUM_HARMONICS = MAX_HARMONICS - MIN_HARMONICS + 1;
+  const int MAX_QUANTIZED_AMPS = MAX_HARMONICS - 1;
+
 
 private:
   // NOTE: Single-letter variable names are upper case only; Lower
