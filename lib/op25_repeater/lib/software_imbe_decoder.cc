@@ -1267,6 +1267,7 @@ software_imbe_decoder::decode_vuv(int K)
       //vee(ell, New) = (bee1 \(2 ^(K - kay))) - 2 *(bee1 \(2 ^(K + 1 - kay)))
       //vee[ell][ New] = ((bee1 & (1 << (K - kay))) > 0) ? 1 : 0;
 	  vee[ell][ New] = (int)floorf(bee1 / pow(2,K-kay)) - 2 * floor(bee1 / pow(2,K+1-kay));
+	  fprintf("%d\n", vee[ell][ New]);
    }
 }
 
