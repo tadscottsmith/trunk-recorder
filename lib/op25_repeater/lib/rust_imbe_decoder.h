@@ -50,10 +50,6 @@ private:
 	int sym_bp;
 	int ErFlag;
 
-	uint32_t pngen15(uint32_t& pn);
-	uint32_t pngen23(uint32_t& pn);
-	uint32_t next_u(uint32_t u);
-
 };
 
 
