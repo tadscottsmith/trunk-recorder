@@ -915,7 +915,7 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 			// Most of the difference is compensated by removing the 146.6433 factor
 			// in the synth_unvoiced procedure.  The final tweak is done by raising the
 			// voiced samples:
-			float sample = suv[en] + sv[en] * 4; //balance v/uv loudness
+			float sample = suv[en] + sv[en];// * 4; //balance v/uv loudness
 			if(abs((int)sample) > 32767) {
 				sample = (sample < 0) ? -32767 : 32767; // * sgn(sample)
 			}
@@ -1264,10 +1264,7 @@ software_imbe_decoder::decode_vuv(int K)
       else
          kay = 12;
 
-      //vee(ell, New) = (bee1 \(2 ^(K - kay))) - 2 *(bee1 \(2 ^(K + 1 - kay)))
-      //vee[ell][ New] = ((bee1 & (1 << (K - kay))) > 0) ? 1 : 0;
 	  vee[ell][ New] = (int)floorf(bee1 / pow(2,K-kay)) - 2 * floor(bee1 / pow(2,K+1-kay));
-	  fprintf(stderr, "%d\n", vee[ell][ New]);
    }
 }
 
