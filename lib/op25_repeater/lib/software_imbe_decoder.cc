@@ -1400,21 +1400,13 @@ software_imbe_decoder::rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t
    bee[0] =((u0 / 16) & 0xfc) |((u7 / 2) & 3);
 
    w0 = 4 * M_PI /(bee[0] + 39.5);
+   L = (int) floorf(.9254 * floorf((M_PI / w0) + .25));
+   K = (int) min(floorf((L + 2) / 3), 12); 
 
-   L =(int)floorf(.9254 * floorf((M_PI / w0) + .25)); if(L < 9 || L > 56) exit(2);
-
-   if( L > 36) {
-      K = 12;
-   } else {
-      K =(int)floorf((L + 2) / 3);
-      //if(K > 12) exit(3);
-			if(K > 12) return 3;
-   }
 
    for(I = 1; I <= L + 1; I++) { bee[I] = 0; }
 
    bee[2] =(u0 & 56) |((u7 / 8) & 1);
-
 
    Seq =(L - 9) * 75;
 
