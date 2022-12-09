@@ -66,6 +66,7 @@ list(APPEND op25_repeater_sources
     p25p2_vf.cc
     imbe_decoder.cc
     software_imbe_decoder.cc
+    rust_imbe_decoder.cc
     ambe.c
     mbelib.c
     ambe_encoder.cc
