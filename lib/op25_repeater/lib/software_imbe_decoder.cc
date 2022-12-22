@@ -1392,16 +1392,19 @@ software_imbe_decoder::rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t
 
    bee[0] =((u0 / 16) & 0xfc) |((u7 / 2) & 3);
 
-   fundamentalFrequency = 4 * M_PI /(bee[0] + 39.5);
-
-   numSpectralAmplitudes =(int)(.9254 * floorf((M_PI / fundamentalFrequency) + .25)); if(numSpectralAmplitudes < 9 || numSpectralAmplitudes > 56) exit(2);
+   fundamentalFrequency = (4 * M_PI) / (bee[0] + 39.5);
+   numSpectralAmplitudes = floor((.9254 * floorf((M_PI / fundamentalFrequency) + .25))); 
+	
+   if(numSpectralAmplitudes < 9 || numSpectralAmplitudes > 56){
+	exit(2);
+   }
 
    if(numSpectralAmplitudes > 36) {
       K = 12;
    } else {
-      K =((numSpectralAmplitudes + 2) / 3);
+      K = floor((numSpectralAmplitudes + 2) / 3);
       //if(K > 12) exit(3);
-			if(K > 12) return 3;
+			if(K > 12) exit(3);
    }
 
    for(I = 1; I <= numSpectralAmplitudes + 1; I++) { bee[I] = 0; }
