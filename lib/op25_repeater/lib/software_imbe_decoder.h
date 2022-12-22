@@ -81,6 +81,12 @@ private:
 	
 	int numSpectralAmplitudes;
 	int prev_numSpectralAmplitudes;
+
+	float spectralEnergy;
+	float prev_spectralEnergy;
+
+	int amplitudeThreshold;
+	int prev_amplitudeThreshold;
 	
 	float spectralAmplitudes[57][2];						// Unenhanced Spectral Amplitudes
 	float log2spectralAmplitudes[58][2];					// Log2 Unenhanced Spectral Amplitudes
@@ -104,9 +110,9 @@ private:
 	uint32_t next_u(uint32_t u);
 	void decode_spectral_amplitudes(int, int );
 	void decode_vuv();
-	void adaptive_smoothing(float, float );
+	void adaptive_smoothing();
 	void fft(float i[], float q[]);
-	void enhance_spectral_amplitudes(float&);
+	void enhance_spectral_amplitudes();
 	void ifft(float i[], float q[], float[]);
 	uint16_t rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7);
 	void synth_unvoiced();

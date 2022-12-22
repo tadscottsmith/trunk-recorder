@@ -737,6 +737,8 @@ software_imbe_decoder::software_imbe_decoder()
    repeatCount = 0;
    prev_numSpectralAmplitudes = 0;
    numSpectralAmplitudes = 9;
+   spectralEnergy = 75000;
+   amplitudeThreshold = 20480;
    Old = 1; New = 0;
    psi1 = 0.0;
    for(i=0; i < 58; i++) {
@@ -791,18 +793,18 @@ software_imbe_decoder::decode(const voice_codeword& cw)
 }
 
 void
-software_imbe_decoder::adaptive_smoothing(float SE, float ET)
+software_imbe_decoder::adaptive_smoothing()
 {
    float VM;
    float YM;
    int ell;
 
-   if(errorRate <= .005 && ET <= 4) {
+   if(errorRate <= .005 && errorTotal <= 4) {
       VM = 1E+38; //infinity
-   } else if(errorRate <= .0125 && ET == 0) {  //(guessing typo in std)
-      VM = 45.255 * powf(SE, .375) / exp(277.6 * errorRate);
+   } else if(errorRate <= .0125 && errorCoset4 == 0) {  
+      VM = (45.255 * powf(spectralEnergy, .375)) / exp(277.6 * errorRate);
    } else {
-      VM = 1.414 * powf(SE, .375);
+      VM = 1.414 * powf(spectralEnergy, .375);
    }
 
    float AM = 0;
@@ -811,9 +813,9 @@ software_imbe_decoder::adaptive_smoothing(float SE, float ET)
       AM = AM + enhancedSpectralAmplitudes[ell][ New];          //smoothed vee(ell) replaces unsmoothed!
    }
 
-   float TM = (errorRate <= .005 && ET <= 6) ? 20480 : 6000 - 300 * ET; // + TM; /* ToDo: uninitialized! */
-   if(TM <= AM) {
-      YM = TM / AM;
+   float amplitudeThreshold = (errorRate <= .005 && errorTotal <= 6) ? 20480 : 6000 - 300 * errorTotal; 
+   if(amplitudeThreshold <= AM) {
+      YM = amplitudeThreshold / AM;
       for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
          enhancedSpectralAmplitudes[ell][ New] = enhancedSpectralAmplitudes[ell][New] * YM;
       }
@@ -869,7 +871,6 @@ void
 software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7)
 {
 	int K;
-	float SE = 0;
 	int en, tmp_f;
 	bool muted = false;
     int b0 = ((u0 >> 4) & 0xfc) | ((u7 >> 1) & 0x3);
@@ -893,10 +894,10 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 		Start8 =((Len8 * (Len8 - 1)) / 2) - 3;
 
 		decode_spectral_amplitudes(Start3, Start8);
-		enhance_spectral_amplitudes(SE);
+		enhance_spectral_amplitudes();
 	}
 	if (!muted) {
-		adaptive_smoothing(SE, errorTotal);
+		adaptive_smoothing();
 
 		// (8000 samp/sec) * (1 sec / 50 compressed voice frames) = 160 samples/frame
 
@@ -925,6 +926,7 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 	}
 	prev_numSpectralAmplitudes = numSpectralAmplitudes;
 	prev_fundamentalFrequency = fundamentalFrequency;
+	prev_spectralEnergy = spectralEnergy;
 	tmp_f = Old; 
 	Old = New;
 	New = tmp_f;
@@ -949,8 +951,8 @@ software_imbe_decoder::decode_tap(int _L, int _K, float _w0, const int * _v, con
 		spectralAmplitudes[ell][ New] = _mu[ell - 1];
 	}
 	// decode_spectral_amplitudes(Start3, Start8);
-	enhance_spectral_amplitudes(SE);
-	adaptive_smoothing(SE, ET);
+	enhance_spectral_amplitudes();
+	adaptive_smoothing();
 
 	// (8000 samp/sec) * (1 sec / 50 compressed voice frames) = 160 samples/frame
 
@@ -1160,7 +1162,7 @@ software_imbe_decoder::repeat_last()
 void
 software_imbe_decoder::decode_spectral_amplitudes(int Start3, int Start8)
 {
-   float G[7];           //Can we use C(1 to 6,1) for this?
+   float gainVectors[7];           //Can we use C(1 to 6,1) for this?
    int   J[7];
    float C[7][ 11] ;
    float T[57];
@@ -1174,17 +1176,17 @@ software_imbe_decoder::decode_spectral_amplitudes(int Start3, int Start8)
 
    P3 = Start3; P8 = Start8;
 
-   G[1] = AnnexE[bee[2]];
+   gainVectors[1] = AnnexE[bee[2]];
 
    for(eye = 2; eye <= 6; eye++) {
-      G[eye] = StepSize[P3] *(bee[eye + 1] - powf(2 ,(BitCount[P3] - 1)) + .5);
+      gainVectors[eye] = StepSize[P3] *(bee[eye + 1] - powf(2 ,(BitCount[P3] - 1)) + .5);
       P3 = P3 + 1;
    }
 
    for(eye = 1; eye <= 6; eye++) {
-      Tmp = G[1];
+      Tmp = gainVectors[1];
       for(em = 2; em <= 6; em++) {
-         Tmp = Tmp + 2 * G[em] * cos(M_PI *(em - 1) *(eye - .5) / 6);
+         Tmp = Tmp + 2 * gainVectors[em] * cos(M_PI *(em - 1) *(eye - .5) / 6);
       }
       //R(eye) = Tmp
       C[eye][1] = Tmp;
@@ -1263,7 +1265,7 @@ void software_imbe_decoder::decode_vuv() {
 }
 
 void
-software_imbe_decoder::enhance_spectral_amplitudes(float& SE)
+software_imbe_decoder::enhance_spectral_amplitudes()
 {
    float RM0;
    float RM1;
@@ -1306,7 +1308,10 @@ software_imbe_decoder::enhance_spectral_amplitudes(float& SE)
    }
 
 	// update SE
-   SE = .95 * SE + .05 * RM0; if(SE < 10000) SE = 10000;
+   spectralEnergy = .95 * prev_spectralEnergy + .05 * RM0; 
+   if(spectralEnergy < 10000){
+		spectralEnergy = 10000;
+   } 
 
 }
 
