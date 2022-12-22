@@ -734,7 +734,7 @@ void software_imbe_decoder::reset() {
 
 	repeatCounter = 0;
 
-	spectralEnergy = 0;
+	spectralEnergy = 75000;
 	amplitudeThreshold = 20480;
 
   int i, j;
@@ -749,9 +749,7 @@ void software_imbe_decoder::reset() {
   New = 0;
   psi1 = 0.0;
   for (i = 0; i < 58; i++) {
-    for (j = 0; j < 2; j++) {
-      log2Mu[i][j] = 0.0;
-    }
+      log2spectralAmplitudes[i] = 0.0;
   }
   for (i = 0; i < 57; i++) {
     for (j = 0; j < 2; j++) {
@@ -791,7 +789,7 @@ void software_imbe_decoder::decode(const voice_codeword &cw) {
 void software_imbe_decoder::adaptive_smoothing() {
   float VM;
   float YM;
-  int ell;
+  int l;
 
   if (errorRate <= .005 && errorTotal <= 4) {
     VM = 1E+38;                               
@@ -802,17 +800,17 @@ void software_imbe_decoder::adaptive_smoothing() {
   }
 
   float AM = 0;
-  for (ell = 1; ell <= numSpectralAmplitudes; ell++) {
-    if (M[ell][New] > VM)
-      voicingDecisions[ell] = 1;   // CAUTION:
-    AM = AM + M[ell][New]; // smoothed voicingDecisions(ell) replaces unsmoothed!
+  for (l = 1; l <= numSpectralAmplitudes; l++) {
+    if (enhancedSpectralAmplitudes[l] > VM)
+      voicingDecisions[l] = 1;   // CAUTION:
+    AM = AM + enhancedSpectralAmplitudes[l]; // smoothed voicingDecisions(l) replaces unsmoothed!
   }
 
   amplitudeThreshold = (errorRate <= .005 && errorTotal <= 6) ? 20480 : 6000 - 300 * errorTotal + amplitudeThreshold;
   if (amplitudeThreshold <= AM) {
     YM = amplitudeThreshold / AM;
-    for (ell = 1; ell <= numSpectralAmplitudes; ell++) {
-      M[ell][New] = M[ell][New] * YM;
+    for (l = 1; l <= numSpectralAmplitudes; l++) {
+      enhancedSpectralAmplitudes[l] = enhancedSpectralAmplitudes[l] * YM;
     }
   }
 }
@@ -892,7 +890,7 @@ void software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u
     }
   } else { 																					// Voice Frame decoding
     repeatCounter = 0;
-    numVoicingDecisions = rearrange(u0, u1, u2, u3, u4, u5, u6, u7); 											// re-arrange the bits from u to b
+    rearrange(u0, u1, u2, u3, u4, u5, u6, u7); 											// re-arrange the bits from u to b
     decode_vuv();
 
     int Len3, Start3, Len8, Start8;
@@ -937,6 +935,9 @@ void software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u
   prev_numSpectralAmplitudes = numSpectralAmplitudes;
   prev_numVoicingDecisions = numVoicingDecisions;
 
+  for(int l = 1; l <= 57; l++){
+  	prev_voicingDecisions[l] = voicingDecisions[l];
+  }
   
   tmp_f = Old;
   Old = New;
@@ -944,7 +945,7 @@ void software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u
 }
 
 void software_imbe_decoder::decode_tap(int _L, int _K, float _w0, const int *_v, const float *_mu) {
-  int ell;
+  int l;
   uint32_t ET = 0;
   float SE = 0;
   int en, tmp_f;
@@ -955,9 +956,9 @@ void software_imbe_decoder::decode_tap(int _L, int _K, float _w0, const int *_v,
 
   numSpectralAmplitudes = _L;
   fundamentalFrequency = _w0;
-  for (ell = 1; ell <= numSpectralAmplitudes; ell++) {
-    voicingDecisions[ell] = _v[ell - 1];
-    Mu[ell][New] = _mu[ell - 1];
+  for (l = 1; l <= numSpectralAmplitudes; l++) {
+    voicingDecisions[l] = _v[l - 1];
+    spectralAmplitudes[l] = prev_spectralAmplitudes[l - 1]; //TSS HUH?
   }
   // decode_spectral_amplitudes(Start3, Start8);
   enhance_spectral_amplitudes();
@@ -1198,11 +1199,11 @@ int software_imbe_decoder::repeat_last() {
   numSpectralAmplitudes = prev_numSpectralAmplitudes;
   for (int i = 0; i < 57; i++) {
     voicingDecisions[i] = prev_voicingDecisions[i];
-    Mu[i][New] = Mu[i][Old];
-    M[i][New] = M[i][Old];
-    log2Mu[i][New] = log2Mu[i][Old];
+    spectralAmplitudes[i] = prev_spectralAmplitudes[i];
+    enhancedSpectralAmplitudes[i] = prev_enhancedSpectralAmplitudes[i];
+    log2spectralAmplitudes[i] = prev_log2spectralAmplitudes[i];
   }
-  log2Mu[57][New] = log2Mu[57][Old]; // log2Mu array is one element longer than all the other parameters!
+  log2spectralAmplitudes[57] = prev_log2spectralAmplitudes[57]; // log2Mu array is one element longer than all the other parameters!
   return 0;
 }
 
@@ -1217,7 +1218,7 @@ void software_imbe_decoder::decode_spectral_amplitudes(int Start3, int Start8) {
   float TD;
   float Tp;
 
-  int P3, P8, eye, jay, kay, ell, em, iTk;
+  int P3, P8, eye, jay, kay, l, em, iTk;
 
   P3 = Start3;
   P8 = Start8;
@@ -1238,19 +1239,19 @@ void software_imbe_decoder::decode_spectral_amplitudes(int Start3, int Start8) {
     C[eye][1] = Tmp;
   }
 
-  ell = 8;
+  l = 8;
   for (eye = 1; eye <= 6; eye++) {
     J[eye] = (numSpectralAmplitudes + eye - 1) / 6; // Prediction Residual Block Length
     // FOR kay = 2 TO J(eye)
     for (kay = 2; kay <= J[eye]; kay++) {
-      C[eye][kay] = StepSize[P3] * (bee[ell] - powf(2, (BitCount[P3] - 1)) + .5);
+      C[eye][kay] = StepSize[P3] * (bee[l] - powf(2, (BitCount[P3] - 1)) + .5);
       P3 = P3 + 1;
       P8 = P8 + 1;
-      ell = ell + 1;
+      l = l + 1;
     }
   }
 
-  ell = 0;
+  l = 0;
   for (eye = 1; eye <= 6; eye++) {
     for (jay = 1; jay <= J[eye]; jay++) {
       Tmp = C[eye][1];
@@ -1258,32 +1259,32 @@ void software_imbe_decoder::decode_spectral_amplitudes(int Start3, int Start8) {
       for (kay = 2; kay <= J[eye]; kay++) {
         Tmp = Tmp + 2 * C[eye][kay] * cos(M_PI * (kay - 1) * (jay - .5) / J[eye]);
       }
-      ell = ell + 1;
-      T[ell] = Tmp;
+      l = l + 1;
+      T[l] = Tmp;
     }
   }
-  if (ell != numSpectralAmplitudes)
+  if (l != numSpectralAmplitudes)
     return;
 
-  // if(ell != L) exit(1);
+  // if(l != L) exit(1);
 
   // *******
-  // we have the residuals in T(ell); now to sum with the predictions
+  // we have the residuals in T(l); now to sum with the predictions
   // *******
 
   // first, set up the assumptions about the previous frame values
   // Note:  L means L(0); prev_numSpectralAmplitudes; means L(-1)
   if (prev_numSpectralAmplitudes == 0) {
     prev_numSpectralAmplitudes = 30;
-    for (ell = 0; ell <= 57; ell++) {
-      log2Mu[ell][Old] = 1;
+    for (l = 0; l <= 57; l++) {
+      prev_log2spectralAmplitudes[l] = 1;
     }
   }
-  for (ell = prev_numSpectralAmplitudes + 1; ell <= numSpectralAmplitudes + 1; ell++) {
-    log2Mu[ell][Old] = log2Mu[prev_numSpectralAmplitudes][Old];
+  for (l = prev_numSpectralAmplitudes + 1; l <= numSpectralAmplitudes + 1; l++) {
+    prev_log2spectralAmplitudes[l] = prev_log2spectralAmplitudes[prev_numSpectralAmplitudes];
   }
 
-  // make the predictions and sum with T(ell)
+  // make the predictions and sum with T(l)
   if (numSpectralAmplitudes <= 15)
     Tp = .4;
   else if (numSpectralAmplitudes <= 24)
@@ -1292,25 +1293,24 @@ void software_imbe_decoder::decode_spectral_amplitudes(int Start3, int Start8) {
     Tp = .7;
 
   Tmp = 0;
-  for (ell = 1; ell <= numSpectralAmplitudes; ell++) {
-    Tk = ((float)prev_numSpectralAmplitudes / (float)numSpectralAmplitudes) * (float)ell;
+  for (l = 1; l <= numSpectralAmplitudes; l++) {
+    Tk = ((float)prev_numSpectralAmplitudes / (float)numSpectralAmplitudes) * (float)l;
     iTk = (int)Tk;
     TD = Tk - iTk;
-    // temporarily use Mu(ell, New) as temp
-    Mu[ell][New] = Tp * ((1 - TD) * log2Mu[iTk][Old] + TD * log2Mu[iTk + 1][Old]);
-    Tmp = Tmp + Mu[ell][New];
+    // temporarily use Mu(l, New) as temp
+    spectralAmplitudes[l] = Tp * ((1 - TD) * prev_log2spectralAmplitudes[iTk] + TD * prev_log2spectralAmplitudes[iTk + 1]);
+    Tmp = Tmp + spectralAmplitudes[l];
   }
   Tmp = Tmp / numSpectralAmplitudes;
-  for (ell = 1; ell <= numSpectralAmplitudes; ell++) {
-    log2Mu[ell][New] = T[ell] + Mu[ell][New] - Tmp;
-    // Mu(ell, New) no longer temp
-    Mu[ell][New] = powf(2, log2Mu[ell][New]);
+  for (l = 1; l <= numSpectralAmplitudes; l++) {
+    log2spectralAmplitudes[l] = T[l] + spectralAmplitudes[l] - Tmp;
+    // Mu(l, New) no longer temp
+    spectralAmplitudes[l] = powf(2, log2spectralAmplitudes[l]);
   }
 }
 
 void software_imbe_decoder::decode_vuv() {
-  int k, bee1, temp;
-  bee1 = bee[1];
+  int k;
 
   for (int l = 1; l <= numSpectralAmplitudes; l++) {
     if (l <= 36)
@@ -1319,11 +1319,6 @@ void software_imbe_decoder::decode_vuv() {
       k = 12;
 
     voicingDecisions[l] = floor(bee[1] / pow(2,numVoicingDecisions-k)) - 2 * floor(bee[1] / pow(2,numVoicingDecisions+1-k));
-	temp = floor(bee1 / pow(2,numVoicingDecisions-k)) - 2 * floor(bee1 / pow(2,numVoicingDecisions+1-k));
-
-	if(voicingDecisions[l] != temp){
-		fprintf(stderr,"Decision: %d - Temp: %d", voicingDecisions[l], temp);
-	}
   }
 }
 
@@ -1335,14 +1330,14 @@ void software_imbe_decoder::enhance_spectral_amplitudes() {
   float K2;
   float K3;
   float W;
-  int ell;
+  int l;
 
   RM0 = 0;
   RM1 = 0;
-  for (ell = 1; ell <= numSpectralAmplitudes; ell++) {
-    Tmp = powf(Mu[ell][New], 2);
+  for (l = 1; l <= numSpectralAmplitudes; l++) {
+    Tmp = powf(spectralAmplitudes[l], 2);
     RM0 = RM0 + Tmp;
-    RM1 = RM1 + Tmp * cos(fundamentalFrequency * ell);
+    RM1 = RM1 + Tmp * cos(fundamentalFrequency * l);
   }
 
   K1 = .96 * M_PI / (fundamentalFrequency * RM0 * (powf(RM0, 2) - powf(RM1, 2)));
@@ -1350,23 +1345,27 @@ void software_imbe_decoder::enhance_spectral_amplitudes() {
   K3 = 2 * RM0 * RM1;
 
   Tmp = 0;
-  for (ell = 1; ell <= numSpectralAmplitudes; ell++) {
-    W = sqrt(Mu[ell][New]) * powf((K1 * (K2 - K3 * cos(fundamentalFrequency * ell))), .25);
-    if ((8 * ell) <= numSpectralAmplitudes)
-      M[ell][New] = Mu[ell][New];
+  for (l = 1; l <= numSpectralAmplitudes; l++) {
+    //W = sqrt(spectralAmplitudes[l][New]) * powf((K1 * (K2 - K3 * cos(fundamentalFrequency * l))), .25);
+	float numerator = .96 * M_PI * (K2 - (K3 * cos(fundamentalFrequency * l)));
+	float denominator = fundamentalFrequency * RM0 * (powf(RM0,2) - powf(RM1,2));
+    W = sqrt(spectralAmplitudes[l]) * powf(numerator/denominator, .25);
+    
+	if ((8 * l) <= numSpectralAmplitudes)
+      enhancedSpectralAmplitudes[l] = spectralAmplitudes[l];
     else if (W > 1.2)
-      M[ell][New] = Mu[ell][New] * 1.2;
+      enhancedSpectralAmplitudes[l] = spectralAmplitudes[l] * 1.2;
     else if (W < .5)
-      M[ell][New] = Mu[ell][New] * .5;
+      enhancedSpectralAmplitudes[l] = spectralAmplitudes[l] * .5;
     else
-      M[ell][New] = Mu[ell][New] * W;
-    Tmp = Tmp + powf(M[ell][New], 2);
+      enhancedSpectralAmplitudes[l] = spectralAmplitudes[l] * W;
+    Tmp = Tmp + powf(enhancedSpectralAmplitudes[l], 2);
   }
 
   Tmp = sqrt(RM0 / Tmp);
 
-  for (ell = 1; ell <= numSpectralAmplitudes; ell++) {
-    M[ell][New] = M[ell][New] * Tmp;
+  for (l = 1; l <= numSpectralAmplitudes; l++) {
+    enhancedSpectralAmplitudes[l] = enhancedSpectralAmplitudes[l] * Tmp;
   }
 
   // update SE
@@ -1448,7 +1447,7 @@ void software_imbe_decoder::ifft(float FDi[], float FDq[], float TD[]) // ToDo: 
   }
 }
 
-uint16_t
+void
 software_imbe_decoder::rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7) {
   int I, ubit, Seq, col;
 
@@ -1465,7 +1464,7 @@ software_imbe_decoder::rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t
   } else {
     numVoicingDecisions = floor((numSpectralAmplitudes + 2) / 3);
     if (numVoicingDecisions > 12)
-      return 3;
+      exit(2);
   }
 
   for (I = 1; I <= numSpectralAmplitudes + 1; I++) {
@@ -1556,7 +1555,6 @@ software_imbe_decoder::rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t
     ubit = ubit / 2;
   }
 
-  return numVoicingDecisions;
 }
 
 void software_imbe_decoder::synth_unvoiced() {
@@ -1566,7 +1564,7 @@ void software_imbe_decoder::synth_unvoiced() {
 
   float Tmp;
 
-  int ell, bl, em, al, en;
+  int l, bl, em, al, en;
 
   // Generate the next 160 samples of white noise
   for (en = 0; en < 51; en++) {
@@ -1576,18 +1574,18 @@ void software_imbe_decoder::synth_unvoiced() {
     u[en] = next_u(u[en - 1]);
   }
 
-  ell = 0;
-  bl = (int)ceilf(128 / M_PI * (ell + .5) * fundamentalFrequency);
+  l = 0;
+  bl = (int)ceilf(128 / M_PI * (l + .5) * fundamentalFrequency);
   for (em = 0; em <= bl - 1; em++) {
     Uwi[em] = 0;
     Uwq[em] = 0;
   }
 
   Luv = 0;
-  for (ell = 1; ell <= numSpectralAmplitudes; ell++) {
+  for (l = 1; l <= numSpectralAmplitudes; l++) {
     al = bl;
-    bl = (int)ceilf(128 / M_PI * (ell + .5) * fundamentalFrequency);
-    if (voicingDecisions[ell]) {
+    bl = (int)ceilf(128 / M_PI * (l + .5) * fundamentalFrequency);
+    if (voicingDecisions[l]) {
       // FOR em = al TO bl - 1
       for (em = al; em <= bl - 1; em++) {
         Uwi[em] = 0;
@@ -1612,7 +1610,7 @@ void software_imbe_decoder::synth_unvoiced() {
       }
       // 0.91652 is my best guess at what the unvoiced scaling
       // coefficient is supposed to be
-      Tmp = 0.91652 * M[ell][New] / sqrt(Tmp / (bl - al));
+      Tmp = 0.91652 * enhancedSpectralAmplitudes[l] / sqrt(Tmp / (bl - al));
       // now do the rest of b.h.e.
       for (em = al; em <= bl - 1; em++) {
         Uwi[em] = (Uwi[em]) * Tmp;
@@ -1658,7 +1656,7 @@ void software_imbe_decoder::synth_voiced() {
   float MOld;
   float Mb;
 
-  int ell, en;
+  int l, en;
 
   if (numSpectralAmplitudes > prev_numSpectralAmplitudes) {
     MaxL = numSpectralAmplitudes;
@@ -1669,64 +1667,64 @@ void software_imbe_decoder::synth_voiced() {
   psi1 = psi1 + (prev_fundamentalFrequency + fundamentalFrequency) * 80;
   psi1 = remainderf(psi1, 2 * M_PI); // ToDo: decide if its 2pi or pi^2
 
-  for (ell = 1; ell <= numSpectralAmplitudes / 4; ell++) {
-    phi[ell][New] = psi1 * ell;
+  for (l = 1; l <= numSpectralAmplitudes / 4; l++) {
+    phi[l][New] = psi1 * l;
   }
 
-  for (; ell <= MaxL; ell++) {
-    phi[ell][New] = psi1 * ell /* + Tmp * PhzNz[ell] */;
+  for (; l <= MaxL; l++) {
+    phi[l][New] = psi1 * l /* + Tmp * PhzNz[l] */;
   }
 
   for (en = 0; en <= 159; en++) {
     sv[en] = 0;
   }
 
-  for (ell = 1; ell <= MaxL; ell++) {
+  for (l = 1; l <= MaxL; l++) {
 
-    if (ell > numSpectralAmplitudes) {
+    if (l > numSpectralAmplitudes) {
       MNew = 0;
     } else {
-      MNew = M[ell][New];
+      MNew = enhancedSpectralAmplitudes[l];
     }
 
-    if (ell > prev_numSpectralAmplitudes) {
+    if (l > prev_numSpectralAmplitudes) {
       MOld = 0;
     } else {
-      MOld = M[ell][Old];
+      MOld = prev_enhancedSpectralAmplitudes[l];
     }
 
-    if (voicingDecisions[ell]) {
-      if (prev_voicingDecisions[ell]) {
-        if (ell < 8 && fabsf(fundamentalFrequency - prev_fundamentalFrequency) < .1 * fundamentalFrequency) { // (fine transition)
-          Dpl = phi[ell][New] - phi[ell][Old] - (prev_fundamentalFrequency + fundamentalFrequency) * ell * 80;
+    if (voicingDecisions[l]) {
+      if (prev_voicingDecisions[l]) {
+        if (l < 8 && fabsf(fundamentalFrequency - prev_fundamentalFrequency) < .1 * fundamentalFrequency) { // (fine transition)
+          Dpl = phi[l][New] - phi[l][Old] - (prev_fundamentalFrequency + fundamentalFrequency) * l * 80;
           Dwl = .00625 * (Dpl - 2 * M_PI * floor((Dpl + M_PI) / (2 * M_PI)));
-          THa = (prev_fundamentalFrequency * (float)ell + Dwl);
-          THb = (fundamentalFrequency - prev_fundamentalFrequency) * ell * .003125;
+          THa = (prev_fundamentalFrequency * (float)l + Dwl);
+          THb = (fundamentalFrequency - prev_fundamentalFrequency) * l * .003125;
           Mb = .00625 * (MNew - MOld);
           for (en = 0; en <= 159; en++) {
-            sv[en] = sv[en] + (MOld + en * Mb) * cos(phi[ell][Old] + (THa + THb * en) * en);
+            sv[en] = sv[en] + (MOld + en * Mb) * cos(phi[l][Old] + (THa + THb * en) * en);
           }
         } else { // (coarse transition)
           for (en = 0; en <= 55; en++) {
-            sv[en] = sv[en] + ws[en + 105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][Old]);
+            sv[en] = sv[en] + ws[en + 105] * MOld * cos(prev_fundamentalFrequency * en * l + phi[l][Old]);
           }
           for (en = 56; en <= 105; en++) {
-            sv[en] = sv[en] + ws[en + 105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][Old]);
-            sv[en] = sv[en] + ws[en - 55] * MNew * cos(fundamentalFrequency * (en - 160) * ell + phi[ell][New]);
+            sv[en] = sv[en] + ws[en + 105] * MOld * cos(prev_fundamentalFrequency * en * l + phi[l][Old]);
+            sv[en] = sv[en] + ws[en - 55] * MNew * cos(fundamentalFrequency * (en - 160) * l + phi[l][New]);
           }
           for (en = 106; en <= 159; en++) {
-            sv[en] = sv[en] + ws[en - 55] * MNew * cos(fundamentalFrequency * (en - 160) * ell + phi[ell][New]);
+            sv[en] = sv[en] + ws[en - 55] * MNew * cos(fundamentalFrequency * (en - 160) * l + phi[l][New]);
           }
         }
       } else {
         for (en = 56; en <= 159; en++) {
-          sv[en] = sv[en] + ws[en - 55] * MNew * cos(fundamentalFrequency * (en - 160) * ell + phi[ell][New]);
+          sv[en] = sv[en] + ws[en - 55] * MNew * cos(fundamentalFrequency * (en - 160) * l + phi[l][New]);
         }
       }
     } else {
-      if (prev_voicingDecisions[ell]) {
+      if (prev_voicingDecisions[l]) {
         for (en = 0; en <= 105; en++) {
-          sv[en] = sv[en] + ws[en + 105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][Old]);
+          sv[en] = sv[en] + ws[en + 105] * MOld * cos(prev_fundamentalFrequency * en * l + phi[l][Old]);
         }
       }
     }

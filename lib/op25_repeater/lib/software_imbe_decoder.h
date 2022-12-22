@@ -78,13 +78,20 @@ private:
 	int voicingDecisions[57];					// V/UV decisions
 	int prev_voicingDecisions[57];				// V/UV decisions
 
-	int bee[58];				// Encoded Spectral Amplitudes
-	float M[57][2];				// Enhanced Spectral Amplitudes
-	float Mu[57][2];			// Unenhanced Spectral Amplitudes
+	int bee[58];								// Encoded Spectral Amplitudes
+	
+	float spectralAmplitudes[57];				// Spectral Amplitudes
+	float prev_spectralAmplitudes[57];			// Spectral Amplitudes
+	
+	float enhancedSpectralAmplitudes[57];		// Enhanced Spectral Amplitudes
+	float prev_enhancedSpectralAmplitudes[57];	// Enhanced Spectral Amplitudes
+
+	float log2spectralAmplitudes[58];			// Log2 Spectral Amplitudes
+	float prev_log2spectralAmplitudes[58];		// Log2 Spectral Amplitudes
 
 	float suv[160];				// Unvoiced samples
 	float sv[160];				// Voiced samples
-	float log2Mu[58][2];
+	
 	float Olduw[256];
 	float psi1;
 	float phi[57][2];
@@ -110,7 +117,7 @@ private:
 	void fft(float i[], float q[]);
 	void enhance_spectral_amplitudes();
 	void ifft(float i[], float q[], float[]);
-	uint16_t rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7);
+	void rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7);
 	void synth_unvoiced();
 	void synth_voiced();
 	void unpack(uint8_t *buf, uint32_t& u0, uint32_t& u1, uint32_t& u2, uint32_t& u3, uint32_t& u4, uint32_t& u5, uint32_t& u6, uint32_t& u7, uint32_t& E0, uint32_t& ET);
