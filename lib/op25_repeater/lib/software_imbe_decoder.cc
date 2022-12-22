@@ -787,7 +787,7 @@ software_imbe_decoder::decode(const voice_codeword& cw)
 	//replace the sync bit(LSB of u7) with the BOT flag
 	u7 = u7 | 0x01; //ECC procedure called above always returns u7 LSB = 0
 
-	decode_fullrate(u0, u1, u2, u3, u4, u5, u6, u7, E0, ET); // process 88-bit frame
+	decode_fullrate(u0, u1, u2, u3, u4, u5, u6, u7); // process 88-bit frame
 }
 
 void
@@ -866,7 +866,7 @@ software_imbe_decoder::fft(float REX[], float IMX[])
 }
 
 void
-software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7, uint32_t E0, uint32_t ET)
+software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7)
 {
 	int K;
 	float SE = 0;
@@ -874,16 +874,16 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 	bool muted = false;
     int b0 = ((u0 >> 4) & 0xfc) | ((u7 >> 1) & 0x3);
 
-	errorRate = (0.95 * errorRate) + (0.000365 * ET);
-	if(errorRate > 0.0875) {                                           // Frame Muting per TIA-102-BABA-A section 7.8
+	errorRate = (0.95 * errorRate) + (0.000365 * errorTotal);
+	if(errorRate > 0.0875) {                                           						// Frame Muting per TIA-102-BABA-A section 7.8
 		muted = true;
-	} else if(b0 > 207 || E0 >= 2 || ET >=(10 + 40 * errorRate)) {      // Frame Repeat per TIA-102-BABA-A section 7.7
-		if (repeat_last()) {                                     // mute if repeat not allowed
+	} else if(b0 > 207 || errorCoset0 >= 2 || errorTotal >=(10 + 40 * errorRate)) {      	// Frame Repeat per TIA-102-BABA-A section 7.7
+		if (repeat_last()) {                                     							// mute if repeat not allowed
 			muted = true;
 		}
-	} else {                                                     // Voice Frame decoding
+	} else {                                                     							// Voice Frame decoding
 		repeatCount = 0;
-		K = rearrange(u0, u1, u2, u3, u4, u5, u6, u7);           // re-arrange the bits from u to b
+		K = rearrange(u0, u1, u2, u3, u4, u5, u6, u7);           							// re-arrange the bits from u to b
 		decode_vuv(K);
 
 		int Len3, Start3, Len8, Start8;
@@ -896,7 +896,7 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 		enhance_spectral_amplitudes(SE);
 	}
 	if (!muted) {
-		adaptive_smoothing(SE, ET);
+		adaptive_smoothing(SE, errorTotal);
 
 		// (8000 samp/sec) * (1 sec / 50 compressed voice frames) = 160 samples/frame
 
