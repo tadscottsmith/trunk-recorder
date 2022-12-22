@@ -912,7 +912,7 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 			// Most of the difference is compensated by removing the 146.6433 factor
 			// in the synth_unvoiced procedure.  The final tweak is done by raising the
 			// voiced samples:
-			float sample = suv[en] + sv[en] * 4; //balance v/uv loudness
+			float sample = suv[en] + voicedSamples[en] * 4; //balance v/uv loudness
 			if(abs((int)sample) > 32767) {
 				sample = (sample < 0) ? -32767 : 32767; // * sgn(sample)
 			}
@@ -967,7 +967,7 @@ software_imbe_decoder::decode_tap(int _L, int _K, float _w0, const int * _v, con
 		// Most of the difference is compensated by removing the 146.6433 factor
 		// in the synth_unvoiced procedure.  The final tweak is done by raising the
 		// voiced samples:
-		float sample = suv[en] + sv[en] * 4; //balance v/uv loudness
+		float sample = suv[en] + voicedSamples[en] * 4; //balance v/uv loudness
 		if(abs((int)sample) > 32767) {
 			sample = (sample < 0) ? -32767 : 32767; // * sgn(sample)
 		}
@@ -1599,7 +1599,7 @@ software_imbe_decoder::synth_voiced()
 
    int ell, en;
 
-   if( numSpectralAmplitudes > prev_numSpectralAmplitudes) { 
+   if(numSpectralAmplitudes > prev_numSpectralAmplitudes) { 
       MaxL = numSpectralAmplitudes; 
    } else {
       MaxL = prev_numSpectralAmplitudes;
@@ -1617,7 +1617,7 @@ software_imbe_decoder::synth_voiced()
    }
 
    for(en = 0; en <= 159; en++) {
-      sv[en] = 0;
+      voicedSamples[en] = 0;
    }
 
    for(ell = 1; ell <= MaxL; ell++) {
@@ -1643,29 +1643,29 @@ software_imbe_decoder::synth_voiced()
                THb = (fundamentalFrequency - prev_fundamentalFrequency) * ell * .003125;
                Mb = .00625 *(MNew - MOld);
                for(en = 0; en <= 159; en++) {
-                  sv[en] = sv[en] +(MOld + en * Mb) * cos(phi[ell][ Old] +(THa + THb * en) * en);
+                  voicedSamples[en] = voicedSamples[en] +(MOld + en * Mb) * cos(phi[ell][ Old] +(THa + THb * en) * en);
                }
             } else { // (coarse transition)
                for(en = 0; en <= 55; en++) {
-                  sv[en] = sv[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell] [ Old]);
+                  voicedSamples[en] = voicedSamples[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell] [ Old]);
                }
                for(en = 56; en <= 105; en++) {
-                  sv[en] = sv[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][ Old]);
-                  sv[en] = sv[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
+                  voicedSamples[en] = voicedSamples[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][ Old]);
+                  voicedSamples[en] = voicedSamples[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
                }
                for(en = 106; en <= 159; en++) {
-                  sv[en] = sv[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
+                  voicedSamples[en] = voicedSamples[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
                }
             }
          } else {
             for(en = 56; en <= 159; en++) {
-               sv[en] = sv[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
+               voicedSamples[en] = voicedSamples[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
             }
          }
       } else {
          if( voicingDecisions[ell][Old]) {
             for(en = 0; en <= 105; en++) {
-               sv[en] = sv[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][ Old]);
+               voicedSamples[en] = voicedSamples[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][ Old]);
             }
          }
       }

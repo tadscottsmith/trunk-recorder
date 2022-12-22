@@ -69,7 +69,7 @@ private:
 	int bee[58];											// Encoded Spectral Amplitudes
 
 	float suv[160];											// Unvoiced samples
-	float sv[160];											// Voiced samples
+	float voicedSamples[160];											// Voiced samples
 	
 	float Olduw[256];
 	float psi1;
