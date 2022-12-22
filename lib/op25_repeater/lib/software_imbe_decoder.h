@@ -61,7 +61,7 @@ private:
 
 	int errorTotal;
 	int errorCoset0;
-	int errorCoset5;
+	int errorCoset4;
 	float errorRate;								// BER Estimate
 
 	int repeatCount;							// Frame repeat counter

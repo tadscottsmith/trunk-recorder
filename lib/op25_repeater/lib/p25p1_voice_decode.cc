@@ -90,9 +90,9 @@ void p25p1_voice_decode::rxframe(const voice_codeword& cw)
 			}
 		}
 	} else { // non-default decoder, do we still need to support it?
-		uint32_t u[8], E0, ET;
+		uint32_t u[8], E0, E4, ET;
 		int16_t frame_vector[8];
-		imbe_header_decode(cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, ET);
+		imbe_header_decode(cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, E4, ET);
 
 		for (int i=0; i < 8; i++) { // Ugh. For compatibility convert imbe params from uint32_t to int16_t
 			frame_vector[i] = u[i];

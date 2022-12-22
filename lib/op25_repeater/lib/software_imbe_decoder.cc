@@ -774,10 +774,15 @@ software_imbe_decoder::decode(const voice_codeword& cw)
 	unsigned int u0 = 0;
 	unsigned int u1,u2,u3,u4,u5,u6,u7;
 	unsigned int E0 = 0;
+	unsigned int E4 = 0;
 	unsigned int ET = 0;
 
 	// PN/Hamming/Golay - etc.
-	imbe_header_decode(cw, u0, u1, u2, u3, u4, u5, u6, u7, E0, ET) ;
+	imbe_header_decode(cw, u0, u1, u2, u3, u4, u5, u6, u7, E0, E4, ET) ;
+
+	errorCoset0 = E0;
+	errorCoset4 = E4;
+	errorTotal = ET;
 
 	//replace the sync bit(LSB of u7) with the BOT flag
 	u7 = u7 | 0x01; //ECC procedure called above always returns u7 LSB = 0
