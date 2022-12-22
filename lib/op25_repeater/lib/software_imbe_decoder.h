@@ -76,8 +76,8 @@ private:
 
 	int Old;
 	int New;
-	int L;
-	int OldL;
+	int numSpectralAmplitudes;
+	int prev_numSpectralAmplitudes;
 	float w0;
 	float Oldw0;
 	float Luv;						//number of unvoiced spectral amplitudes

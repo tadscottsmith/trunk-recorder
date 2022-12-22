@@ -735,8 +735,8 @@ software_imbe_decoder::software_imbe_decoder()
 	//initialize
    ER = 0;
    rpt_ctr = 0;
-   OldL = 0;
-   L = 9;
+   prev_numSpectralAmplitudes = 0;
+   numSpectralAmplitudes = 9;
    Old = 1; New = 0;
    psi1 = 0.0;
    for(i=0; i < 58; i++) {
@@ -801,7 +801,7 @@ software_imbe_decoder::adaptive_smoothing(float SE, float ET)
    }
 
    float AM = 0;
-   for(ell = 1; ell <= L; ell++) {
+   for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
       if(M[ell][ New] > VM) vee[ell][ New] = 1; //CAUTION:
       AM = AM + M[ell][ New];          //smoothed vee(ell) replaces unsmoothed!
    }
@@ -809,7 +809,7 @@ software_imbe_decoder::adaptive_smoothing(float SE, float ET)
    float TM = (ER <= .005 && ET <= 6) ? 20480 : 6000 - 300 * ET; // + TM; /* ToDo: uninitialized! */
    if(TM <= AM) {
       YM = TM / AM;
-      for(ell = 1; ell <= L; ell++) {
+      for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
          M[ell][ New] = M[ell][New] * YM;
       }
    }
@@ -882,9 +882,9 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 		decode_vuv(K);
 
 		int Len3, Start3, Len8, Start8;
-		Len3 = L - 1;
+		Len3 = numSpectralAmplitudes - 1;
 		Start3 =((Len3 * (Len3 - 1)) / 2) - 28;
-		Len8 = L - 6;
+		Len8 = numSpectralAmplitudes - 6;
 		Start8 =((Len8 * (Len8 - 1)) / 2) - 3;
 
 		decode_spectral_amplitudes(Start3, Start8);
@@ -918,7 +918,7 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 			samples->push_back(0);
 		}
 	}
-	OldL = L;
+	prev_numSpectralAmplitudes = numSpectralAmplitudes;
 	Oldw0 = w0;
 	tmp_f = Old; Old = New; New = tmp_f;
 }
@@ -935,9 +935,9 @@ software_imbe_decoder::decode_tap(int _L, int _K, float _w0, const int * _v, con
 	// It would probably be better to move them into here since the mechanism
 	// is largely the same.  Would also need to integrate tone repeats etc.
 
-	L = _L;
+	numSpectralAmplitudes = _L;
 	w0 = _w0;
-	for(ell = 1; ell <= L; ell++) {
+	for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
 		vee[ell][ New] = _v[ell - 1];
 		Mu[ell][ New] = _mu[ell - 1];
 	}
@@ -964,7 +964,7 @@ software_imbe_decoder::decode_tap(int _L, int _K, float _w0, const int * _v, con
 		}
 		samples->push_back(sample);
     }
-	OldL = L;
+	prev_numSpectralAmplitudes = numSpectralAmplitudes;
 	Oldw0 = w0;
 	tmp_f = Old; Old = New; New = tmp_f;
 }
@@ -1139,7 +1139,7 @@ software_imbe_decoder::repeat_last()
 
    // Reload parameters from previous frame
    w0 = Oldw0;
-   L = OldL;
+   numSpectralAmplitudes = prev_numSpectralAmplitudes;
    for (int i = 0; i < 57; i++) {
       vee[i][New]    = vee[i][Old]; 
       Mu[i][New]     = Mu[i][Old];
@@ -1185,7 +1185,7 @@ software_imbe_decoder::decode_spectral_amplitudes(int Start3, int Start8)
 
    ell = 8;
    for(eye = 1; eye <= 6; eye++) {
-      J[eye] =(L + eye - 1) / 6; //Prediction Residual Block Length
+      J[eye] =(numSpectralAmplitudes + eye - 1) / 6; //Prediction Residual Block Length
       // FOR kay = 2 TO J(eye)
       for(kay = 2; kay <= J[eye]; kay++) {
          C[eye][ kay] = StepSize[P3] *(bee[ell] - powf(2 ,(BitCount[P3] - 1)) + .5);
@@ -1204,7 +1204,7 @@ software_imbe_decoder::decode_spectral_amplitudes(int Start3, int Start8)
          ell = ell + 1; T[ell] = Tmp;
       }
    }
-	 if(ell != L) return;
+	 if(ell != numSpectralAmplitudes) return;
 
 	 //if(ell != L) exit(1);
 
@@ -1213,29 +1213,29 @@ software_imbe_decoder::decode_spectral_amplitudes(int Start3, int Start8)
 	// *******
 
 	// first, set up the assumptions about the previous frame values
-	// Note:  L means L(0); OldL means L(-1)
-   if(OldL == 0) { OldL = 30; for( ell = 0; ell <= 57; ell++) { log2Mu[ell][ Old] = 1; } }
-   for(ell = OldL + 1; ell <= L + 1; ell++) { log2Mu[ell][ Old] = log2Mu[OldL][ Old]; }
+	// Note:  L means L(0); prev_numSpectralAmplitudes means L(-1)
+   if(prev_numSpectralAmplitudes == 0) { prev_numSpectralAmplitudes = 30; for( ell = 0; ell <= 57; ell++) { log2Mu[ell][ Old] = 1; } }
+   for(ell = prev_numSpectralAmplitudes + 1; ell <= numSpectralAmplitudes + 1; ell++) { log2Mu[ell][ Old] = log2Mu[prev_numSpectralAmplitudes][ Old]; }
 
 	// make the predictions and sum with T(ell)
-   if(L <= 15)
+   if(numSpectralAmplitudes <= 15)
       Tp = .4;
-   else if(L <= 24)
-      Tp = .03 * L - .05;
+   else if(numSpectralAmplitudes <= 24)
+      Tp = .03 * numSpectralAmplitudes - .05;
    else
       Tp = .7;
 
    Tmp = 0;
-   for(ell = 1; ell <= L; ell++) {
-      Tk =((float)OldL /(float)L) *(float)ell;
+   for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
+      Tk =((float)prev_numSpectralAmplitudes /(float)numSpectralAmplitudes) *(float)ell;
       iTk =(int) Tk;
       TD = Tk - iTk;
       // temporarily use Mu(ell, New) as temp
       Mu[ell][ New] = Tp *((1 - TD) * log2Mu[iTk][ Old] + TD * log2Mu[iTk + 1][ Old]);
       Tmp = Tmp + Mu[ell][ New];
    }
-   Tmp = Tmp / L;
-   for(ell = 1; ell <= L; ell++) {
+   Tmp = Tmp / numSpectralAmplitudes;
+   for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
       log2Mu[ell][ New] = T[ell] + Mu[ell][ New] - Tmp;
       // Mu(ell, New) no longer temp
       Mu[ell][ New] = powf(2 ,log2Mu[ell][ New]);
@@ -1247,7 +1247,7 @@ software_imbe_decoder::decode_vuv(int K)
 {
    int bee1, ell, kay;
    bee1 = bee[1];
-   for(ell = 1; ell <= L; ell++) {
+   for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
       if(ell <= 36)
          kay =(ell + 2) / 3;
       else
@@ -1271,7 +1271,7 @@ software_imbe_decoder::enhance_spectral_amplitudes(float& SE)
    int ell;
 
    RM0 = 0; RM1 = 0;
-   for(ell = 1; ell <= L; ell++) {
+   for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
       Tmp = powf(Mu[ell][ New] , 2);
       RM0 = RM0 + Tmp;
       RM1 = RM1 + Tmp * cos(w0 * ell);
@@ -1282,9 +1282,9 @@ software_imbe_decoder::enhance_spectral_amplitudes(float& SE)
    K3 = 2 * RM0 * RM1;
 
    Tmp = 0;
-   for(ell = 1; ell <= L; ell++) {
+   for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
       W = sqrt(Mu[ell][ New]) * powf((K1 *(K2 - K3 * cos(w0 * ell))) , .25);
-      if((8 * ell) <= L)
+      if((8 * ell) <= numSpectralAmplitudes)
          M[ell][ New] = Mu[ell][ New];
       else if(W > 1.2)
          M[ell][ New] = Mu[ell][ New] * 1.2;
@@ -1297,7 +1297,7 @@ software_imbe_decoder::enhance_spectral_amplitudes(float& SE)
 
    Tmp = sqrt(RM0 / Tmp);
 
-   for(ell = 1; ell <= L; ell++) {
+   for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
       M[ell][ New] = M[ell][ New] * Tmp;
    }
 
@@ -1387,22 +1387,22 @@ software_imbe_decoder::rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t
 
    w0 = 4 * M_PI /(bee[0] + 39.5);
 
-   L =(int)(.9254 * floorf((M_PI / w0) + .25)); if(L < 9 || L > 56) exit(2);
+   numSpectralAmplitudes =(int)(.9254 * floorf((M_PI / w0) + .25)); if(numSpectralAmplitudes < 9 || numSpectralAmplitudes > 56) exit(2);
 
-   if( L > 36) {
+   if(numSpectralAmplitudes > 36) {
       K = 12;
    } else {
-      K =((L + 2) / 3);
+      K =((numSpectralAmplitudes + 2) / 3);
       //if(K > 12) exit(3);
 			if(K > 12) return 3;
    }
 
-   for(I = 1; I <= L + 1; I++) { bee[I] = 0; }
+   for(I = 1; I <= numSpectralAmplitudes + 1; I++) { bee[I] = 0; }
 
    bee[2] =(u0 & 56) |((u7 / 8) & 1);
 
 
-   Seq =(L - 9) * 75;
+   Seq =(numSpectralAmplitudes - 9) * 75;
 
    ubit = 4;
    for(I = 0; I <= 2; I++) {
@@ -1511,7 +1511,7 @@ software_imbe_decoder::synth_unvoiced()
    }
 
    Luv = 0;
-   for(ell = 1; ell <= L; ell++) {
+   for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
       al = bl; bl =(int) ceilf(128 / M_PI * (ell + .5) * w0);
       if(vee[ell][New]) {
          // FOR em = al TO bl - 1
@@ -1586,16 +1586,16 @@ software_imbe_decoder::synth_voiced()
 
    int ell, en;
 
-   if( L > OldL) { 
-      MaxL = L; 
+   if( numSpectralAmplitudes > prev_numSpectralAmplitudes) { 
+      MaxL = numSpectralAmplitudes; 
    } else {
-      MaxL = OldL;
+      MaxL = prev_numSpectralAmplitudes;
    }
 
    psi1 = psi1 +(Oldw0 + w0) * 80;
    psi1 = remainderf(psi1, 2 * M_PI); // ToDo: decide if its 2pi or pi^2
 
-   for(ell = 1; ell <= L/4; ell++) {
+   for(ell = 1; ell <= numSpectralAmplitudes/4; ell++) {
       phi[ell][ New] = psi1 * ell;
    }
 
@@ -1609,13 +1609,13 @@ software_imbe_decoder::synth_voiced()
 
    for(ell = 1; ell <= MaxL; ell++) {
 
-      if(ell > L) { 
+      if(ell > numSpectralAmplitudes) { 
          MNew = 0;
       } else {
          MNew = M[ell][ New];
       }
 
-      if(ell > OldL) {
+      if(ell > prev_numSpectralAmplitudes) {
          MOld = 0;
       } else {
          MOld = M[ell][ Old];
