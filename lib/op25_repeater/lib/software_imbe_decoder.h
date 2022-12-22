@@ -68,7 +68,6 @@ private:
 
 	int bee[58];											// Encoded Spectral Amplitudes
 
-	int voicingDecisions[57][2];							// V/UV decisions
 	float suv[160];											// Unvoiced samples
 	float sv[160];											// Voiced samples
 	
@@ -90,6 +89,9 @@ private:
 	float fundamentalFrequency;
 	float prev_fundamentalFrequency;
 
+	int numVoicingDecisions;
+	int voicingDecisions[57][2];							// V/UV decisions
+
 	float Luv;						//number of unvoiced spectral amplitudes
 
 	char sym_b[4096];
@@ -101,7 +103,7 @@ private:
 	uint32_t pngen23(uint32_t& pn);
 	uint32_t next_u(uint32_t u);
 	void decode_spectral_amplitudes(int, int );
-	void decode_vuv(int );
+	void decode_vuv();
 	void adaptive_smoothing(float, float );
 	void fft(float i[], float q[]);
 	void enhance_spectral_amplitudes(float&);

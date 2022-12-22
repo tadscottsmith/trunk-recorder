@@ -883,8 +883,8 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 		}
 	} else {                                                     							// Voice Frame decoding
 		repeatCount = 0;
-		K = rearrange(u0, u1, u2, u3, u4, u5, u6, u7);           							// re-arrange the bits from u to b
-		decode_vuv(K);
+		rearrange(u0, u1, u2, u3, u4, u5, u6, u7);           							// re-arrange the bits from u to b
+		decode_vuv();
 
 		int Len3, Start3, Len8, Start8;
 		Len3 = numSpectralAmplitudes - 1;
@@ -1250,7 +1250,7 @@ software_imbe_decoder::decode_spectral_amplitudes(int Start3, int Start8)
 }
 
 void
-software_imbe_decoder::decode_vuv(int K)
+software_imbe_decoder::decode_vuv()
 {
    int bee1, ell, kay;
    bee1 = bee[1];
@@ -1261,7 +1261,7 @@ software_imbe_decoder::decode_vuv(int K)
          kay = 12;
 
       //vee(ell, New) = (bee1 \(2 ^(K - kay))) - 2 *(bee1 \(2 ^(K + 1 - kay)))
-      voicingDecisions[ell][ New] = ((bee1 & (1 << (K - kay))) > 0) ? 1 : 0;
+      voicingDecisions[ell][ New] = ((bee1 & (1 << (numVoicingDecisions - kay))) > 0) ? 1 : 0;
    }
 }
 
@@ -1493,6 +1493,7 @@ software_imbe_decoder::rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t
       ubit = ubit / 2;
    }
 
+	numVoicingDecisions = K;
    return K;
 }
 
