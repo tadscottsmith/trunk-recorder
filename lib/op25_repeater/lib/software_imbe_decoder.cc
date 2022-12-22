@@ -912,7 +912,7 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 			// Most of the difference is compensated by removing the 146.6433 factor
 			// in the synth_unvoiced procedure.  The final tweak is done by raising the
 			// voiced samples:
-			float sample = suv[en] + voicedSamples[en] * 4; //balance v/uv loudness
+			float sample = unVoicedSamples[en] + voicedSamples[en] * 4; //balance v/uv loudness
 			if(abs((int)sample) > 32767) {
 				sample = (sample < 0) ? -32767 : 32767; // * sgn(sample)
 			}
@@ -967,7 +967,7 @@ software_imbe_decoder::decode_tap(int _L, int _K, float _w0, const int * _v, con
 		// Most of the difference is compensated by removing the 146.6433 factor
 		// in the synth_unvoiced procedure.  The final tweak is done by raising the
 		// voiced samples:
-		float sample = suv[en] + voicedSamples[en] * 4; //balance v/uv loudness
+		float sample = unVoicedSamples[en] + voicedSamples[en] * 4; //balance v/uv loudness
 		if(abs((int)sample) > 32767) {
 			sample = (sample < 0) ? -32767 : 32767; // * sgn(sample)
 		}
@@ -1571,13 +1571,13 @@ software_imbe_decoder::synth_unvoiced()
    //             (ws(n)^2) +(ws(n-159)^2)                  ws(-105 to 105)
 
    for(en = 0; en <= 55; en++) {
-      suv[en] = Olduw[en+128];
+      unVoicedSamples[en] = Olduw[en+128];
    }
    for(en = 56; en <= 104; en++) {
-      suv[en] =(ws[en+105] * Olduw[en+128] + ws[en - 55] * uw[en - 32]) * woaa[en];
+      unVoicedSamples[en] =(ws[en+105] * Olduw[en+128] + ws[en - 55] * uw[en - 32]) * woaa[en];
    }
    for(en = 105; en <= 159; en++) {
-      suv[en] = uw[en - 32];
+      unVoicedSamples[en] = uw[en - 32];
    }
 
    for(en = -128; en <= 127; en++) {
