@@ -59,8 +59,12 @@ private:
 	//NOTE: Single-letter variable names are upper case only; Lower
 	//				  case if needed is spelled. e.g. L, ell
 
-	float ER;								// BER Estimate
-	int rpt_ctr;							// Frame repeat counter
+	int errorTotal;
+	int errorCoset0;
+	int errorCoset5;
+	float errorRate;								// BER Estimate
+
+	int repeatCount;							// Frame repeat counter
 
 	int bee[58];											// Encoded Spectral Amplitudes
 

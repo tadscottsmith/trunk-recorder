@@ -733,8 +733,8 @@ software_imbe_decoder::software_imbe_decoder()
 {
    int i,j;
 	//initialize
-   ER = 0;
-   rpt_ctr = 0;
+   errorRate = 0;
+   repeatCount = 0;
    prev_numSpectralAmplitudes = 0;
    numSpectralAmplitudes = 9;
    Old = 1; New = 0;
@@ -792,10 +792,10 @@ software_imbe_decoder::adaptive_smoothing(float SE, float ET)
    float YM;
    int ell;
 
-   if(ER <= .005 && ET <= 4) {
+   if(errorRate <= .005 && ET <= 4) {
       VM = 1E+38; //infinity
-   } else if( ER <= .0125 && ET == 0) {  //(guessing typo in std)
-      VM = 45.255 * powf(SE, .375) / exp(277.6 * ER);
+   } else if(errorRate <= .0125 && ET == 0) {  //(guessing typo in std)
+      VM = 45.255 * powf(SE, .375) / exp(277.6 * errorRate);
    } else {
       VM = 1.414 * powf(SE, .375);
    }
@@ -806,7 +806,7 @@ software_imbe_decoder::adaptive_smoothing(float SE, float ET)
       AM = AM + enhancedSpectralAmplitudes[ell][ New];          //smoothed vee(ell) replaces unsmoothed!
    }
 
-   float TM = (ER <= .005 && ET <= 6) ? 20480 : 6000 - 300 * ET; // + TM; /* ToDo: uninitialized! */
+   float TM = (errorRate <= .005 && ET <= 6) ? 20480 : 6000 - 300 * ET; // + TM; /* ToDo: uninitialized! */
    if(TM <= AM) {
       YM = TM / AM;
       for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
@@ -869,15 +869,15 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 	bool muted = false;
     int b0 = ((u0 >> 4) & 0xfc) | ((u7 >> 1) & 0x3);
 
-	ER = (0.95 * ER) + (0.000365 * ET);
-	if( ER > 0.0875) {                                           // Frame Muting per TIA-102-BABA-A section 7.8
+	errorRate = (0.95 * errorRate) + (0.000365 * ET);
+	if(errorRate > 0.0875) {                                           // Frame Muting per TIA-102-BABA-A section 7.8
 		muted = true;
-	} else if(b0 > 207 || E0 >= 2 || ET >=(10 + 40 * ER)) {      // Frame Repeat per TIA-102-BABA-A section 7.7
+	} else if(b0 > 207 || E0 >= 2 || ET >=(10 + 40 * errorRate)) {      // Frame Repeat per TIA-102-BABA-A section 7.7
 		if (repeat_last()) {                                     // mute if repeat not allowed
 			muted = true;
 		}
 	} else {                                                     // Voice Frame decoding
-		rpt_ctr = 0;
+		repeatCount = 0;
 		K = rearrange(u0, u1, u2, u3, u4, u5, u6, u7);           // re-arrange the bits from u to b
 		decode_vuv(K);
 
@@ -920,7 +920,9 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 	}
 	prev_numSpectralAmplitudes = numSpectralAmplitudes;
 	prev_fundamentalFrequency = fundamentalFrequency;
-	tmp_f = Old; Old = New; New = tmp_f;
+	tmp_f = Old; 
+	Old = New;
+	New = tmp_f;
 }
 
 void
@@ -1134,7 +1136,7 @@ int
 software_imbe_decoder::repeat_last()
 {
    // Frame Repeat per TIA-102-BABA-A sections 7.7 & 14.6
-   if (++rpt_ctr >= 4)
+   if (++repeatCount >= 4)
       return 1;
 
    // Reload parameters from previous frame
