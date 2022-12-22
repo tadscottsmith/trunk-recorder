@@ -741,7 +741,7 @@ software_imbe_decoder::software_imbe_decoder()
    psi1 = 0.0;
    for(i=0; i < 58; i++) {
       for(j=0; j < 2; j++) {
-         log2Mu[i][j] = 0.0;
+         log2spectralAmplitudes[i][j] = 0.0;
       }
    }
    for(i=0; i < 57; i++) {
@@ -1144,9 +1144,9 @@ software_imbe_decoder::repeat_last()
       voicingDecisions[i][New]    = voicingDecisions[i][Old]; 
       spectralAmplitudes[i][New]     = spectralAmplitudes[i][Old];
       enhancedSpectralAmplitudes[i][New]      = enhancedSpectralAmplitudes[i][Old];
-      log2Mu[i][New] = log2Mu[i][Old];
+      log2spectralAmplitudes[i][New] = log2spectralAmplitudes[i][Old];
    }
-   log2Mu[57][New] = log2Mu[57][Old]; // log2Mu array is one element longer than all the other parameters!
+   log2spectralAmplitudes[57][New] = log2spectralAmplitudes[57][Old]; // log2Mu array is one element longer than all the other parameters!
    return 0;
 }
 
@@ -1214,8 +1214,8 @@ software_imbe_decoder::decode_spectral_amplitudes(int Start3, int Start8)
 
 	// first, set up the assumptions about the previous frame values
 	// Note:  L means L(0); prev_numSpectralAmplitudes means L(-1)
-   if(prev_numSpectralAmplitudes == 0) { prev_numSpectralAmplitudes = 30; for( ell = 0; ell <= 57; ell++) { log2Mu[ell][ Old] = 1; } }
-   for(ell = prev_numSpectralAmplitudes + 1; ell <= numSpectralAmplitudes + 1; ell++) { log2Mu[ell][ Old] = log2Mu[prev_numSpectralAmplitudes][ Old]; }
+   if(prev_numSpectralAmplitudes == 0) { prev_numSpectralAmplitudes = 30; for( ell = 0; ell <= 57; ell++) { log2spectralAmplitudes[ell][ Old] = 1; } }
+   for(ell = prev_numSpectralAmplitudes + 1; ell <= numSpectralAmplitudes + 1; ell++) { log2spectralAmplitudes[ell][ Old] = log2spectralAmplitudes[prev_numSpectralAmplitudes][ Old]; }
 
 	// make the predictions and sum with T(ell)
    if(numSpectralAmplitudes <= 15)
@@ -1231,14 +1231,14 @@ software_imbe_decoder::decode_spectral_amplitudes(int Start3, int Start8)
       iTk =(int) Tk;
       TD = Tk - iTk;
       // temporarily use Mu(ell, New) as temp
-      spectralAmplitudes[ell][ New] = Tp *((1 - TD) * log2Mu[iTk][ Old] + TD * log2Mu[iTk + 1][ Old]);
+      spectralAmplitudes[ell][ New] = Tp *((1 - TD) * log2spectralAmplitudes[iTk][ Old] + TD * log2spectralAmplitudes[iTk + 1][ Old]);
       Tmp = Tmp + spectralAmplitudes[ell][ New];
    }
    Tmp = Tmp / numSpectralAmplitudes;
    for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
-      log2Mu[ell][ New] = T[ell] + spectralAmplitudes[ell][ New] - Tmp;
+      log2spectralAmplitudes[ell][ New] = T[ell] + spectralAmplitudes[ell][ New] - Tmp;
       // Mu(ell, New) no longer temp
-      spectralAmplitudes[ell][ New] = powf(2 ,log2Mu[ell][ New]);
+      spectralAmplitudes[ell][ New] = powf(2 ,log2spectralAmplitudes[ell][ New]);
    }
 }
 

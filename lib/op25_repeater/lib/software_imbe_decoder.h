@@ -67,7 +67,7 @@ private:
 	int voicingDecisions[57][2];							// V/UV decisions
 	float suv[160];											// Unvoiced samples
 	float sv[160];											// Voiced samples
-	float log2Mu[58][2];
+	
 	float Olduw[256];
 	float psi1;
 	float phi[57][2];
@@ -80,6 +80,7 @@ private:
 	int prev_numSpectralAmplitudes;
 	
 	float spectralAmplitudes[57][2];						// Unenhanced Spectral Amplitudes
+	float log2spectralAmplitudes[58][2];					// Log2 Unenhanced Spectral Amplitudes
 	float enhancedSpectralAmplitudes[57][2];				// Enhanced Spectral Amplitudes
 	
 	float fundamentalFrequency;
