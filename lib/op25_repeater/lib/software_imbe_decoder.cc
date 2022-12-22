@@ -1616,10 +1616,6 @@ software_imbe_decoder::synth_voiced()
       phi[ell][ New] = psi1 * ell /* + Tmp * PhzNz[ell] */;
    }
 
-   for(en = 0; en <= 159; en++) {
-      voicedSamples[en] = 0;
-   }
-
    for(ell = 1; ell <= MaxL; ell++) {
 
       if(ell > numSpectralAmplitudes) { 
@@ -1634,41 +1630,47 @@ software_imbe_decoder::synth_voiced()
          MOld = enhancedSpectralAmplitudes[ell][ Old];
       }
 
-      if(voicingDecisions[ell][ New]) {
-         if ( voicingDecisions[ell][ Old]) {
-            if(ell < 8 && fabsf(fundamentalFrequency - prev_fundamentalFrequency) < .1 * fundamentalFrequency) { // (fine transition)
-               Dpl = phi[ell][ New] - phi[ell][ Old] -(prev_fundamentalFrequency + fundamentalFrequency) * ell * 80;
-               Dwl = .00625 * (Dpl - 2 * M_PI * floorf((Dpl + M_PI) / (2 * M_PI)));
-               THa = (prev_fundamentalFrequency * (float)ell + Dwl);
-               THb = (fundamentalFrequency - prev_fundamentalFrequency) * ell * .003125;
-               Mb = .00625 *(MNew - MOld);
-               for(en = 0; en <= 159; en++) {
-                  voicedSamples[en] = voicedSamples[en] +(MOld + en * Mb) * cos(phi[ell][ Old] +(THa + THb * en) * en);
-               }
-            } else { // (coarse transition)
-               for(en = 0; en <= 55; en++) {
-                  voicedSamples[en] = voicedSamples[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell] [ Old]);
-               }
-               for(en = 56; en <= 105; en++) {
-                  voicedSamples[en] = voicedSamples[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][ Old]);
-                  voicedSamples[en] = voicedSamples[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
-               }
-               for(en = 106; en <= 159; en++) {
-                  voicedSamples[en] = voicedSamples[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
-               }
-            }
-         } else {
+	  // Both current and previous voicing decisions exist.
+      if(voicingDecisions[ell][ New] && voicingDecisions[ell][ Old]) {
+	
+		if(ell < 8 && fabsf(fundamentalFrequency - prev_fundamentalFrequency) < .1 * fundamentalFrequency) { 
+			Dpl = phi[ell][ New] - phi[ell][ Old] -(prev_fundamentalFrequency + fundamentalFrequency) * ell * 80;
+			Dwl = .00625 * (Dpl - 2 * M_PI * floorf((Dpl + M_PI) / (2 * M_PI)));
+			THa = (prev_fundamentalFrequency * (float)ell + Dwl);
+			THb = (fundamentalFrequency - prev_fundamentalFrequency) * ell * .003125;
+			Mb = .00625 *(MNew - MOld);
+			for(en = 0; en <= 159; en++) {
+				voicedSamples[en] = voicedSamples[en] +(MOld + en * Mb) * cos(phi[ell][ Old] +(THa + THb * en) * en);
+			}
+		} else { // (coarse transition)
+			for(en = 0; en <= 55; en++) {
+				voicedSamples[en] = voicedSamples[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell] [ Old]);
+			}
+			for(en = 56; en <= 105; en++) {
+				voicedSamples[en] = voicedSamples[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][ Old]);
+				voicedSamples[en] = voicedSamples[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
+			}
+			for(en = 106; en <= 159; en++) {
+				voicedSamples[en] = voicedSamples[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
+			}
+		}
+	  // Only current voicing decisions exist.
+	  } else if (voicingDecisions[ell][ New] && !voicingDecisions[ell][ Old]){
             for(en = 56; en <= 159; en++) {
                voicedSamples[en] = voicedSamples[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
             }
-         }
-      } else {
-         if( voicingDecisions[ell][Old]) {
+	  // Only previous voicing decisions exist.
+      } else if(voicingDecisions[ell][Old]) {
             for(en = 0; en <= 105; en++) {
                voicedSamples[en] = voicedSamples[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][ Old]);
             }
-         }
       }
+	  // Neeither voicing decision exists.
+	  else{
+		for(en = 0; en <= 159; en++) {
+			voicedSamples[en] = 0;
+		}
+	  }
    }
 }
 
