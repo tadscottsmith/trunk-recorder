@@ -283,6 +283,8 @@ namespace gr {
                 fprintf (stderr, "%s NAC 0x%03x HDU:  ", logts.get(d_msgq_id), framer->nac);
             }
 
+            software_decoder.reset();
+
             uint32_t MFID;
             int i, j, k, ec;
             size_t errs = 0, gly_errs = 0;
@@ -644,7 +646,7 @@ namespace gr {
                     imbe_deinterleave(A, cw, i);
                     uint16_t imbe_error = 0;
 
-                    errs = imbe_header_decode(cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, ET);
+                    errs = 0; //imbe_header_decode(cw, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, ET);
 
                     if (d_debug >= 9) {
                         packed_codeword p_cw;
@@ -696,7 +698,7 @@ namespace gr {
                             std::string encr = "{\"encrypted\": " + std::to_string(0) + ", \"algid\": " + std::to_string(ess_algid) + ", \"keyid\": " + std::to_string(ess_keyid) + "}";
                             send_msg(encr, M_P25_JSON_DATA);
                             // This is the Vocoder that OP25 currently uses.
-                            /*software_decoder.decode_fullrate(u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, ET);
+                            software_decoder.decode(cw);
                             audio_samples *samples = software_decoder.audio();
                             for (int i=0; i < SND_FRAME; i++) {
                            	    if (samples->size() > 0) {
@@ -705,8 +707,9 @@ namespace gr {
                                 } else {
                                     snd[i] = 0;
                                 }
-                            }*/
+                            }
 
+                            /*
                             // This is the older, fullrate vocoder
                             // it was copied from p25p1_voice_decode.cc
                             int16_t frame_vector[8];
@@ -717,7 +720,7 @@ namespace gr {
                             frame_vector[7] >>= 1;
                             vocoder.imbe_decode(frame_vector, snd);
 
-
+                            */
 
 
 

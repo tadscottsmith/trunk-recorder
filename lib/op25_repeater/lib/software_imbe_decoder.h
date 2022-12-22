@@ -51,21 +51,37 @@ public:
 	 */
 	virtual void decode(const voice_codeword& cw);
 
-	void decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7, uint32_t E0, uint32_t ET);
+	void decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7);
 	void decode_tap(int _L, int _K, float _w0, const int * _v, const float * _mu);
 	void decode_tone(int _ID, int _AD, int * _n);
+	void reset();
 private:
 
 	//NOTE: Single-letter variable names are upper case only; Lower
 	//				  case if needed is spelled. e.g. L, ell
 
-	float ER;					// BER Estimate
-	int rpt_ctr;				// Frame repeat counter
+	float errorRate;
+	unsigned int errorTotal;
+	unsigned int errorCoset0;
+	unsigned int errorCoset4;
+
+	int repeatCounter;				// Frame repeat counter
+
+	float spectralEnergy;
+	unsigned int amplitudeThreshold;
+
+	int numSpectralAmplitudes;
+	int prev_numSpectralAmplitudes;
+	int numVoicingDecisions;
+	int prev_numVoicingDecisions;
+
+	int voicingDecisions[57];					// V/UV decisions
+	int prev_voicingDecisions[57];				// V/UV decisions
 
 	int bee[58];				// Encoded Spectral Amplitudes
 	float M[57][2];				// Enhanced Spectral Amplitudes
 	float Mu[57][2];			// Unenhanced Spectral Amplitudes
-	int vee[57][2];				// V/UV decisions
+
 	float suv[160];				// Unvoiced samples
 	float sv[160];				// Voiced samples
 	float log2Mu[58][2];
@@ -76,10 +92,8 @@ private:
 
 	int Old;
 	int New;
-	int L;
-	int OldL;
-	float w0;
-	float Oldw0;
+	float fundamentalFrequency;
+	float prev_fundamentalFrequency;
 	float Luv;						//number of unvoiced spectral amplitudes
 
 	char sym_b[4096];
@@ -91,10 +105,10 @@ private:
 	uint32_t pngen23(uint32_t& pn);
 	uint32_t next_u(uint32_t u);
 	void decode_spectral_amplitudes(int, int );
-	void decode_vuv(int );
-	void adaptive_smoothing(float, float );
+	void decode_vuv();
+	void adaptive_smoothing();
 	void fft(float i[], float q[]);
-	void enhance_spectral_amplitudes(float&);
+	void enhance_spectral_amplitudes();
 	void ifft(float i[], float q[], float[]);
 	uint16_t rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7);
 	void synth_unvoiced();
