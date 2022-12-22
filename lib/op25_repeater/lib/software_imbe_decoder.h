@@ -59,15 +59,15 @@ private:
 	//NOTE: Single-letter variable names are upper case only; Lower
 	//				  case if needed is spelled. e.g. L, ell
 
-	float ER;					// BER Estimate
-	int rpt_ctr;				// Frame repeat counter
+	float ER;								// BER Estimate
+	int rpt_ctr;							// Frame repeat counter
 
-	int bee[58];				// Encoded Spectral Amplitudes
-	float M[57][2];				// Enhanced Spectral Amplitudes
-	float Mu[57][2];			// Unenhanced Spectral Amplitudes
-	int vee[57][2];				// V/UV decisions
-	float suv[160];				// Unvoiced samples
-	float sv[160];				// Voiced samples
+	int bee[58];											// Encoded Spectral Amplitudes
+	float enhancedSpectralAmplitudes[57][2];				// Enhanced Spectral Amplitudes
+	float spectralAmplitudes[57][2];						// Unenhanced Spectral Amplitudes
+	int vee[57][2];											// V/UV decisions
+	float suv[160];											// Unvoiced samples
+	float sv[160];											// Voiced samples
 	float log2Mu[58][2];
 	float Olduw[256];
 	float psi1;

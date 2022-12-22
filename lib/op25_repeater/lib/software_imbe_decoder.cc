@@ -802,15 +802,15 @@ software_imbe_decoder::adaptive_smoothing(float SE, float ET)
 
    float AM = 0;
    for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
-      if(M[ell][ New] > VM) vee[ell][ New] = 1; //CAUTION:
-      AM = AM + M[ell][ New];          //smoothed vee(ell) replaces unsmoothed!
+      if(enhancedSpectralAmplitudes[ell][ New] > VM) vee[ell][ New] = 1; //CAUTION:
+      AM = AM + enhancedSpectralAmplitudes[ell][ New];          //smoothed vee(ell) replaces unsmoothed!
    }
 
    float TM = (ER <= .005 && ET <= 6) ? 20480 : 6000 - 300 * ET; // + TM; /* ToDo: uninitialized! */
    if(TM <= AM) {
       YM = TM / AM;
       for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
-         M[ell][ New] = M[ell][New] * YM;
+         enhancedSpectralAmplitudes[ell][ New] = enhancedSpectralAmplitudes[ell][New] * YM;
       }
    }
 }
@@ -939,7 +939,7 @@ software_imbe_decoder::decode_tap(int _L, int _K, float _w0, const int * _v, con
 	fundamentalFrequency = _w0;
 	for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
 		vee[ell][ New] = _v[ell - 1];
-		Mu[ell][ New] = _mu[ell - 1];
+		spectralAmplitudes[ell][ New] = _mu[ell - 1];
 	}
 	// decode_spectral_amplitudes(Start3, Start8);
 	enhance_spectral_amplitudes(SE);
@@ -1142,8 +1142,8 @@ software_imbe_decoder::repeat_last()
    numSpectralAmplitudes = prev_numSpectralAmplitudes;
    for (int i = 0; i < 57; i++) {
       vee[i][New]    = vee[i][Old]; 
-      Mu[i][New]     = Mu[i][Old];
-      M[i][New]      = M[i][Old];
+      spectralAmplitudes[i][New]     = spectralAmplitudes[i][Old];
+      enhancedSpectralAmplitudes[i][New]      = enhancedSpectralAmplitudes[i][Old];
       log2Mu[i][New] = log2Mu[i][Old];
    }
    log2Mu[57][New] = log2Mu[57][Old]; // log2Mu array is one element longer than all the other parameters!
@@ -1231,14 +1231,14 @@ software_imbe_decoder::decode_spectral_amplitudes(int Start3, int Start8)
       iTk =(int) Tk;
       TD = Tk - iTk;
       // temporarily use Mu(ell, New) as temp
-      Mu[ell][ New] = Tp *((1 - TD) * log2Mu[iTk][ Old] + TD * log2Mu[iTk + 1][ Old]);
-      Tmp = Tmp + Mu[ell][ New];
+      spectralAmplitudes[ell][ New] = Tp *((1 - TD) * log2Mu[iTk][ Old] + TD * log2Mu[iTk + 1][ Old]);
+      Tmp = Tmp + spectralAmplitudes[ell][ New];
    }
    Tmp = Tmp / numSpectralAmplitudes;
    for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
-      log2Mu[ell][ New] = T[ell] + Mu[ell][ New] - Tmp;
+      log2Mu[ell][ New] = T[ell] + spectralAmplitudes[ell][ New] - Tmp;
       // Mu(ell, New) no longer temp
-      Mu[ell][ New] = powf(2 ,log2Mu[ell][ New]);
+      spectralAmplitudes[ell][ New] = powf(2 ,log2Mu[ell][ New]);
    }
 }
 
@@ -1272,7 +1272,7 @@ software_imbe_decoder::enhance_spectral_amplitudes(float& SE)
 
    RM0 = 0; RM1 = 0;
    for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
-      Tmp = powf(Mu[ell][ New] , 2);
+      Tmp = powf(spectralAmplitudes[ell][ New] , 2);
       RM0 = RM0 + Tmp;
       RM1 = RM1 + Tmp * cos(fundamentalFrequency * ell);
    }
@@ -1283,22 +1283,22 @@ software_imbe_decoder::enhance_spectral_amplitudes(float& SE)
 
    Tmp = 0;
    for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
-      W = sqrt(Mu[ell][ New]) * powf((K1 *(K2 - K3 * cos(fundamentalFrequency * ell))) , .25);
+      W = sqrt(spectralAmplitudes[ell][ New]) * powf((K1 *(K2 - K3 * cos(fundamentalFrequency * ell))) , .25);
       if((8 * ell) <= numSpectralAmplitudes)
-         M[ell][ New] = Mu[ell][ New];
+         enhancedSpectralAmplitudes[ell][ New] = spectralAmplitudes[ell][ New];
       else if(W > 1.2)
-         M[ell][ New] = Mu[ell][ New] * 1.2;
+         enhancedSpectralAmplitudes[ell][ New] = spectralAmplitudes[ell][ New] * 1.2;
       else if(W < .5)
-         M[ell][ New] = Mu[ell][ New] * .5;
+         enhancedSpectralAmplitudes[ell][ New] = spectralAmplitudes[ell][ New] * .5;
       else
-         M[ell][ New] = Mu[ell][ New] * W;
-      Tmp = Tmp + powf(M[ell][ New] , 2);
+         enhancedSpectralAmplitudes[ell][ New] = spectralAmplitudes[ell][ New] * W;
+      Tmp = Tmp + powf(enhancedSpectralAmplitudes[ell][ New] , 2);
    }
 
    Tmp = sqrt(RM0 / Tmp);
 
    for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
-      M[ell][ New] = M[ell][ New] * Tmp;
+      enhancedSpectralAmplitudes[ell][ New] = enhancedSpectralAmplitudes[ell][ New] * Tmp;
    }
 
 	// update SE
@@ -1537,7 +1537,7 @@ software_imbe_decoder::synth_unvoiced()
          }
          // 0.91652 is my best guess at what the unvoiced scaling
          // coefficient is supposed to be
-         Tmp = 0.91652 * M[ell][New] / sqrt(Tmp /(bl - al));
+         Tmp = 0.91652 * enhancedSpectralAmplitudes[ell][New] / sqrt(Tmp /(bl - al));
          //now do the rest of b.h.e.
          for(em = al; em <= bl - 1; em++) {
             Uwi[em] =(Uwi[em]) * Tmp;
@@ -1612,13 +1612,13 @@ software_imbe_decoder::synth_voiced()
       if(ell > numSpectralAmplitudes) { 
          MNew = 0;
       } else {
-         MNew = M[ell][ New];
+         MNew = enhancedSpectralAmplitudes[ell][ New];
       }
 
       if(ell > prev_numSpectralAmplitudes) {
          MOld = 0;
       } else {
-         MOld = M[ell][ Old];
+         MOld = enhancedSpectralAmplitudes[ell][ Old];
       }
 
       if(vee[ell][ New]) {
