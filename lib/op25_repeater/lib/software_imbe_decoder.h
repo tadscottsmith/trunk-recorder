@@ -63,9 +63,8 @@ private:
 	int rpt_ctr;							// Frame repeat counter
 
 	int bee[58];											// Encoded Spectral Amplitudes
-	float enhancedSpectralAmplitudes[57][2];				// Enhanced Spectral Amplitudes
-	float spectralAmplitudes[57][2];						// Unenhanced Spectral Amplitudes
-	int vee[57][2];											// V/UV decisions
+
+	int voicingDecisions[57][2];							// V/UV decisions
 	float suv[160];											// Unvoiced samples
 	float sv[160];											// Voiced samples
 	float log2Mu[58][2];
@@ -79,6 +78,9 @@ private:
 	
 	int numSpectralAmplitudes;
 	int prev_numSpectralAmplitudes;
+	
+	float spectralAmplitudes[57][2];						// Unenhanced Spectral Amplitudes
+	float enhancedSpectralAmplitudes[57][2];				// Enhanced Spectral Amplitudes
 	
 	float fundamentalFrequency;
 	float prev_fundamentalFrequency;

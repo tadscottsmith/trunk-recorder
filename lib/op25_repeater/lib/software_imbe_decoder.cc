@@ -802,7 +802,7 @@ software_imbe_decoder::adaptive_smoothing(float SE, float ET)
 
    float AM = 0;
    for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
-      if(enhancedSpectralAmplitudes[ell][ New] > VM) vee[ell][ New] = 1; //CAUTION:
+      if(enhancedSpectralAmplitudes[ell][ New] > VM) voicingDecisions[ell][ New] = 1; //CAUTION:
       AM = AM + enhancedSpectralAmplitudes[ell][ New];          //smoothed vee(ell) replaces unsmoothed!
    }
 
@@ -938,7 +938,7 @@ software_imbe_decoder::decode_tap(int _L, int _K, float _w0, const int * _v, con
 	numSpectralAmplitudes = _L;
 	fundamentalFrequency = _w0;
 	for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
-		vee[ell][ New] = _v[ell - 1];
+		voicingDecisions[ell][ New] = _v[ell - 1];
 		spectralAmplitudes[ell][ New] = _mu[ell - 1];
 	}
 	// decode_spectral_amplitudes(Start3, Start8);
@@ -1141,7 +1141,7 @@ software_imbe_decoder::repeat_last()
    fundamentalFrequency = prev_fundamentalFrequency;
    numSpectralAmplitudes = prev_numSpectralAmplitudes;
    for (int i = 0; i < 57; i++) {
-      vee[i][New]    = vee[i][Old]; 
+      voicingDecisions[i][New]    = voicingDecisions[i][Old]; 
       spectralAmplitudes[i][New]     = spectralAmplitudes[i][Old];
       enhancedSpectralAmplitudes[i][New]      = enhancedSpectralAmplitudes[i][Old];
       log2Mu[i][New] = log2Mu[i][Old];
@@ -1254,7 +1254,7 @@ software_imbe_decoder::decode_vuv(int K)
          kay = 12;
 
       //vee(ell, New) = (bee1 \(2 ^(K - kay))) - 2 *(bee1 \(2 ^(K + 1 - kay)))
-      vee[ell][ New] = ((bee1 & (1 << (K - kay))) > 0) ? 1 : 0;
+      voicingDecisions[ell][ New] = ((bee1 & (1 << (K - kay))) > 0) ? 1 : 0;
    }
 }
 
@@ -1513,7 +1513,7 @@ software_imbe_decoder::synth_unvoiced()
    Luv = 0;
    for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
       al = bl; bl =(int) ceilf(128 / M_PI * (ell + .5) * fundamentalFrequency);
-      if(vee[ell][New]) {
+      if(voicingDecisions[ell][New]) {
          // FOR em = al TO bl - 1
          for(em = al; em <= bl - 1; em++) {
             Uwi[em] = 0; Uwq[em] = 0;
@@ -1621,8 +1621,8 @@ software_imbe_decoder::synth_voiced()
          MOld = enhancedSpectralAmplitudes[ell][ Old];
       }
 
-      if(vee[ell][ New]) {
-         if ( vee[ell][ Old]) {
+      if(voicingDecisions[ell][ New]) {
+         if ( voicingDecisions[ell][ Old]) {
             if(ell < 8 && fabsf(fundamentalFrequency - prev_fundamentalFrequency) < .1 * fundamentalFrequency) { // (fine transition)
                Dpl = phi[ell][ New] - phi[ell][ Old] -(prev_fundamentalFrequency + fundamentalFrequency) * ell * 80;
                Dwl = .00625 * (Dpl - 2 * M_PI * floorf((Dpl + M_PI) / (2 * M_PI)));
@@ -1650,7 +1650,7 @@ software_imbe_decoder::synth_voiced()
             }
          }
       } else {
-         if( vee[ell][Old]) {
+         if( voicingDecisions[ell][Old]) {
             for(en = 0; en <= 105; en++) {
                sv[en] = sv[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][ Old]);
             }
