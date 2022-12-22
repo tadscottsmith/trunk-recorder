@@ -1712,7 +1712,7 @@ void software_imbe_decoder::synth_voiced() {
         voicedSamples[en] = voicedSamples[en] + ws[en - 55] * MNew * cos(fundamentalFrequency * (en - 160) * ell + phi[ell][New]);
       }
       // Only previous voicing decisions exist.
-    } else if (voicingDecisions[ell][Old]) {
+    } else if (!voicingDecisions[ell][New] && voicingDecisions[ell][Old]) {
       for (en = 0; en <= 105; en++) {
         voicedSamples[en] = voicedSamples[en] + ws[en + 105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][Old]);
       }
