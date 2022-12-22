@@ -919,7 +919,7 @@ software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, ui
 		}
 	}
 	prev_numSpectralAmplitudes = numSpectralAmplitudes;
-	Oldw0 = w0;
+	prev_fundamentalFrequency = fundamentalFrequency;
 	tmp_f = Old; Old = New; New = tmp_f;
 }
 
@@ -936,7 +936,7 @@ software_imbe_decoder::decode_tap(int _L, int _K, float _w0, const int * _v, con
 	// is largely the same.  Would also need to integrate tone repeats etc.
 
 	numSpectralAmplitudes = _L;
-	w0 = _w0;
+	fundamentalFrequency = _w0;
 	for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
 		vee[ell][ New] = _v[ell - 1];
 		Mu[ell][ New] = _mu[ell - 1];
@@ -965,7 +965,7 @@ software_imbe_decoder::decode_tap(int _L, int _K, float _w0, const int * _v, con
 		samples->push_back(sample);
     }
 	prev_numSpectralAmplitudes = numSpectralAmplitudes;
-	Oldw0 = w0;
+	prev_fundamentalFrequency = fundamentalFrequency;
 	tmp_f = Old; Old = New; New = tmp_f;
 }
 
@@ -1138,7 +1138,7 @@ software_imbe_decoder::repeat_last()
       return 1;
 
    // Reload parameters from previous frame
-   w0 = Oldw0;
+   fundamentalFrequency = prev_fundamentalFrequency;
    numSpectralAmplitudes = prev_numSpectralAmplitudes;
    for (int i = 0; i < 57; i++) {
       vee[i][New]    = vee[i][Old]; 
@@ -1274,16 +1274,16 @@ software_imbe_decoder::enhance_spectral_amplitudes(float& SE)
    for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
       Tmp = powf(Mu[ell][ New] , 2);
       RM0 = RM0 + Tmp;
-      RM1 = RM1 + Tmp * cos(w0 * ell);
+      RM1 = RM1 + Tmp * cos(fundamentalFrequency * ell);
    }
 
-   K1 = .96 * M_PI /(w0 * RM0 *(powf(RM0 , 2) - powf(RM1 , 2)));
+   K1 = .96 * M_PI /(fundamentalFrequency * RM0 *(powf(RM0 , 2) - powf(RM1 , 2)));
    K2 = powf(RM0 , 2) + powf(RM1 , 2);
    K3 = 2 * RM0 * RM1;
 
    Tmp = 0;
    for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
-      W = sqrt(Mu[ell][ New]) * powf((K1 *(K2 - K3 * cos(w0 * ell))) , .25);
+      W = sqrt(Mu[ell][ New]) * powf((K1 *(K2 - K3 * cos(fundamentalFrequency * ell))) , .25);
       if((8 * ell) <= numSpectralAmplitudes)
          M[ell][ New] = Mu[ell][ New];
       else if(W > 1.2)
@@ -1385,9 +1385,9 @@ software_imbe_decoder::rearrange(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t
 
    bee[0] =((u0 / 16) & 0xfc) |((u7 / 2) & 3);
 
-   w0 = 4 * M_PI /(bee[0] + 39.5);
+   fundamentalFrequency = 4 * M_PI /(bee[0] + 39.5);
 
-   numSpectralAmplitudes =(int)(.9254 * floorf((M_PI / w0) + .25)); if(numSpectralAmplitudes < 9 || numSpectralAmplitudes > 56) exit(2);
+   numSpectralAmplitudes =(int)(.9254 * floorf((M_PI / fundamentalFrequency) + .25)); if(numSpectralAmplitudes < 9 || numSpectralAmplitudes > 56) exit(2);
 
    if(numSpectralAmplitudes > 36) {
       K = 12;
@@ -1505,14 +1505,14 @@ software_imbe_decoder::synth_unvoiced()
       u[en] = next_u(u[en-1]);
    }
 
-   ell = 0; bl =(int) ceilf(128 / M_PI *(ell + .5) * w0);
+   ell = 0; bl =(int) ceilf(128 / M_PI *(ell + .5) * fundamentalFrequency);
    for(em = 0; em <= bl - 1; em++) {
       Uwi[em] = 0; Uwq[em] = 0;
    }
 
    Luv = 0;
    for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
-      al = bl; bl =(int) ceilf(128 / M_PI * (ell + .5) * w0);
+      al = bl; bl =(int) ceilf(128 / M_PI * (ell + .5) * fundamentalFrequency);
       if(vee[ell][New]) {
          // FOR em = al TO bl - 1
          for(em = al; em <= bl - 1; em++) {
@@ -1592,7 +1592,7 @@ software_imbe_decoder::synth_voiced()
       MaxL = prev_numSpectralAmplitudes;
    }
 
-   psi1 = psi1 +(Oldw0 + w0) * 80;
+   psi1 = psi1 +(prev_fundamentalFrequency + fundamentalFrequency) * 80;
    psi1 = remainderf(psi1, 2 * M_PI); // ToDo: decide if its 2pi or pi^2
 
    for(ell = 1; ell <= numSpectralAmplitudes/4; ell++) {
@@ -1623,36 +1623,36 @@ software_imbe_decoder::synth_voiced()
 
       if(vee[ell][ New]) {
          if ( vee[ell][ Old]) {
-            if(ell < 8 && fabsf(w0 - Oldw0) < .1 * w0) { // (fine transition)
-               Dpl = phi[ell][ New] - phi[ell][ Old] -(Oldw0 + w0) * ell * 80;
+            if(ell < 8 && fabsf(fundamentalFrequency - prev_fundamentalFrequency) < .1 * fundamentalFrequency) { // (fine transition)
+               Dpl = phi[ell][ New] - phi[ell][ Old] -(prev_fundamentalFrequency + fundamentalFrequency) * ell * 80;
                Dwl = .00625 * (Dpl - 2 * M_PI * floorf((Dpl + M_PI) / (2 * M_PI)));
-               THa = (Oldw0 * (float)ell + Dwl);
-               THb = (w0 - Oldw0) * ell * .003125;
+               THa = (prev_fundamentalFrequency * (float)ell + Dwl);
+               THb = (fundamentalFrequency - prev_fundamentalFrequency) * ell * .003125;
                Mb = .00625 *(MNew - MOld);
                for(en = 0; en <= 159; en++) {
                   sv[en] = sv[en] +(MOld + en * Mb) * cos(phi[ell][ Old] +(THa + THb * en) * en);
                }
             } else { // (coarse transition)
                for(en = 0; en <= 55; en++) {
-                  sv[en] = sv[en] + ws[en+105] * MOld * cos(Oldw0 * en * ell + phi[ell] [ Old]);
+                  sv[en] = sv[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell] [ Old]);
                }
                for(en = 56; en <= 105; en++) {
-                  sv[en] = sv[en] + ws[en+105] * MOld * cos(Oldw0 * en * ell + phi[ell][ Old]);
-                  sv[en] = sv[en] + ws[en-55] * MNew * cos(w0 *(en - 160) * ell + phi[ell][ New]);
+                  sv[en] = sv[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][ Old]);
+                  sv[en] = sv[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
                }
                for(en = 106; en <= 159; en++) {
-                  sv[en] = sv[en] + ws[en-55] * MNew * cos(w0 *(en - 160) * ell + phi[ell][ New]);
+                  sv[en] = sv[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
                }
             }
          } else {
             for(en = 56; en <= 159; en++) {
-               sv[en] = sv[en] + ws[en-55] * MNew * cos(w0 *(en - 160) * ell + phi[ell][ New]);
+               sv[en] = sv[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
             }
          }
       } else {
          if( vee[ell][Old]) {
             for(en = 0; en <= 105; en++) {
-               sv[en] = sv[en] + ws[en+105] * MOld * cos(Oldw0 * en * ell + phi[ell][ Old]);
+               sv[en] = sv[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][ Old]);
             }
          }
       }

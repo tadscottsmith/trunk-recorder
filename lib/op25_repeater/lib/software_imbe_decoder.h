@@ -76,10 +76,13 @@ private:
 
 	int Old;
 	int New;
+	
 	int numSpectralAmplitudes;
 	int prev_numSpectralAmplitudes;
-	float w0;
-	float Oldw0;
+	
+	float fundamentalFrequency;
+	float prev_fundamentalFrequency;
+
 	float Luv;						//number of unvoiced spectral amplitudes
 
 	char sym_b[4096];
