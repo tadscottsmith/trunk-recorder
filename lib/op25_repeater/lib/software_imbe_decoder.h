@@ -98,7 +98,7 @@ private:
 	int numVoicingDecisions;
 	int voicingDecisions[57][2];							// V/UV decisions
 
-	float Luv;						//number of unvoiced spectral amplitudes
+	int numUnvoicedSpectralAmplitues;						//number of unvoiced spectral amplitudes
 
 	char sym_b[4096];
 	char RxData[4096];

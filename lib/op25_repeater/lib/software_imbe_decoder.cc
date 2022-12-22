@@ -1523,7 +1523,7 @@ software_imbe_decoder::synth_unvoiced()
       Uwi[em] = 0; Uwq[em] = 0;
    }
 
-   Luv = 0;
+   numUnvoicedSpectralAmplitues = 0;
    for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
       al = bl; bl =(int) ceilf(128 / M_PI * (ell + .5) * fundamentalFrequency);
       if(voicingDecisions[ell][New]) {
@@ -1532,7 +1532,7 @@ software_imbe_decoder::synth_unvoiced()
             Uwi[em] = 0; Uwq[em] = 0;
          }
       } else {
-         Luv = Luv + 1;
+         numUnvoicedSpectralAmplitues = numUnvoicedSpectralAmplitues + 1;
          for(em = al; em <= bl - 1; em++) {
             Uwi[em] = 0;
             Uwq[em] = 0;
