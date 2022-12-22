@@ -1249,20 +1249,17 @@ software_imbe_decoder::decode_spectral_amplitudes(int Start3, int Start8)
    }
 }
 
-void
-software_imbe_decoder::decode_vuv()
-{
-   int bee1, ell, kay;
-   bee1 = bee[1];
-   for(ell = 1; ell <= numSpectralAmplitudes; ell++) {
-      if(ell <= 36)
-         kay =(ell + 2) / 3;
-      else
-         kay = 12;
+void software_imbe_decoder::decode_vuv() {
+  int k;
 
-      //vee(ell, New) = (bee1 \(2 ^(K - kay))) - 2 *(bee1 \(2 ^(K + 1 - kay)))
-      voicingDecisions[ell][ New] = ((bee1 & (1 << (numVoicingDecisions - kay))) > 0) ? 1 : 0;
-   }
+  for (int l = 1; l <= numSpectralAmplitudes; l++) {
+    if (l <= 36)
+      k = floor((l + 2) / 3);
+    else
+      k = 12;
+
+    voicingDecisions[l][ New] = floor(bee[1] / pow(2,numVoicingDecisions-k)) - 2 * floor(bee[1] / pow(2,numVoicingDecisions+1-k));
+  }
 }
 
 void
