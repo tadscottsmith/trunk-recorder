@@ -1655,7 +1655,7 @@ software_imbe_decoder::synth_voiced()
 			}
 		}
 	  // Only current voicing decisions exist.
-	  } else if (voicingDecisions[ell][ New] && !voicingDecisions[ell][ Old]){
+	  } else if (voicingDecisions[ell][ New]){
             for(en = 56; en <= 159; en++) {
                voicedSamples[en] = voicedSamples[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
             }
