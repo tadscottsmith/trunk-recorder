@@ -1639,6 +1639,34 @@ void software_imbe_decoder::synth_unvoiced() {
 void
 software_imbe_decoder::synth_voiced()
 {
+
+  /*
+  int ell;
+
+  // Algorithm 130. No voiced.
+  if(!voicingDecisions[ell][Old] && !voicingDecisions[ell][New]) {
+  }
+  
+  // Algorithm 131. Transition from voiced to unvoiced.
+  if(voicingDecisions[ell][Old] && !voicingDecisions[ell][New]) {
+  }
+  
+  // Algorithm 132. Transition from unvoiced to voiced.
+  if(!voicingDecisions[ell][Old] && voicingDecisions[ell][New]) {
+  }
+
+  int amplify;  
+  // Algorithm 133. Voiced without amplification.
+  if(voicingDecisions[ell][Old] && voicingDecisions[ell][New] && !amplify) {
+  } 
+
+  // Algorithm 134. Voiced with amplification.
+  if(voicingDecisions[ell][Old] && voicingDecisions[ell][New] && amplify) {
+  } 
+  */
+
+
+  
    float MaxL;
    float Dpl;
    float Dwl;
@@ -1655,6 +1683,8 @@ software_imbe_decoder::synth_voiced()
    } else {
       MaxL = prev_numSpectralAmplitudes;
    }
+
+  
 
    psi1 = psi1 +(prev_fundamentalFrequency + fundamentalFrequency) * 80;
    psi1 = remainderf(psi1, 2 * M_PI); // ToDo: decide if its 2pi or pi^2
@@ -1694,29 +1724,29 @@ software_imbe_decoder::synth_voiced()
                THb = (fundamentalFrequency - prev_fundamentalFrequency) * ell * .003125;
                Mb = .00625 *(MNew - MOld);
                for(en = 0; en <= 159; en++) {
-                  voicedSamples[en] = voicedSamples[en] +(MOld + en * Mb) * cos(phi[ell][ Old] +(THa + THb * en) * en);
+                  voicedSamples[en] += 2 * (MOld + en * Mb) * cos(phi[ell][ Old] +(THa + THb * en) * en);
                }
             } else { // (coarse transition)
                for(en = 0; en <= 55; en++) {
-                  voicedSamples[en] = voicedSamples[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell] [ Old]);
+                  voicedSamples[en] += 2 * ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell] [ Old]);
                }
                for(en = 56; en <= 105; en++) {
-                  voicedSamples[en] = voicedSamples[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][ Old]);
-                  voicedSamples[en] = voicedSamples[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
+                  voicedSamples[en] += 2 * ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][ Old]);
+                  voicedSamples[en] += 2 * ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
                }
                for(en = 106; en <= 159; en++) {
-                  voicedSamples[en] = voicedSamples[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
+                  voicedSamples[en] += 2 * ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
                }
             }
          } else {
             for(en = 56; en <= 159; en++) {
-               voicedSamples[en] = voicedSamples[en] + ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
+               voicedSamples[en] += 2 * ws[en-55] * MNew * cos(fundamentalFrequency *(en - 160) * ell + phi[ell][ New]);
             }
          }
       } else {
          if( voicingDecisions[ell][Old]) {
             for(en = 0; en <= 105; en++) {
-               voicedSamples[en] = voicedSamples[en] + ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][ Old]);
+               voicedSamples[en] += 2 * ws[en+105] * MOld * cos(prev_fundamentalFrequency * en * ell + phi[ell][ Old]);
             }
          }
       }
