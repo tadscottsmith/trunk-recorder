@@ -76,6 +76,12 @@ private:
 	float phi[57][2];
 	uint32_t u[211];
 
+	float phasesV[57];
+	float prev_phasesV[57];
+
+	float phasesO[57];
+	float prev_phasesO[57];
+
 	int Old;
 	int New;
 	
