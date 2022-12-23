@@ -722,6 +722,10 @@ static const float PhzNz[57] = {
     0.068775, 0.520336, 2.339119, -0.808328, 1.332154, 2.929768, -0.338316, 0.022767, -1.063795};
 
 software_imbe_decoder::software_imbe_decoder() {
+  reset();
+}
+
+software_imbe_decoder::reset() {
   int i, j;
   // initialize
   errorRate = 0;

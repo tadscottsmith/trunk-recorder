@@ -283,6 +283,9 @@ namespace gr {
                 fprintf (stderr, "%s NAC 0x%03x HDU:  ", logts.get(d_msgq_id), framer->nac);
             }
 
+            // Reinitialize to default variables
+            software_decoder.reset();
+
             uint32_t MFID;
             int i, j, k, ec;
             size_t errs = 0, gly_errs = 0;

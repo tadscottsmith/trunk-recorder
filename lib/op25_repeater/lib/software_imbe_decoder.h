@@ -50,7 +50,7 @@ public:
 	 * \cw in IMBE codeword (including parity check bits).
 	 */
 	virtual void decode(const voice_codeword& cw);
-
+	void reset();
 	void decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3, uint32_t u4, uint32_t u5, uint32_t u6, uint32_t u7);
 	void decode_tap(int _L, int _K, float _w0, const int * _v, const float * _mu);
 	void decode_tone(int _ID, int _AD, int * _n);
