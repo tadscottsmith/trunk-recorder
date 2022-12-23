@@ -725,6 +725,7 @@ software_imbe_decoder::software_imbe_decoder() {
   reset();
 }
 
+void
 software_imbe_decoder::reset() {
   int i, j;
   // initialize
