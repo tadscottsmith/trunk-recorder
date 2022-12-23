@@ -731,10 +731,10 @@ software_imbe_decoder::reset() {
   // initialize
   errorRate = 0;
   repeatCount = 0;
-  prev_numSpectralAmplitudes = 0;
-  numSpectralAmplitudes = 9;
-  spectralEnergy = 75000;
-  amplitudeThreshold = 20480;
+  prev_numSpectralAmplitudes = 30;
+  prev_fundamentalFrequency = .02985 * M_PI;
+  prev_spectralEnergy = 75000;
+  prev_amplitudeThreshold = 20480;
   Old = 1;
   New = 0;
   psi1 = 0.0;
@@ -744,8 +744,12 @@ software_imbe_decoder::reset() {
     }
   }
   for (i = 0; i < 57; i++) {
+    prev_phasesO[i] = 0;
+    prev_phasesV[i] = 0;
     for (j = 0; j < 2; j++) {
       phi[i][j] = 0.0;
+      spectralAmplitudes[i][j] = 1;
+      enhancedSpectralAmplitudes[i][j] = 0;
     }
   }
   for (i = 0; i < 256; i++) {
@@ -1647,9 +1651,18 @@ software_imbe_decoder::synth_voiced()
 
   /*
   int ell;
+  int n;
+
+  // Static portion of Algorithm 139.
+  float phaseMultiplier = (prev_fundamentalFrequency + fundamentalFrequency) * 80;
+
+  for(int l = 1; l <= 56; l++){
+    phasesV[l] = prev_phasesV[l] + (phaseMultiplier * l);
+  }
 
   // Algorithm 130. No voiced.
   if(!voicingDecisions[ell][Old] && !voicingDecisions[ell][New]) {
+    voicedSamples[n] = 0;
   }
   
   // Algorithm 131. Transition from voiced to unvoiced.
@@ -1668,9 +1681,9 @@ software_imbe_decoder::synth_voiced()
   // Algorithm 134. Voiced with amplification.
   if(voicingDecisions[ell][Old] && voicingDecisions[ell][New] && amplify) {
   } 
+  
+
   */
-
-
   
    float MaxL;
    float Dpl;
