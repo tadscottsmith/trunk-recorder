@@ -69,12 +69,22 @@ enum Call_Data_Status { INITIAL,
                         SUCCESS,
                         RETRY,
                         FAILED };
+                  
+enum Recorder_Type { DEBUG,
+                      SIGMF,
+                      ANALOG,
+                      ANALOGC,
+                      P25,
+                      P25C,
+                      DMR };
+
 struct Call_Data_t {
   long talkgroup;
   std::vector<unsigned long> patched_talkgroups;
   std::string talkgroup_tag;
   std::string talkgroup_alpha_tag;
   std::string talkgroup_description;
+  std::string talkgroup_display;
   std::string talkgroup_group;
   long call_num;
   double freq;
