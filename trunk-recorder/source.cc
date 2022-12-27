@@ -482,6 +482,7 @@ Source::Source(double c, double r, double e, std::string drv, std::string dev, C
     std::string gain_list;
     for (std::vector<std::string>::iterator it = gain_names.begin(); it != gain_names.end(); it++) {
       std::string gain_name = *it;
+	BOOST_LOG_TRIVIAL(info) << "Gain Stage: " << gain_name; 
       osmosdr::gain_range_t range = osmo_src->get_gain_range(gain_name);
       std::vector<double> gains = range.values();
       std::string gain_opt_str;

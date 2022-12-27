@@ -1649,41 +1649,103 @@ void
 software_imbe_decoder::synth_voiced()
 {
 
-  /*
-  int ell;
-  int n;
+  int MaxL;
 
-  // Static portion of Algorithm 139.
-  float phaseMultiplier = (prev_fundamentalFrequency + fundamentalFrequency) * 80;
+  if(numSpectralAmplitudes > prev_numSpectralAmplitudes) { 
+    MaxL = numSpectralAmplitudes; 
+   } else {
+    MaxL = prev_numSpectralAmplitudes;
+   }
 
-  for(int l = 1; l <= 56; l++){
-    phasesV[l] = prev_phasesV[l] + (phaseMultiplier * l);
-  }
 
-  // Algorithm 130. No voiced.
-  if(!voicingDecisions[ell][Old] && !voicingDecisions[ell][New]) {
+  // Covers Algorithm 128 and 129. Could be optimized.
+  for(int n = 0; n <= 159; n++) {
     voicedSamples[n] = 0;
   }
-  
-  // Algorithm 131. Transition from voiced to unvoiced.
-  if(voicingDecisions[ell][Old] && !voicingDecisions[ell][New]) {
+
+  // Static portion of Algorithm 139.
+  float phaseMultiplier = ((prev_fundamentalFrequency + fundamentalFrequency)/2) * 160;
+
+  int quarterL = floor(numSpectralAmplitudes / 4);
+  for(int l = 1; l <= 56; l++){
+    // Complete Algorithm 139.
+    prev_phasesV[l] = prev_phasesV[l] / (2 * M_PI);
+    phasesV[l] = prev_phasesV[l] + (phaseMultiplier * l);
+
+    // Complete Algorithm 140.
+    if(l <= quarterL){
+      phasesO[l] = phasesV[l];
+    }
+    else if(l <= MaxL){
+      float pl = ((2 * M_PI * u[l]) / 53125) - M_PI;
+      phasesO[l] = phasesV[l] +  ((numUnvoicedSpectralAmplitues * pl) / numSpectralAmplitudes);
+    }
   }
-  
-  // Algorithm 132. Transition from unvoiced to voiced.
-  if(!voicingDecisions[ell][Old] && voicingDecisions[ell][New]) {
+
+  for(int n = 0; n < 160; n++)
+  {
+      for(int l = 1; l <= MaxL; l++)
+      {
+        // Algorithm 130. No voiced.
+        if(!voicingDecisions[l][Old] && !voicingDecisions[l][New]) {
+          // We already set to 0 in Algorithm 128 and 129.
+          //voicedSamples[n] = 0;
+        }
+        
+        // Algorithm 131. Transition from voiced to unvoiced.
+        if(voicingDecisions[l][Old] && !voicingDecisions[l][New]) {
+          // The synthesis window is 0 when n > 105 which makes the whole equation 0
+          if(n <= 105)
+          {
+            voicedSamples[n] += 2 * (ws[n+105] * enhancedSpectralAmplitudes[l][Old] * cos((prev_fundamentalFrequency * n * l) + prev_phasesO[l]));
+          }
+        }
+        
+        // Algorithm 132. Transition from unvoiced to voiced.
+        if(!voicingDecisions[l][Old] && voicingDecisions[l][New]) {
+          // 56 - 160 = -104 which is the start of the sythesis window not = 0;
+          if(n > 56){
+            voicedSamples[n] += 2 * (ws[n-160+105] * enhancedSpectralAmplitudes[l][New] * cos(fundamentalFrequency * (n - 160) * l + phasesO[l]));
+          }
+        }
+
+        int amplify = fabsf(fundamentalFrequency - prev_fundamentalFrequency) < (.1 * fundamentalFrequency);
+
+        // Algorithm 133 - 138
+        if(voicingDecisions[l][Old] && voicingDecisions[l][New]) {
+
+          if((l < 8) && amplify){
+            float amplitude = enhancedSpectralAmplitudes[l][Old] + ((n / 160) * enhancedSpectralAmplitudes[l][New] - enhancedSpectralAmplitudes[l][Old]);
+            float ol = (phasesO[l] - prev_phasesO[l] - ((prev_fundamentalFrequency + fundamentalFrequency)  * l * 80));
+            float wl = (1/160) * (ol - (2 * M_PI) * floor((ol + M_PI) / (2 * M_PI)));
+            float phase = phasesO[l] + (((prev_fundamentalFrequency * l) + wl) * n) + ((fundamentalFrequency - prev_fundamentalFrequency) * ((l * n * n) / 320));
+            voicedSamples[n] += 2 * (amplitude * cos(phase));
+
+          }
+          else{
+            float previous = prev_phasesO[l] + (prev_fundamentalFrequency * n * l);
+            voicedSamples[n] += 2 * (ws[n+105] * enhancedSpectralAmplitudes[l][Old] * cos(previous));
+            float current = phasesO[l] + (fundamentalFrequency * (n-160) * l);
+            //-160 + 105 = -55
+            voicedSamples[n] += 2 * (ws[n-55] * enhancedSpectralAmplitudes[l][New] * cos(current));
+          }
+        }
+      }
   }
 
-  int amplify;  
-  // Algorithm 133. Voiced without amplification.
-  if(voicingDecisions[ell][Old] && voicingDecisions[ell][New] && !amplify) {
-  } 
+  for(int l=1; l<=56; l++)
+  {
+    prev_phasesV[l] = phasesV[l];
+    prev_phasesO[l] = phasesO[l];
+  }
 
-  // Algorithm 134. Voiced with amplification.
-  if(voicingDecisions[ell][Old] && voicingDecisions[ell][New] && amplify) {
-  } 
+return;
+/*
+
+
   
 
-  */
+
   
    float MaxL;
    float Dpl;
@@ -1696,11 +1758,7 @@ software_imbe_decoder::synth_voiced()
 
    int ell, en;
 
-   if(numSpectralAmplitudes > prev_numSpectralAmplitudes) { 
-      MaxL = numSpectralAmplitudes; 
-   } else {
-      MaxL = prev_numSpectralAmplitudes;
-   }
+
 
   
 
@@ -1712,12 +1770,10 @@ software_imbe_decoder::synth_voiced()
    }
 
    for(; ell <= MaxL; ell++) {
-      phi[ell][ New] = psi1 * ell /* + Tmp * PhzNz[ell] */;
+      phi[ell][ New] = psi1 * ell; // + Tmp * PhzNz[ell] 
    }
 
-   for(en = 0; en <= 159; en++) {
-      voicedSamples[en] = 0;
-   }
+
 
    for(ell = 1; ell <= MaxL; ell++) {
 
@@ -1727,7 +1783,7 @@ software_imbe_decoder::synth_voiced()
          MNew = enhancedSpectralAmplitudes[ell][ New];
       }
 
-      if(ell > prev_numSpectralAmplitudes) {
+      if(ell > prev_numSpectralAmplitudes) {u[
          MOld = 0;
       } else {
          MOld = enhancedSpectralAmplitudes[ell][ Old];
@@ -1769,4 +1825,5 @@ software_imbe_decoder::synth_voiced()
          }
       }
    }
+*/
 }
