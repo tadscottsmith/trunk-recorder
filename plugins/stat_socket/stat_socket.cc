@@ -64,6 +64,11 @@ public:
   }
 
   Stat_Socket() : m_open(false), m_done(false), m_config_sent(false) {
+
+    int retry_attempt = 0;
+    time_t reconnect_time = time(NULL);
+    bool m_reconnect = false;
+
     // set up access channels to only log interesting things
     m_client.clear_access_channels(websocketpp::log::alevel::all);
     m_client.set_access_channels(websocketpp::log::alevel::connect);
