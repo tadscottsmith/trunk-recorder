@@ -1855,13 +1855,14 @@ software_imbe_decoder::synth_voiced_new()
   for(int l = 1; l <= 56; l++)
   {
       //Unwrap the previous phase before updating to avoid overflow
-      prev_phasesV[l] %= TWO_PI;
+      prev_phasesV[l] %= (2 * M_PI));
 
       //Alg #139 - calculate current phase v values
       currentPhaseV[l] = prev_phasesV[l] + (phaseOffsetPerFrame * (float)l);
   }
 
   //Short circuit if there are no voiced bands and return an array of zeros
+  /*
   if(!voicingDecisions[l][Old] && !voicingDecisions[l][New])
   {
       for(int l=1; l<=56; l++){
@@ -1874,10 +1875,22 @@ software_imbe_decoder::synth_voiced_new()
 
       return;
   }
+  */
+
+  for(int n = 0; n <= 159; n++) {
+    voicedSamples[n] = 0;
+  }
 
   int currentL = numSpectralAmplitudes;
   int previousL = prev_numSpectralAmplitudes;
-  int maxL = max(currentL, previousL);
+  
+  int maxL;
+
+  if(numSpectralAmplitudes > prev_numSpectralAmplitudes) { 
+    MaxL = numSpectralAmplitudes; 
+  } else {
+    MaxL = prev_numSpectralAmplitudes;
+  }
 
   //Alg #128 & #129 - enhanced spectral amplitudes for current and previous frames outside range of 1 - L are set
   // to zero.  Below, in the audio generation loop, we control access to these arrays through the voicing
@@ -1903,18 +1916,18 @@ software_imbe_decoder::synth_voiced_new()
       }
       else if(l <= maxL)
       {
-          float pl = WHITE_NOISE_SCALAR * u[l] - (float)Math.PI;
+          float pl = WHITE_NOISE_SCALAR * u[l] - (float)M_PI;
           currentPhaseO[l] = currentPhaseV[l] + (((float)unvoicedBandCount * pl) / (float)currentL);
       }
   }
 
-  float currentM = *enhancedSpectralAmplitudes[57][New];
-  float previousM = *enhancedSpectralAmplitudes[57][Old];
+  float *currentM = enhancedSpectralAmplitudes[57][New];
+  float *previousM = enhancedSpectralAmplitudes[57][Old];
 
   //Alg #127 - reconstruct 160 voice samples using each of the l harmonics that are common between this frame and
   // the previous frame, using one of four algorithms selected by the combination of the voicing decisions of the
   // current and previous frames for each harmonic.
-  boolean exceedsThreshold = Math.fabsf(currentFrequency - previousFrequency) >= (0.1 * currentFrequency);
+  bool exceedsThreshold = Math.fabsf(currentFrequency - previousFrequency) >= (0.1 * currentFrequency);
 
   for(int n = 0; n < 160; n++)
   {
