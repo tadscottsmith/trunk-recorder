@@ -1855,7 +1855,7 @@ software_imbe_decoder::synth_voiced_new()
   for(int l = 1; l <= 56; l++)
   {
       //Unwrap the previous phase before updating to avoid overflow
-      prev_phasesV[l] = prev_phasesV[l] % (float)(2 * M_PI);
+      //prev_phasesV[l] = prev_phasesV[l] % (float)(2 * M_PI);
 
       //Alg #139 - calculate current phase v values
       currentPhaseV[l] = prev_phasesV[l] + (phaseOffsetPerFrame * (float)l);
@@ -1921,9 +1921,6 @@ software_imbe_decoder::synth_voiced_new()
       }
   }
 
-  float *currentM = enhancedSpectralAmplitudes[57][New];
-  float *previousM = enhancedSpectralAmplitudes[57][Old];
-
   //Alg #127 - reconstruct 160 voice samples using each of the l harmonics that are common between this frame and
   // the previous frame, using one of four algorithms selected by the combination of the voicing decisions of the
   // current and previous frames for each harmonic.
@@ -1939,16 +1936,16 @@ software_imbe_decoder::synth_voiced_new()
               {
                   //Alg #133
                   float previousPhase = prev_phasesO[l] + (previousFrequency * (float)n * (float)l);
-                  voicedSamples[n] += 2.0f * (synthesisWindow(n) * previousM[l] * cos(previousPhase));
+                  voicedSamples[n] += 2.0f * (synthesisWindow(n) * enhancedSpectralAmplitutes[l][Old] * cos(previousPhase));
 
                   float currentPhase = currentPhaseO[l] + (currentFrequency * (float)(n - 160) * (float)l);
-                  voicedSamples[n] += 2.0f * (synthesisWindow(n - 160) * currentM[l] * cos(currentPhase));
+                  voicedSamples[n] += 2.0f * (synthesisWindow(n - 160) * enhancedSpectralAmplitutes[l][New] * cos(currentPhase));
               }
               else
               {
                   //Alg #135 - amplitude function
                   //Performs linear interpolation of the harmonic's amplitude from previous frame to current
-                  float amplitude = previousM[l] + (((float)n / (float)160) * (currentM[l] - previousM[l]));
+                  float amplitude = enhancedSpectralAmplitutes[l] + (((float)n / (float)160) * (enhancedSpectralAmplitutes[l][New] - enhancedSpectralAmplitutes[l][Old]));
 
                   //Alg #137
                   float ol = (currentPhaseO[l] - prev_phasesO[l] - (phaseOffsetPerFrame * (float)l));
@@ -1957,7 +1954,7 @@ software_imbe_decoder::synth_voiced_new()
                   float wl = (ol - ((M_PI * 2) * (float)floor((ol + (float)M_PI) / (M_PI * 2)))) / 160.0;
 
                   //Alg #136 - phase function
-                  float phase = mPreviousPhaseO[l] +
+                  float phase = prev_phasesO[l] +
                       (((previousFrequency * (float)l) + wl) * (float)n) +
                       ((currentFrequency - previousFrequency) * ((float)(l *  n * n) / 320.0));
 
@@ -1968,13 +1965,13 @@ software_imbe_decoder::synth_voiced_new()
           else if(!voicingDecisions[l][New] && voicingDecisions[l][Old])
           {
               //Alg #131
-              voicedSamples[n] += 2.0f * (synthesisWindow(n) * previousM[l] *
+              voicedSamples[n] += 2.0f * (synthesisWindow(n) * enhancedSpectralAmplitutes[l][Old] *
                   (float)cos(prev_phasesO[l] + (previousFrequency * (float)n * (float)l)));
           }
           else if(voicingDecisions[l][New] && !voicingDecisions[l][Old])
           {
               //Alg #132
-              voicedSamples[n] += 2.0f * (synthesisWindow(n - 160) * currentM[l] *
+              voicedSamples[n] += 2.0f * (synthesisWindow(n - 160) * enhancedSpectralAmplitutes[l][New] *
                   (float)cos(currentPhaseO[l] + (currentFrequency * (float)(n - 160) * (float)l)));
           }
 
