@@ -1945,7 +1945,7 @@ software_imbe_decoder::synth_voiced_new()
               {
                   //Alg #135 - amplitude function
                   //Performs linear interpolation of the harmonic's amplitude from previous frame to current
-                  float amplitude = enhancedSpectralAmplitudes[l] + (((float)n / (float)160) * (enhancedSpectralAmplitudes[l][New] - enhancedSpectralAmplitudes[l][Old]));
+                  float amplitude = enhancedSpectralAmplitudes[l][Old] + (((float)n / (float)160) * (enhancedSpectralAmplitudes[l][New] - enhancedSpectralAmplitudes[l][Old]));
 
                   //Alg #137
                   float ol = (currentPhaseO[l] - prev_phasesO[l] - (phaseOffsetPerFrame * (float)l));
