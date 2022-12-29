@@ -1936,16 +1936,16 @@ software_imbe_decoder::synth_voiced_new()
               {
                   //Alg #133
                   float previousPhase = prev_phasesO[l] + (previousFrequency * (float)n * (float)l);
-                  voicedSamples[n] += 2.0f * (synthesisWindow(n) * enhancedSpectralAmplitutes[l][Old] * cos(previousPhase));
+                  voicedSamples[n] += 2.0f * (synthesisWindow(n) * enhancedSpectralAmplitudes[l][Old] * cos(previousPhase));
 
                   float currentPhase = currentPhaseO[l] + (currentFrequency * (float)(n - 160) * (float)l);
-                  voicedSamples[n] += 2.0f * (synthesisWindow(n - 160) * enhancedSpectralAmplitutes[l][New] * cos(currentPhase));
+                  voicedSamples[n] += 2.0f * (synthesisWindow(n - 160) * enhancedSpectralAmplitudes[l][New] * cos(currentPhase));
               }
               else
               {
                   //Alg #135 - amplitude function
                   //Performs linear interpolation of the harmonic's amplitude from previous frame to current
-                  float amplitude = enhancedSpectralAmplitutes[l] + (((float)n / (float)160) * (enhancedSpectralAmplitutes[l][New] - enhancedSpectralAmplitutes[l][Old]));
+                  float amplitude = enhancedSpectralAmplitudes[l] + (((float)n / (float)160) * (enhancedSpectralAmplitudes[l][New] - enhancedSpectralAmplitudes[l][Old]));
 
                   //Alg #137
                   float ol = (currentPhaseO[l] - prev_phasesO[l] - (phaseOffsetPerFrame * (float)l));
@@ -1965,13 +1965,13 @@ software_imbe_decoder::synth_voiced_new()
           else if(!voicingDecisions[l][New] && voicingDecisions[l][Old])
           {
               //Alg #131
-              voicedSamples[n] += 2.0f * (synthesisWindow(n) * enhancedSpectralAmplitutes[l][Old] *
+              voicedSamples[n] += 2.0f * (synthesisWindow(n) * enhancedSpectralAmplitudes[l][Old] *
                   (float)cos(prev_phasesO[l] + (previousFrequency * (float)n * (float)l)));
           }
           else if(voicingDecisions[l][New] && !voicingDecisions[l][Old])
           {
               //Alg #132
-              voicedSamples[n] += 2.0f * (synthesisWindow(n - 160) * enhancedSpectralAmplitutes[l][New] *
+              voicedSamples[n] += 2.0f * (synthesisWindow(n - 160) * enhancedSpectralAmplitudes[l][New] *
                   (float)cos(currentPhaseO[l] + (currentFrequency * (float)(n - 160) * (float)l)));
           }
 
