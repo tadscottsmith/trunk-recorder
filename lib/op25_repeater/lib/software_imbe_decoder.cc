@@ -1855,7 +1855,7 @@ software_imbe_decoder::synth_voiced_new()
   for(int l = 1; l <= 56; l++)
   {
       //Unwrap the previous phase before updating to avoid overflow
-      //prev_phasesV[l] = prev_phasesV[l] % (float)(2 * M_PI);
+      prev_phasesV[l] = prev_phasesV[l] % (float)(2 * M_PI);
 
       //Alg #139 - calculate current phase v values
       currentPhaseV[l] = prev_phasesV[l] + (phaseOffsetPerFrame * (float)l);
