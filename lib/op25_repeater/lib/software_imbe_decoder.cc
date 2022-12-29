@@ -1855,7 +1855,7 @@ software_imbe_decoder::synth_voiced_new()
   for(int l = 1; l <= 56; l++)
   {
       //Unwrap the previous phase before updating to avoid overflow
-      prev_phasesV[l] %= (float)(2 * M_PI);
+      prev_phasesV[l] = prev_phasesV[l] % (float)(2 * M_PI);
 
       //Alg #139 - calculate current phase v values
       currentPhaseV[l] = prev_phasesV[l] + (phaseOffsetPerFrame * (float)l);
@@ -1938,7 +1938,7 @@ software_imbe_decoder::synth_voiced_new()
               if(l >= 8 || exceedsThreshold)
               {
                   //Alg #133
-                  float previousPhase = mPreviousPhaseO[l] + (previousFrequency * (float)n * (float)l);
+                  float previousPhase = prev_phasesO[l] + (previousFrequency * (float)n * (float)l);
                   voicedSamples[n] += 2.0f * (synthesisWindow(n) * previousM[l] * cos(previousPhase));
 
                   float currentPhase = currentPhaseO[l] + (currentFrequency * (float)(n - 160) * (float)l);
@@ -1951,10 +1951,10 @@ software_imbe_decoder::synth_voiced_new()
                   float amplitude = previousM[l] + (((float)n / (float)160) * (currentM[l] - previousM[l]));
 
                   //Alg #137
-                  float ol = (currentPhaseO[l] - mPreviousPhaseO[l] - (phaseOffsetPerFrame * (float)l));
+                  float ol = (currentPhaseO[l] - prev_phasesO[l] - (phaseOffsetPerFrame * (float)l));
 
                   //Alg #138
-                  float wl = (ol - ((M_PI * 2) * (float)Math.floor((ol + (float)M_PI) / (M_PI * 2)))) / 160.0;
+                  float wl = (ol - ((M_PI * 2) * (float)floor((ol + (float)M_PI) / (M_PI * 2)))) / 160.0;
 
                   //Alg #136 - phase function
                   float phase = mPreviousPhaseO[l] +
@@ -1969,7 +1969,7 @@ software_imbe_decoder::synth_voiced_new()
           {
               //Alg #131
               voicedSamples[n] += 2.0f * (synthesisWindow(n) * previousM[l] *
-                  (float)cos(mPreviousPhaseO[l] + (previousFrequency * (float)n * (float)l)));
+                  (float)cos(prev_phasesO[l] + (previousFrequency * (float)n * (float)l)));
           }
           else if(voicingDecisions[l][New] && !voicingDecisions[l][Old])
           {
