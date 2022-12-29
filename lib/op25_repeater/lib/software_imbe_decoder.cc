@@ -1827,3 +1827,152 @@ return;
    }
 */
 }
+
+float
+software_imbe_decoder::synthesisWindow(int n)
+{
+    if(n < -105 || n > 105)
+    {
+        return 0.0;
+    }
+
+    return ws[n + 105];
+}
+
+
+void
+software_imbe_decoder::synth_voiced_new()
+{
+  float currentFrequency = fundamentalFrequency;
+  float previousFrequency = prev_fundamentalFrequency;
+  float averageFrequency = (previousFrequency + currentFrequency) / 2.0;
+  float phaseOffsetPerFrame = averageFrequency * 160;
+
+  //Alg #139 - calculate current phase angle for each harmonic
+  float currentPhaseV[57];
+
+  //Update each of the phase values
+  for(int l = 1; l <= 56; l++)
+  {
+      //Unwrap the previous phase before updating to avoid overflow
+      prev_phasesV[l] %= TWO_PI;
+
+      //Alg #139 - calculate current phase v values
+      currentPhaseV[l] = prev_phasesV[l] + (phaseOffsetPerFrame * (float)l);
+  }
+
+  //Short circuit if there are no voiced bands and return an array of zeros
+  if(!voicingDecisions[l][Old] && !voicingDecisions[l][New])
+  {
+      for(int l=1; l<=56; l++){
+        prev_phasesV[l] = phasesV[l];
+      }
+
+      for(int n = 0; n <= 159; n++) {
+        voicedSamples[n] = 0;
+      }
+
+      return;
+  }
+
+  int currentL = numSpectralAmplitudes;
+  int previousL = prev_numSpectralAmplitudes;
+  int maxL = max(currentL, previousL);
+
+  //Alg #128 & #129 - enhanced spectral amplitudes for current and previous frames outside range of 1 - L are set
+  // to zero.  Below, in the audio generation loop, we control access to these arrays through the voicing
+  // decisions array.  Thus, we don't have to resize the enhanced spectral amplitudes arrays to the max L of
+  // current or previous.
+
+  //Alg #140 partial - number of unvoiced spectral amplitudes (Luv) in current frame */
+  int unvoicedBandCount = numUnvoicedSpectralAmplitues;
+
+  //Alg #139 - calculate current phase angle for each harmonic
+  float currentPhaseO[57];
+  int threshold = (int)floor((float)currentL / 4.0);
+
+  float WHITE_NOISE_SCALAR = (M_PI * 2) / 53125.0;
+
+  //Update each of the phase values
+  for(int l = 1; l <= 56; l++)
+  {
+      //Alg #140 - calculate current phase o values
+      if(l <= threshold)
+      {
+          currentPhaseO[l] = currentPhaseV[l];
+      }
+      else if(l <= maxL)
+      {
+          float pl = WHITE_NOISE_SCALAR * u[l] - (float)Math.PI;
+          currentPhaseO[l] = currentPhaseV[l] + (((float)unvoicedBandCount * pl) / (float)currentL);
+      }
+  }
+
+  float currentM = *enhancedSpectralAmplitudes[57][New];
+  float previousM = *enhancedSpectralAmplitudes[57][Old];
+
+  //Alg #127 - reconstruct 160 voice samples using each of the l harmonics that are common between this frame and
+  // the previous frame, using one of four algorithms selected by the combination of the voicing decisions of the
+  // current and previous frames for each harmonic.
+  boolean exceedsThreshold = Math.fabsf(currentFrequency - previousFrequency) >= (0.1 * currentFrequency);
+
+  for(int n = 0; n < 160; n++)
+  {
+      for(int l = 1; l <= maxL; l++)
+      {
+          if(voicingDecisions[l][Old] && voicingDecisions[l][New])
+          {
+              if(l >= 8 || exceedsThreshold)
+              {
+                  //Alg #133
+                  float previousPhase = mPreviousPhaseO[l] + (previousFrequency * (float)n * (float)l);
+                  voicedSamples[n] += 2.0f * (synthesisWindow(n) * previousM[l] * cos(previousPhase));
+
+                  float currentPhase = currentPhaseO[l] + (currentFrequency * (float)(n - 160) * (float)l);
+                  voicedSamples[n] += 2.0f * (synthesisWindow(n - 160) * currentM[l] * cos(currentPhase));
+              }
+              else
+              {
+                  //Alg #135 - amplitude function
+                  //Performs linear interpolation of the harmonic's amplitude from previous frame to current
+                  float amplitude = previousM[l] + (((float)n / (float)160) * (currentM[l] - previousM[l]));
+
+                  //Alg #137
+                  float ol = (currentPhaseO[l] - mPreviousPhaseO[l] - (phaseOffsetPerFrame * (float)l));
+
+                  //Alg #138
+                  float wl = (ol - ((M_PI * 2) * (float)Math.floor((ol + (float)M_PI) / (M_PI * 2)))) / 160.0;
+
+                  //Alg #136 - phase function
+                  float phase = mPreviousPhaseO[l] +
+                      (((previousFrequency * (float)l) + wl) * (float)n) +
+                      ((currentFrequency - previousFrequency) * ((float)(l *  n * n) / 320.0));
+
+                  //Alg #134
+                  voicedSamples[n] += 2.0f * (amplitude * cos(phase));
+              }
+          }
+          else if(!voicingDecisions[l][New] && voicingDecisions[l][Old])
+          {
+              //Alg #131
+              voicedSamples[n] += 2.0f * (synthesisWindow(n) * previousM[l] *
+                  (float)cos(mPreviousPhaseO[l] + (previousFrequency * (float)n * (float)l)));
+          }
+          else if(voicingDecisions[l][New] && !voicingDecisions[l][Old])
+          {
+              //Alg #132
+              voicedSamples[n] += 2.0f * (synthesisWindow(n - 160) * currentM[l] *
+                  (float)cos(currentPhaseO[l] + (currentFrequency * (float)(n - 160) * (float)l)));
+          }
+
+          //Alg #130 - harmonics that are unvoiced in both the current and previous frames contribute nothing
+      }
+  }
+
+  for(int l=1; l<=56; l++)
+  {
+    prev_phasesV[l] = currentPhaseV[l];
+    prev_phasesO[l] = currentPhaseO[l];
+  }
+
+}
