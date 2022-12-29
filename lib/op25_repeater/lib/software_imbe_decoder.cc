@@ -1855,7 +1855,7 @@ software_imbe_decoder::synth_voiced_new()
   for(int l = 1; l <= 56; l++)
   {
       //Unwrap the previous phase before updating to avoid overflow
-      prev_phasesV[l] %= (2 * M_PI));
+      prev_phasesV[l] %= (float)(2 * M_PI);
 
       //Alg #139 - calculate current phase v values
       currentPhaseV[l] = prev_phasesV[l] + (phaseOffsetPerFrame * (float)l);
@@ -1887,9 +1887,9 @@ software_imbe_decoder::synth_voiced_new()
   int maxL;
 
   if(numSpectralAmplitudes > prev_numSpectralAmplitudes) { 
-    MaxL = numSpectralAmplitudes; 
+    maxL = numSpectralAmplitudes; 
   } else {
-    MaxL = prev_numSpectralAmplitudes;
+    maxL = prev_numSpectralAmplitudes;
   }
 
   //Alg #128 & #129 - enhanced spectral amplitudes for current and previous frames outside range of 1 - L are set
@@ -1927,7 +1927,7 @@ software_imbe_decoder::synth_voiced_new()
   //Alg #127 - reconstruct 160 voice samples using each of the l harmonics that are common between this frame and
   // the previous frame, using one of four algorithms selected by the combination of the voicing decisions of the
   // current and previous frames for each harmonic.
-  bool exceedsThreshold = Math.fabsf(currentFrequency - previousFrequency) >= (0.1 * currentFrequency);
+  bool exceedsThreshold = fabsf(currentFrequency - previousFrequency) >= (0.1 * currentFrequency);
 
   for(int n = 0; n < 160; n++)
   {
