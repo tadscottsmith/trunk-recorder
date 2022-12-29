@@ -912,7 +912,7 @@ void software_imbe_decoder::decode_fullrate(uint32_t u0, uint32_t u1, uint32_t u
 
     // synth:
     synth_unvoiced(); // ToDo: make suv return value?
-    synth_voiced();   // ToDo: make sv return value?
+    synth_voiced_new();   // ToDo: make sv return value?
 
     // output:
     audio_samples *samples = audio();
