@@ -48,9 +48,8 @@ void adaptive_smoothing(IMBE_PARAM *imbe_param)
 	}
 
 	for(int i = 0; i<imbe_param->num_harms;i++){
-		float spectralAmplitude = imbe_param->sa[i];
-		amplitudeMeasure += spectralAmplitude; // Compute Algorithm 114 early to possibly save cycles.
-		if(spectralAmplitude > adaptiveThreshold){
+		amplitudeMeasure += imbe_param->sa[i];
+		if(imbe_param->sa[i] > adaptiveThreshold){
 			imbe_param->v_uv_dsn[i] = 1;
 		}
 	}

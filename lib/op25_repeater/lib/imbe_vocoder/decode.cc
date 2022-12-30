@@ -46,9 +46,9 @@ void imbe_vocoder::decode_init(IMBE_PARAM *imbe_param)
 
 	// Make previous frame for the first frame
 	memset((char *)imbe_param, 0, sizeof(IMBE_PARAM));
-	imbe_param->fund_freq = 0x0cf6474a;
-	imbe_param->num_harms = 9;
-	imbe_param->num_bands = 3;
+	imbe_param->fund_freq = .02985 * M_PI;
+	imbe_param->num_harms = 30;
+	imbe_param->num_bands = 10;
 	imbe_param->errorCoset0 = 0;
 	imbe_param->errorCoset4 = 0;
 	imbe_param->errorRate = 0.0;
