@@ -86,10 +86,16 @@ void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *
 	} else {
 		for (j = 0; j < FRAME; j++) {
 			snd[j] = add(snd[j], snd_tmp[j]);
-			if(abs(snd[j]) > 31125){ // ~ .95 * 32768
-				int tmp = snd[j];
-				snd[j] = (int)(snd[j] * .94);
+			int tmp = snd[j];
+			if(snd[j] > 31125){ // ~ .95 * 32768
+				snd[j] = 31125;
 				fprintf(stderr, "Old: %d\tNew: %d\n", tmp, snd[j]);
+			}
+			if(snd[j] < -31125){
+				snd[j] = -31125
+				fprintf(stderr, "Old: %d\tNew: %d\n", tmp, snd[j]);
+			}
+				
 			}
 		}
 	}
