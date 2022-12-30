@@ -35,7 +35,10 @@
 #include "imbe_vocoder.h"
 
 #include <string.h>
+
+// Added TSS
 #include <stdio.h>
+#include <cstdlib>
 
 
 void imbe_vocoder::decode_init(IMBE_PARAM *imbe_param)
