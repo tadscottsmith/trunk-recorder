@@ -92,11 +92,10 @@ void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *
 				fprintf(stderr, "Old: %d\tNew: %d\n", tmp, snd[j]);
 			}
 			if(snd[j] < -31125){
-				snd[j] = -31125
+				snd[j] = -31125;
 				fprintf(stderr, "Old: %d\tNew: %d\n", tmp, snd[j]);
 			}
 				
-			}
 		}
 	}
 }
