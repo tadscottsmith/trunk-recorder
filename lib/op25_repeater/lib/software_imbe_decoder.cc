@@ -785,7 +785,7 @@ software_imbe_decoder::decode(const voice_codeword& cw)
 
 	decode_fullrate(u0, u1, u2, u3, u4, u5, u6, u7, E0, ET); // process 88-bit frame
 }
-
+  
 void
 software_imbe_decoder::adaptive_smoothing(float SE, float ET)
 {
