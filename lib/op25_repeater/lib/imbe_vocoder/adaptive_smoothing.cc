@@ -34,7 +34,6 @@
 void adaptive_smoothing(IMBE_PARAM *imbe_param)
 {
 
-	return;
 	float adaptiveThreshold;
 	float amplitudeMeasure = 0;
 
@@ -62,7 +61,7 @@ void adaptive_smoothing(IMBE_PARAM *imbe_param)
 		imbe_param->amplitudeThreshold = 6000 - (300 * imbe_param->errorTotal) + imbe_param->amplitudeThreshold;
 	}
 
-	if(imbe_param->amplitudeThreshold > amplitudeMeasure)
+	if(amplitudeMeasure > imbe_param->amplitudeThreshold)
 	{
 		float scaleFactor = imbe_param->amplitudeThreshold / amplitudeMeasure;
 		for(int i = 0; i<imbe_param->num_harms;i++){
