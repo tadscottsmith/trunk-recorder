@@ -35,7 +35,7 @@
 #include "imbe_vocoder.h"
 
 #include <string.h>
-
+#include <stdio.h>
 
 
 void imbe_vocoder::decode_init(IMBE_PARAM *imbe_param)
