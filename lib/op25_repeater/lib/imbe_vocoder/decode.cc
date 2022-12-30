@@ -69,8 +69,8 @@ void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *
 	sa_decode(imbe_param);
 	sa_enh(imbe_param);
 	adaptive_smoothing(imbe_param);
-	v_synt(imbe_param, snd);
 	uv_synt(imbe_param, snd_tmp);
+	v_synt(imbe_param, snd);
 
 	if (imbe_param->repeatCount > 3) {
 			imbe_param->muteAudio = true;
