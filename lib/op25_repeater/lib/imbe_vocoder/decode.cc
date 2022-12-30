@@ -83,7 +83,8 @@ void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *
 	} else {
 		for (j = 0; j < FRAME; j++) {
 			snd[j] = add(snd[j], snd_tmp[j]);
-			fprintf(stderr, "%d\n", snd[j]);
+			if(abs(snd[j]) > 15000)
+				fprintf(stderr, "%d\n", snd[j]);
 		}
 	}
 }
