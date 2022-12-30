@@ -82,7 +82,7 @@ void imbe_vocoder::decode(IMBE_PARAM *imbe_param, Word16 *frame_vector, Word16 *
 		}
 	} else {
 		for (j = 0; j < FRAME; j++) {
-			snd[j] = add(snd[j], snd_tmp[j]);
+			snd[j] = add(snd[j] * 2, snd_tmp[j]);
 		}
 	}
 }

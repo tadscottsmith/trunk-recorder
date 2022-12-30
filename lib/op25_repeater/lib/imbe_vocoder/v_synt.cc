@@ -138,7 +138,7 @@ void imbe_vocoder::v_synt(IMBE_PARAM *imbe_param, Word16 *snd)
 			{
 				L_tmp = L_mult(sa[i], cos_fxp(extract_h(L_ph_acc)));
 				L_tmp = L_shr(L_tmp, 1);
-				L_snd[j] = 2 * L_add(L_snd[j], L_tmp);
+				L_snd[j] = L_add(L_snd[j], L_tmp);
 				L_ph_acc += L_ph_step;
 			}
 			continue;
@@ -154,7 +154,7 @@ void imbe_vocoder::v_synt(IMBE_PARAM *imbe_param, Word16 *snd)
 			{
 				L_tmp = L_mult(sa_prev3[i], cos_fxp(extract_h(L_ph_acc)));
 				L_tmp = L_shr(L_tmp, 1);
-				L_snd[j] = 2 * L_add(L_snd[j], L_tmp);
+				L_snd[j] = L_add(L_snd[j], L_tmp);
 				L_ph_acc += L_ph_step_prev;
 			}
 
@@ -163,7 +163,7 @@ void imbe_vocoder::v_synt(IMBE_PARAM *imbe_param, Word16 *snd)
 				L_tmp = L_mult(*s_ptr--, sa_prev3[i]);
 				L_tmp = L_mpy_ls(L_tmp, cos_fxp(extract_h(L_ph_acc)));
 				L_tmp = L_shr(L_tmp, 1);
-				L_snd[j] = 2 * L_add(L_snd[j], L_tmp);
+				L_snd[j] = L_add(L_snd[j], L_tmp);
 				L_ph_acc += L_ph_step_prev;
 			}
 			continue;
@@ -181,7 +181,7 @@ void imbe_vocoder::v_synt(IMBE_PARAM *imbe_param, Word16 *snd)
 			{
 				L_tmp = L_mult(sa_prev3[i], cos_fxp(extract_h(L_ph_acc_aux)));
 				L_tmp = L_shr(L_tmp, 1);
-				L_snd[j] = 2 * L_add(L_snd[j], L_tmp);
+				L_snd[j] = L_add(L_snd[j], L_tmp);
 				L_ph_acc_aux += L_ph_step_prev;
 			}
 
@@ -190,12 +190,12 @@ void imbe_vocoder::v_synt(IMBE_PARAM *imbe_param, Word16 *snd)
 				L_tmp = L_mult(*s_ptr_aux--, sa_prev3[i]);
 				L_tmp = L_mpy_ls(L_tmp, cos_fxp(extract_h(L_ph_acc_aux)));
 				L_tmp = L_shr(L_tmp, 1);
-				L_snd[j] = 2 * L_add(L_snd[j], L_tmp);
+				L_snd[j] = L_add(L_snd[j], L_tmp);
 
 				L_tmp = L_mult(*s_ptr++, sa[i]);
 				L_tmp = L_mpy_ls(L_tmp, cos_fxp(extract_h(L_ph_acc)));
 				L_tmp = L_shr(L_tmp, 1);
-				L_snd[j] = 2 * L_add(L_snd[j], L_tmp);
+				L_snd[j] = L_add(L_snd[j], L_tmp);
 
 				L_ph_acc_aux += L_ph_step_prev;
 				L_ph_acc += L_ph_step;
@@ -205,7 +205,7 @@ void imbe_vocoder::v_synt(IMBE_PARAM *imbe_param, Word16 *snd)
 			{
 				L_tmp = L_mult(sa[i], cos_fxp(extract_h(L_ph_acc)));
 				L_tmp = L_shr(L_tmp, 1);
-				L_snd[j] = 2 * L_add(L_snd[j], L_tmp);
+				L_snd[j] = L_add(L_snd[j], L_tmp);
 				L_ph_acc += L_ph_step;
 			}
 			continue;
@@ -228,7 +228,7 @@ void imbe_vocoder::v_synt(IMBE_PARAM *imbe_param, Word16 *snd)
 			L_ph_acc_aux = ((L_ph_acc_aux >> 9) * j) << 9; 
 
 			L_tmp = L_mpy_ls(L_amp_acc, cos_fxp(extract_h(L_ph_acc + L_ph_acc_aux)));			
-			L_snd[j] =  2 * L_add(L_snd[j], L_tmp);
+			L_snd[j] =  L_add(L_snd[j], L_tmp);
 
 			L_amp_acc = L_add(L_amp_acc, L_amp_step);
 			L_ph_acc += L_ph_step_prev;
