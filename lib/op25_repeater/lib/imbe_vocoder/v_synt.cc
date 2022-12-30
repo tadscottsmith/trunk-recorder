@@ -130,7 +130,7 @@ void imbe_vocoder::v_synt(IMBE_PARAM *imbe_param, Word16 *snd)
 				L_tmp = L_mult(*s_ptr++, sa[i]);
 				L_tmp = L_mpy_ls(L_tmp, cos_fxp(extract_h(L_ph_acc)));
 				L_tmp = L_shr(L_tmp, 1);
-				L_snd[j] = 2 * L_add(L_snd[j], L_tmp);
+				L_snd[j] = L_add(L_snd[j], L_tmp);
 				L_ph_acc += L_ph_step;
 			}
 
