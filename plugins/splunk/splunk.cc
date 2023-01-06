@@ -277,11 +277,12 @@ public:
       //system_id = sys->system_id;
     }
 
-    fprintf(stderr, "%s\n", val.c_str());
+    //fprintf(stderr, "%s\n", val.c_str());
 
   CURL *curl = curl_easy_init();
   if (!curl) {
     // Handle error
+    fprintf(stderr, "CURL EASY INIT ERROR\n");
     return -1;
   }
 
@@ -300,6 +301,7 @@ public:
   // Perform the request
   CURLcode res = curl_easy_perform(curl);
   if (res != CURLE_OK) {
+    fprintf(stderr, "CURL OK ERROR\n");
     return -1;
   }
 
