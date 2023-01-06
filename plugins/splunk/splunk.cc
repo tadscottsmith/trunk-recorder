@@ -293,7 +293,7 @@ public:
 
   // Set the HTTP headers
   struct curl_slist *headers = nullptr;
-  headers = curl_slist_append(headers, "Authorization: Splunk " + api_key);
+  headers = curl_slist_append(headers, "Authorization: Splunk " + "f97fd213-61b1-49e6-8733-00f20483359a");
   headers = curl_slist_append(headers, "Content-Type: application/json");
   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
