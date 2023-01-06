@@ -301,7 +301,7 @@ public:
   // Perform the request
   CURLcode res = curl_easy_perform(curl);
   if (res != CURLE_OK) {
-    fprintf(stderr, "CURL OK ERROR\n");
+    fprintf(stderr, "CURL OK ERROR - %d\n", res);
     return -1;
   }
 
