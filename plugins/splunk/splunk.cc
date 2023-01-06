@@ -22,6 +22,15 @@ struct stat_plugin_t {
   Config *config;
 };
 
+struct splunk_system {
+  std::string api_key;
+  std::string short_name;
+  std::string system_id;
+  std::string talkgroupsFile;
+  Talkgroups *talkgroups;
+  bool compress_wav;
+};
+
 class splunk : public Plugin_Api {
 
   int retry_attempt;
@@ -30,6 +39,8 @@ class splunk : public Plugin_Api {
   std::vector<System *> systems;
   std::vector<Call *> calls;
   Config *config;
+
+  bool m_config_sent = false;
 
 public:
   int system_rates(std::vector<System *> systems, float timeDiff) {
@@ -335,7 +346,7 @@ public:
     BOOST_FOREACH (boost::property_tree::ptree::value_type &node, cfg.get_child("systems")) {
       boost::optional<boost::property_tree::ptree &> splunk_exists = node.second.get_child_optional("apiKey");
       if (splunk_exists) {
-        splunk sys;
+        splunk_system sys;
 
         sys.api_key = node.second.get<std::string>("apiKey", "");
         sys.system_id = node.second.get<std::string>("systemId", "");
