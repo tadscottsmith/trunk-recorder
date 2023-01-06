@@ -60,6 +60,10 @@ public:
     return NULL;
   }
 
+  static size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
+    ((std::string *)userp)->append((char *)contents, size * nmemb);
+    return size * nmemb;
+  }
 
   int system_rates(std::vector<System *> systems, float timeDiff) {
     this->systems = systems;
@@ -300,6 +304,7 @@ public:
   headers = curl_slist_append(headers, "Authorization: Splunk f97fd213-61b1-49e6-8733-00f20483359a");
   headers = curl_slist_append(headers, "Content-Type: application/json");
   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
 
   // Perform the request
   CURLcode res = curl_easy_perform(curl);
