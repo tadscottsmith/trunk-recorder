@@ -52,7 +52,7 @@ class splunk : public Plugin_Api {
 public:
 
   splunk_system *get_system(std::string short_name) {
-    for (std::vector<Rdio_Scanner_System>::iterator it = data.systems.begin(); it != data.systems.end(); ++it) {
+    for (std::vector<splunk_system>::iterator it = data.systems.begin(); it != data.systems.end(); ++it) {
       if (it->short_name == short_name) {
         return &(*it);
       }
