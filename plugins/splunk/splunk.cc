@@ -270,7 +270,7 @@ public:
 
     std::string api_key;
 
-    splunk_system *sys = get_system(call_info.short_name);
+    splunk_system *sys = get_system("ramsey");
 
     if (sys) {
       api_key = sys->api_key;
