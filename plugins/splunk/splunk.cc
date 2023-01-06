@@ -11,6 +11,7 @@
 #include <boost/dll/alias.hpp> // for BOOST_DLL_ALIAS
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
 
 typedef struct stat_plugin_t stat_plugin_t;
 
