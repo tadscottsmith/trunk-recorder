@@ -44,9 +44,6 @@ public:
     return send_object(nodes, "rates", "rates");
   }
 
-  splunk() : {
-  }
-
   void send_config(std::vector<Source *> sources, std::vector<System *> systems) {
 
     if (config_sent())
@@ -235,7 +232,6 @@ public:
   }
 
   bool config_sent() {
-    scoped_lock guard(m_lock);
 
     return m_config_sent;
   }
@@ -360,7 +356,7 @@ public:
   int stop() {
     return 0;
   }
-  
+
   int setup_sources(std::vector<Source *> sources) { return 0; }
 };
 
