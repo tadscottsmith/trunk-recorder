@@ -256,12 +256,20 @@ public:
 
   int send_stat(std::string val) {
 
+
+    std::string api_key;
+
+    if (sys) {
+      api_key = sys->api_key;
+      system_id = sys->system_id;
+    }
+
     fprintf(stderr, "%s\n", val.c_str());
 
   CURL *curl = curl_easy_init();
   if (!curl) {
     // Handle error
-    return;
+    return -1;
   }
 
         std::string url = data.server + "/api/call-upload";
@@ -272,7 +280,7 @@ public:
 
   // Set the HTTP headers
   struct curl_slist *headers = nullptr;
-  headers = curl_slist_append(headers, "Authorization: Splunk " + token);
+  headers = curl_slist_append(headers, "Authorization: Splunk " + api_key.c_str());
   headers = curl_slist_append(headers, "Content-Type: application/json");
   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
