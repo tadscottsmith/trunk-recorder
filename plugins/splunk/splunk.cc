@@ -285,7 +285,7 @@ public:
     return -1;
   }
 
-        std::string url = data.server + "/api/call-upload";
+        std::string url = data.server;
 
   /* what URL that receives this POST */
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
