@@ -50,6 +50,17 @@ class splunk : public Plugin_Api {
   bool m_config_sent = false;
 
 public:
+
+  splunk_system *get_system(std::string short_name) {
+    for (std::vector<Rdio_Scanner_System>::iterator it = data.systems.begin(); it != data.systems.end(); ++it) {
+      if (it->short_name == short_name) {
+        return &(*it);
+      }
+    }
+    return NULL;
+  }
+
+
   int system_rates(std::vector<System *> systems, float timeDiff) {
     this->systems = systems;
 
@@ -258,6 +269,8 @@ public:
 
 
     std::string api_key;
+
+    splunk_system *sys = get_system(call_info.short_name);
 
     if (sys) {
       api_key = sys->api_key;
