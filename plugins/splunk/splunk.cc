@@ -256,7 +256,7 @@ public:
 
   int send_stat(std::string val) {
 
-    fprintf(stderr, "%s", val);
+    fprintf(stderr, "%s/n", val.str());
     // PUT THE CURL MAGIC HERE
     return 0;
   }
