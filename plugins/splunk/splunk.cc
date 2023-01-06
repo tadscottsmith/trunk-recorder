@@ -1,8 +1,6 @@
 #include <curl/curl.h>
 #include <time.h>
 #include <vector>
-#include <websocketpp/client.hpp>
-#include <websocketpp/config/asio_no_tls_client.hpp>
 
 // #include "../../trunk-recorder/global_structs.h"
 // #include "../../trunk-recorder/recorders/recorder.h"
@@ -12,6 +10,7 @@
 #include "../trunk-recorder/gr_blocks/decoder_wrapper.h"
 #include <boost/dll/alias.hpp> // for BOOST_DLL_ALIAS
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/algorithm/string.hpp>
 
 typedef struct stat_plugin_t stat_plugin_t;
 
@@ -32,7 +31,7 @@ struct splunk_system {
 };
 
 struct splunk_data {
-  std::vector<Rdio_Scanner_System> systems;
+  std::vector<splunk_system> systems;
   std::string server;
 };
 
