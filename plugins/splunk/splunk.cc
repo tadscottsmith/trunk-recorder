@@ -32,7 +32,6 @@ class splunk : public Plugin_Api {
   Config *config;
 
 public:
-
   int system_rates(std::vector<System *> systems, float timeDiff) {
     this->systems = systems;
 
@@ -46,7 +45,6 @@ public:
   }
 
   splunk() : {
-
   }
 
   void send_config(std::vector<Source *> sources, std::vector<System *> systems) {
@@ -245,7 +243,6 @@ public:
   int send_stat(std::string val) {
 
     // PUT THE CURL MAGIC HERE
-
   }
 
   int signal(long unitId, const char *signaling_type, gr::blocks::SignalType sig_type, Call *call, System *system, Recorder *recorder) {
@@ -318,9 +315,9 @@ public:
         new splunk());
   }
 
-  int parse_config(boost::property_tree::ptree &cfg) { 
+  int parse_config(boost::property_tree::ptree &cfg) {
 
-      // Tests to see if the rdioscannerServer value exists in the config file
+    // Tests to see if the rdioscannerServer value exists in the config file
     boost::optional<std::string> upload_server_exists = cfg.get_optional<std::string>("server");
     if (!upload_server_exists) {
       return 1;
@@ -336,7 +333,7 @@ public:
     if (!regex_match(this->data.server.c_str(), what, ex)) {
       BOOST_LOG_TRIVIAL(error) << "Unable to parse Splunk Server URL\n";
       return 1;
-    } 
+    }
 
     // Gets the API key for each system, if defined
     BOOST_FOREACH (boost::property_tree::ptree::value_type &node, cfg.get_child("systems")) {
@@ -358,12 +355,12 @@ public:
     }
 
     return 0;
-  }  
-    return 0; 
-    
   }
 
-  int stop() { return 0; }
+  int stop() {
+    return 0;
+  }
+  
   int setup_sources(std::vector<Source *> sources) { return 0; }
 };
 
