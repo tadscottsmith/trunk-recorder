@@ -286,7 +286,7 @@ public:
     return -1;
   }
 
-        std::string url = data.server;
+  std::string url = data.server;
 
   /* what URL that receives this POST */
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -301,7 +301,7 @@ public:
   // Perform the request
   CURLcode res = curl_easy_perform(curl);
   if (res != CURLE_OK) {
-    fprintf(stderr, "CURL OK ERROR - %d\n", res);
+    fprintf(stderr, "CURL OK ERROR - %d\t%s\n", res, url.c_str());
     return -1;
   }
 
