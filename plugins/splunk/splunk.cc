@@ -31,7 +31,14 @@ struct splunk_system {
   bool compress_wav;
 };
 
+struct splunk_data {
+  std::vector<Rdio_Scanner_System> systems;
+  std::string server;
+};
+
 class splunk : public Plugin_Api {
+
+  splunk_data data;
 
   int retry_attempt;
 
@@ -250,6 +257,7 @@ public:
   int send_stat(std::string val) {
 
     // PUT THE CURL MAGIC HERE
+    return 0;
   }
 
   int signal(long unitId, const char *signaling_type, gr::blocks::SignalType sig_type, Call *call, System *system, Recorder *recorder) {
@@ -286,7 +294,6 @@ public:
   }
 
   int start() {
-    open_stat();
     return 0;
   }
 
