@@ -291,7 +291,9 @@ public:
   /* what URL that receives this POST */
   url = "http://192.168.50.51:8080/services/collector/event";
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, val.c_str());
+
+  std::string wrappedEvent = "{\"event\":" + val + "}";
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, wrappedEvent.c_str());
 
   // Set the HTTP headers
   struct curl_slist *headers = nullptr;
