@@ -256,7 +256,36 @@ public:
 
   int send_stat(std::string val) {
 
-    fprintf(stderr, "%s/n", val.c_str());
+    fprintf(stderr, "%s\n", val.c_str());
+
+  CURL *curl = curl_easy_init();
+  if (!curl) {
+    // Handle error
+    return;
+  }
+
+        std::string url = data.server + "/api/call-upload";
+
+  /* what URL that receives this POST */
+  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, val.c_str());
+
+  // Set the HTTP headers
+  struct curl_slist *headers = nullptr;
+  headers = curl_slist_append(headers, "Authorization: Splunk " + token);
+  headers = curl_slist_append(headers, "Content-Type: application/json");
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+  // Perform the request
+  CURLcode res = curl_easy_perform(curl);
+  if (res != CURLE_OK) {
+    return -1;
+  }
+
+  // Clean up
+  curl_slist_free_all(headers);
+  curl_easy_cleanup(curl);
+
     // PUT THE CURL MAGIC HERE
     return 0;
   }
