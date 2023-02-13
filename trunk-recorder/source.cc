@@ -441,6 +441,21 @@ void Source::set_min_max() {
   max_hz = center + ((rate / 2) - (if1 / 2));
 }
 
+void Source::set_freq_error(double freq, int error){
+  //freq_errors[freq] += error;
+  freq_errors_count[freq] += 1;
+  //freq_errors_average[freq] = freq_errors[freq] / freq_errors_count[freq];
+  freq_errors_average[freq] = error;
+}
+  
+int Source::get_freq_error(double freq){
+  return freq_errors_average[freq];
+}
+
+int Source::get_freq_error_count(double freq){
+  return freq_errors_count[freq];
+}
+
 Source::Source(double c, double r, double e, std::string drv, std::string dev, Config *cfg) {
   rate = r;
   center = c;

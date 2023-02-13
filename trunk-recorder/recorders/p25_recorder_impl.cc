@@ -432,6 +432,8 @@ void p25_recorder_impl::stop() {
     clear();
     
     BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << this->call->get_talkgroup_display() << "\tFreq: " << format_freq(chan_freq) << "\t\u001b[33mStopping P25 Recorder Num [" << rec_num << "]\u001b[0m\tTDMA: " << d_phase2_tdma << "\tSlot: " << tdma_slot << "\tHz Error: " << this->get_freq_error();
+    source->set_freq_error(chan_freq, this->get_freq_error());
+    BOOST_LOG_TRIVIAL(info) << "Frequency " << format_freq(chan_freq) << "\tError: " << source->get_freq_error(chan_freq) << " Hz.\tCount: " << source->get_freq_error_count(chan_freq);
 
     state = INACTIVE;
     valve->set_enabled(false);
@@ -491,7 +493,14 @@ bool p25_recorder_impl::start(Call *call) {
 
     int offset_amount = (center_freq - chan_freq);
 
-    tune_offset(offset_amount);
+    if ((source->get_freq_error(chan_freq) <= -200) || (source->get_freq_error(chan_freq) >= 200))
+    {
+      tune_offset(offset_amount + source->get_freq_error(chan_freq));
+    }
+    else{
+      tune_offset(offset_amount);
+    }
+    
     if (qpsk_mod) {
       modulation_selector->set_output_index(1);
       qpsk_p25_decode->start(call);

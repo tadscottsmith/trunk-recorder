@@ -63,6 +63,10 @@ class Source {
   gr::basic_block_sptr source_block;
   void add_gain_stage(std::string stage_name, int value);
 
+  std::map<double, int> freq_errors;
+  std::map<double, int> freq_errors_count;
+  std::map<double, int> freq_errors_average;
+
 public:
   int get_num_available_digital_recorders();
   int get_num_available_analog_recorders();
@@ -124,6 +128,10 @@ public:
   Recorder *get_analog_recorder(Talkgroup *talkgroup, int priority, Call *call);
   Recorder *get_debug_recorder();
   Recorder *get_sigmf_recorder();
+
+  void set_freq_error(double freq, int error);
+  int get_freq_error(double freq);
+  int get_freq_error_count(double freq);
 
 #if GNURADIO_VERSION < 0x030900
   inline osmosdr::source::sptr cast_to_osmo_sptr(gr::basic_block_sptr p) {
