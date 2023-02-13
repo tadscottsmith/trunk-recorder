@@ -430,8 +430,9 @@ void p25_recorder_impl::stop() {
       recording_duration += fsk4_p25_decode->get_current_length();
     }
     clear();
-    
-    BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << this->call->get_talkgroup_display() << "\tFreq: " << format_freq(chan_freq) << "\t\u001b[33mStopping P25 Recorder Num [" << rec_num << "]\u001b[0m\tTDMA: " << d_phase2_tdma << "\tSlot: " << tdma_slot << "\tHz Error: " << this->get_freq_error();
+    if(this->get_freq_error() > 250){
+      BOOST_LOG_TRIVIAL(error) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << this->call->get_talkgroup_display() << "\tFreq: " << format_freq(chan_freq) << "\t\u001b[33mStopping P25 Recorder Num [" << rec_num << "]\u001b[0m\tTDMA: " << d_phase2_tdma << "\tSlot: " << tdma_slot << "\tHz Error: " << this->get_freq_error();
+    }
     source->set_freq_error(chan_freq, this->get_freq_error());
     BOOST_LOG_TRIVIAL(info) << "Frequency " << format_freq(chan_freq) << "\tError: " << source->get_freq_error(chan_freq) << " Hz.\tCount: " << source->get_freq_error_count(chan_freq);
 
