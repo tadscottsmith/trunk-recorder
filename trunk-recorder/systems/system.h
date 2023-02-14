@@ -108,7 +108,7 @@ public:
   virtual void set_source(Source *) = 0;
   virtual Talkgroup *find_talkgroup(long tg) = 0;
   virtual Talkgroup *find_talkgroup_by_freq(double freq) = 0;
-  virtual UnitTag *find_unit_tag(long unitID) = 0;
+  virtual std::string find_unit_tag(long unitID) = 0;
   virtual void set_talkgroups_file(std::string) = 0;
   virtual void set_channel_file(std::string channel_file) = 0;
   virtual bool has_channel_file() = 0;
@@ -159,5 +159,15 @@ public:
   virtual void update_active_talkgroup_patches(PatchData f_data) = 0;
   virtual void delete_talkgroup_patch(PatchData f_data) = 0;
   virtual void clear_stale_talkgroup_patches() = 0;
+
+  virtual bool get_multiSite() = 0;
+  virtual void set_multiSite(bool multiSite) = 0;
+
+  virtual std::string get_multiSiteSystemName() = 0;
+  virtual void set_multiSiteSystemName(std::string multiSiteSystemName) = 0;
+
+  virtual unsigned long get_multiSiteSystemNumber() = 0;
+  virtual void set_multiSiteSystemNumber(unsigned long multiSiteSystemName) = 0;
+
 };
 #endif

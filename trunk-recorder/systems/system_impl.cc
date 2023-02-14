@@ -306,7 +306,7 @@ Talkgroup *System_impl::find_talkgroup(long tg_number) {
 Talkgroup *System_impl::find_talkgroup_by_freq(double freq) {
   return talkgroups->find_talkgroup_by_freq(sys_num, freq);
 }
-UnitTag *System_impl::find_unit_tag(long unitID) {
+std::string System_impl::find_unit_tag(long unitID) {
   return unit_tags->find_unit_tag(unitID);
 }
 
@@ -590,4 +590,27 @@ void System_impl::clear_stale_talkgroup_patches() {
     }
     BOOST_LOG_TRIVIAL(debug) << "Active Patch of TGIDs" << printstring;
   }
+}
+
+bool System_impl::get_multiSite() {
+  return d_multiSite;
+}
+void System_impl::set_multiSite(bool multiSite) {
+  d_multiSite = multiSite;
+}
+
+std::string System_impl::get_multiSiteSystemName() {
+  return d_multiSiteSystemName;
+}
+
+void System_impl::set_multiSiteSystemName(std::string multiSiteSystemName) {
+  d_multiSiteSystemName = multiSiteSystemName;
+}
+
+unsigned long System_impl::get_multiSiteSystemNumber() {
+  return d_multiSiteSystemNumber;
+}
+
+void System_impl::set_multiSiteSystemNumber(unsigned long multiSiteSystemNumber) {
+  d_multiSiteSystemNumber = multiSiteSystemNumber;
 }

@@ -166,7 +166,7 @@ public:
   void set_source(Source *);
   Talkgroup *find_talkgroup(long tg);
   Talkgroup *find_talkgroup_by_freq(double freq);
-  UnitTag *find_unit_tag(long unitID);
+  std::string find_unit_tag(long unitID);
   void set_talkgroups_file(std::string);
   void set_channel_file(std::string channel_file);
   bool has_channel_file();
@@ -218,10 +218,22 @@ public:
   void delete_talkgroup_patch(PatchData f_data);
   void clear_stale_talkgroup_patches();
 
+  bool get_multiSite();
+  void set_multiSite(bool multiSite);
+
+  std::string get_multiSiteSystemName();
+  void set_multiSiteSystemName(std::string multiSiteSystemName);
+
+  unsigned long get_multiSiteSystemNumber();
+  void set_multiSiteSystemNumber(unsigned long multiSiteSystemNumber);
+
 private:
   TalkgroupDisplayFormat talkgroup_display_format;
   bool d_hideEncrypted;
   bool d_hideUnknown;
+  bool d_multiSite;
+  std::string d_multiSiteSystemName;
+  unsigned long d_multiSiteSystemNumber;
 
   bool d_mdc_enabled;
   bool d_fsync_enabled;

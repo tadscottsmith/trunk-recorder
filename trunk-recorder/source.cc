@@ -158,11 +158,15 @@ Recorder *Source::get_analog_recorder(Talkgroup *talkgroup, int priority, Call *
   int num_available_recorders = get_num_available_analog_recorders();
 
   if(talkgroup && (priority == -1)){
+    call->set_state(MONITORING);
+    call->set_monitoring_state(IGNORED_TG);
     BOOST_LOG_TRIVIAL(info) << "[" << call->get_system()->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\tNot recording talkgroup. Priority is -1.";
     return NULL;
   }
 
   if (talkgroup && priority > num_available_recorders) { // a high priority is bad. You need at least the number of availalbe recorders to your priority
+    call->set_state(MONITORING);
+    call->set_monitoring_state(NO_RECORDER);
     BOOST_LOG_TRIVIAL(error) << "[" << call->get_system()->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\tNot recording talkgroup. Priority is " <<  priority << " but only " << num_available_recorders << " recorders are available.";
     return NULL;
   }
@@ -364,11 +368,15 @@ Recorder *Source::get_digital_recorder(Talkgroup *talkgroup, int priority, Call 
   int num_available_recorders = get_num_available_digital_recorders();
 
   if(talkgroup && (priority == -1)){
+    call->set_state(MONITORING);
+    call->set_monitoring_state(IGNORED_TG);
     BOOST_LOG_TRIVIAL(info) << "[" << call->get_system()->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\tNot recording talkgroup. Priority is -1.";
     return NULL;
   }
 
   if (talkgroup && priority > num_available_recorders) { // a high priority is bad. You need at least the number of availalbe recorders to your priority
+    call->set_state(MONITORING);
+    call->set_monitoring_state(NO_RECORDER);
     BOOST_LOG_TRIVIAL(error) << "[" << call->get_system()->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\tNot recording talkgroup. Priority is " <<  priority << " but only " << num_available_recorders << " recorders are available.";
     return NULL;
   }
@@ -387,6 +395,8 @@ Recorder *Source::get_digital_recorder(Call *call) {
       break;
     }
   }
+
+  return NULL;
 
   BOOST_LOG_TRIVIAL(error) << "[" << call->get_system()->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t[ " << device << " ] No Digital Recorders Available.";
 
@@ -429,6 +439,21 @@ void Source::set_min_max() {
   long if1 = rate / decim;
   min_hz = center - ((rate / 2) - (if1 / 2));
   max_hz = center + ((rate / 2) - (if1 / 2));
+}
+
+void Source::set_freq_error(double freq, int error){
+  //freq_errors[freq] += error;
+  freq_errors_count[freq] += 1;
+  //freq_errors_average[freq] = freq_errors[freq] / freq_errors_count[freq];
+  freq_errors_average[freq] = error;
+}
+  
+int Source::get_freq_error(double freq){
+  return freq_errors_average[freq];
+}
+
+int Source::get_freq_error_count(double freq){
+  return freq_errors_count[freq];
 }
 
 Source::Source(double c, double r, double e, std::string drv, std::string dev, Config *cfg) {
@@ -475,6 +500,7 @@ Source::Source(double c, double r, double e, std::string drv, std::string dev, C
     BOOST_LOG_TRIVIAL(info) << "Setting sample rate to: " << FormatSamplingRate(rate);
     osmo_src->set_sample_rate(rate);
     actual_rate = osmo_src->get_sample_rate();
+    rate = round(actual_rate);
     BOOST_LOG_TRIVIAL(info) << "Actual sample rate: " << FormatSamplingRate(actual_rate);
     BOOST_LOG_TRIVIAL(info) << "Tuning to " << format_freq(center + error);
     osmo_src->set_center_freq(center + error, 0);
