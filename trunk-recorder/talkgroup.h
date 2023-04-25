@@ -11,6 +11,9 @@ public:
   Talkgroup(int sys_num, long num, std::string mode, std::string alpha_tag, std::string description, std::string tag, std::string group, int priority, unsigned long preferredNAC);
   Talkgroup(int sys_num, long num, double freq, double tone, std::string alpha_tag, std::string description, std::string tag, std::string group);
 
+  long get_number();
+  int get_sys_num();
+
   bool is_active();
   void set_active(bool new_active);
   
@@ -34,7 +37,13 @@ public:
 
   std::string get_group();
   void set_group(std::string new_group);
-  
+
+  double get_freq();
+  void set_freq(double new_freq);
+
+  double get_tone();
+  void set_tone(double new_tone);
+
   std::string menu_string();
 
 private:

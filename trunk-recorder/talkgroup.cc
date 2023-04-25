@@ -44,6 +44,14 @@ std::string Talkgroup::menu_string() {
   return buffAsStdStr;
 }
 
+long Talkgroup::get_number() {
+  return number;
+}
+
+int Talkgroup::get_sys_num() {
+  return sys_num;
+}
+
 bool Talkgroup::is_active() {
   return active;
 }
@@ -108,3 +116,18 @@ void Talkgroup::set_group(std::string new_group) {
   group = new_group;
 }
   
+double Talkgroup::get_freq() {
+  return freq;
+}
+
+void Talkgroup::set_freq(double new_freq) {
+  freq = new_freq;
+}
+
+double Talkgroup::get_tone() {
+  return tone;
+}
+
+void Talkgroup::set_tone(double new_tone) {
+  tone = new_tone;
+}
