@@ -44,23 +44,67 @@ std::string Talkgroup::menu_string() {
   return buffAsStdStr;
 }
 
+bool Talkgroup::is_active() {
+  return active;
+}
+
+void Talkgroup::set_active(bool new_active) {
+  active = new_active;
+}
+
 int Talkgroup::get_priority() {
   return priority;
+}
+
+void Talkgroup::set_priority(int new_priority) {
+  priority = new_priority;
 }
 
 unsigned long Talkgroup::get_preferredNAC() {
   return preferredNAC;
 }
 
-void Talkgroup::set_priority(int new_priority) {
-  priority = new_priority;
-  return;
+void Talkgroup::set_preferredNAC(unsgined long new_preferredNAC){
+  preferredNAC = new_preferredNAC;
 }
 
-bool Talkgroup::is_active() {
-  return active;
+std::string Talkgroup::get_mode() {
+  return mode;
 }
 
-void Talkgroup::set_active(bool a) {
-  active = a;
+void Talkgroup::set_mode(std::string new_mode) {
+  mode = new_mode;
 }
+
+std::string Talkgroup::get_alpha_tag() {
+  return alpha_tag;
+}
+
+void Talkgroup::set_alpha_tag(std::string new_alpha_tag) {
+  alpha_tag = new_alpha_tag;
+}
+
+std::string Talkgroup::get_description() {
+  return description;
+}
+
+void Talkgroup::set_description(std::string new_description) {
+  description = new_description;
+}
+
+std::string Talkgroup::get_tag() {
+  return tag;
+}
+
+void Talkgroup::set_tag(std::string new_tag) {
+  tag = new_tag;
+}
+
+std::string Talkgroup::get_group() {
+  return group;
+}
+
+void Talkgroup::set_group(std::string new_group) {
+  group = new_group;
+}
+  
