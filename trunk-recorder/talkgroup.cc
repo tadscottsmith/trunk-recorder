@@ -64,7 +64,7 @@ unsigned long Talkgroup::get_preferredNAC() {
   return preferredNAC;
 }
 
-void Talkgroup::set_preferredNAC(unsgined long new_preferredNAC){
+void Talkgroup::set_preferredNAC(unsigned long new_preferredNAC){
   preferredNAC = new_preferredNAC;
 }
 
