@@ -1542,8 +1542,8 @@ bool setup_convetional_channel(System *system, double frequency, long channel_in
       Call_conventional *call = NULL;
       if (system->has_channel_file()) {
         Talkgroup *tg = system->find_talkgroup_by_freq(frequency);
-        call = new Call_conventional(tg->number, tg->freq, system, config);
-        call->set_talkgroup_tag(tg->alpha_tag);
+        call = new Call_conventional(tg->get_number(), tg->get_freq(), system, config);
+        call->set_talkgroup_tag(tg->get_alpha_tag());
       } else {
         call = new Call_conventional(channel_index, frequency, system, config);
       }
@@ -1594,10 +1594,10 @@ bool setup_conventional_system(System *system) {
     for (vector<Talkgroup *>::iterator tg_it = talkgroups.begin(); tg_it != talkgroups.end(); tg_it++) {
       Talkgroup *tg = *tg_it;
 
-      bool channel_added = setup_convetional_channel(system, tg->freq, tg->number);
+      bool channel_added = setup_convetional_channel(system, tg->get_freq(), tg->get_number());
 
       if (!channel_added) {
-        BOOST_LOG_TRIVIAL(error) << "[" << system->get_short_name() << "]\t Unable to find a source for this conventional channel! Channel not added: " << format_freq(tg->freq) << " Talkgroup: " << tg->number;
+        BOOST_LOG_TRIVIAL(error) << "[" << system->get_short_name() << "]\t Unable to find a source for this conventional channel! Channel not added: " << format_freq(tg->get_freq()) << " Talkgroup: " << tg->get_number();
         // return false;
       } else {
         system_added = true;
