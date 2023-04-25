@@ -18,7 +18,7 @@ public:
   void set_priority(int new_priority);
 
   unsigned long get_preferredNAC();
-  void set_preferredNAC(unsgined long new_preferredNAC);
+  void set_preferredNAC(unsigned long new_preferredNAC);
 
   std::string get_mode();
   void set_mode(std::string new_mode);
