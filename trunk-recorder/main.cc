@@ -638,12 +638,12 @@ bool start_recorder(Call *call, TrunkMessage message, System *sys) {
   }
 
   if (talkgroup) {
-    call->set_talkgroup_tag(talkgroup->alpha_tag);
+    call->set_talkgroup_tag(talkgroup->get_alpha_tag());
   } else {
     call->set_talkgroup_tag("-");
   }
 
-  if (call->get_encrypted() == true || (talkgroup && (talkgroup->mode.compare("E") == 0 || talkgroup->mode.compare("TE") == 0 || talkgroup->mode.compare("DE") == 0))) {
+  if (call->get_encrypted() == true || (talkgroup && (talkgroup->get_mode().compare("E") == 0 || talkgroup->get_mode().compare("TE") == 0 || talkgroup->get_mode().compare("DE") == 0))) {
     call->set_state(MONITORING);
     call->set_monitoring_state(ENCRYPTED);
     if (sys->get_hideEncrypted() == false) {
@@ -669,7 +669,7 @@ bool start_recorder(Call *call, TrunkMessage message, System *sys) {
             }
           }
         }
-        if (talkgroup->mode.compare("A") == 0) {
+        if (talkgroup->get_mode().compare("A") == 0) {
           recorder = source->get_analog_recorder(talkgroup, priority, call);
           call->set_is_analog(true);
         } else {
@@ -1136,7 +1136,7 @@ void handle_call_grant(TrunkMessage message, System *sys) {
     Talkgroup *talkgroup = sys->find_talkgroup(call->get_talkgroup());
 
     if (talkgroup) {
-      call->set_talkgroup_tag(talkgroup->alpha_tag);
+      call->set_talkgroup_tag(talkgroup->get_alpha_tag());
     } else {
       call->set_talkgroup_tag("-");
     }
