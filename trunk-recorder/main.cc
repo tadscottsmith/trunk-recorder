@@ -1036,60 +1036,26 @@ void handle_call_grant(TrunkMessage message, System *sys) {
     if ((call->get_talkgroup() == message.talkgroup) && (call->get_phase2_tdma() == message.phase2_tdma)) {
       if (call->get_sys_num() != message.sys_num) {
         if (call->get_system()->get_multiSite() && sys->get_multiSite()) {
-          // For P25 we can use the WACN, RFSS, and SITE ID TO find duplicates.
+
+          // For P25 we can use the WACN to ensure this is the same P25 System.
           if (call->get_system()->get_wacn() == sys->get_wacn()) {
-            // If the RFSS does not match, we do not need to check the SITE ID.
-            if (call->get_system()->get_sys_rfss() != sys->get_sys_rfss()) {
-              if (call->get_state() == RECORDING) {
 
-                duplicate_grant = true;
-                original_call = call;
+            int msgRFSS = sys->get_sys_rfss();
+            int msgSiteID = sys->get_sys_site_id();
 
-                int call_preferred_sys_rfss = 0;
-                int call_preferred_sys_site_id = 0;
-                Talkgroup *call_talkgroup = call->get_system()->find_talkgroup(message.talkgroup);
-                if (call_talkgroup) {
-                  call_preferred_sys_rfss = call_talkgroup->get_preferred_sys_rfss();
-                  call_preferred_sys_site_id = call_talkgroup->get_preferred_sys_site_id();
-                }
+            if (call->get_state() == RECORDING) {
 
-                // If the existing call RFSS and Site ID does not match the preferred, but the new Grant message does match, supersede the call.
-                if (call_preferred_sys_rfss != call->get_system()->get_sys_rfss() && call_preferred_sys_site_id != call->get_system()->get_sys_rfss()) {
-                  if(message_preferred_sys_rfss == sys->get_sys_rfss() && message_preferred_sys_site_id == sys->get_sys_rfss())
-                  {
-                      superseding_grant = true;
-                  }
-                }
-
-              }
-            }
-            // If the RFSS does match, we need to check the SITE ID.
-            else if (call->get_system()->get_sys_rfss() == sys->get_sys_rfss()) {
-              if(call->get_system()->get_sys_site_id() == sys->get_sys_site_id()){
-                if (call->get_state() == RECORDING) {
-
-                  duplicate_grant = true;
-                  original_call = call;
-
-                  int call_preferred_sys_rfss = 0;
-                  int call_preferred_sys_site_id = 0;
-                  Talkgroup *call_talkgroup = call->get_system()->find_talkgroup(message.talkgroup);
-                  if (call_talkgroup) {
-                    call_preferred_sys_rfss = call_talkgroup->get_preferred_sys_rfss();
-                    call_preferred_sys_site_id = call_talkgroup->get_preferred_sys_site_id();
-                  }
-
-                  // If the existing call RFSS and Site ID does not match the preferred, but the new Grant message does match, supersede the call.
-                  if (call_preferred_sys_rfss != call->get_system()->get_sys_rfss() && call_preferred_sys_site_id != call->get_system()->get_sys_rfss()) {
-                    if(message_preferred_sys_rfss == sys->get_sys_rfss() && message_preferred_sys_site_id == sys->get_sys_rfss())
-                    {
-                        superseding_grant = true;
-                    }
-                  }
-
+              duplicate_grant = true;
+              original_call = call;
+              
+              //If this is a duplicate call and this grant message is on the preferred RFSS and Site ID, set it as superseding.
+              if(message_preferred_sys_rfss && message_preferred_sys_site_id){
+                if((message_preferred_sys_rfss == msgRFSS) && (message_preferred_sys_site_id == msgSiteID)){
+                  superseding_grant = true;
                 }
               }
             }
+
             // For SmartNet we need to manually enter multiSiteSytemName.
             // We already know that Call's system number does not match the message system number.
             // In this case, we check that the multiSiteSystemName is present, and that the Call and System multiSiteSystemNames are the same.
@@ -1098,12 +1064,6 @@ void handle_call_grant(TrunkMessage message, System *sys) {
 
                 duplicate_grant = true;
                 original_call = call;
-
-                unsigned long call_preferredNAC = 0;
-                Talkgroup *call_talkgroup = call->get_system()->find_talkgroup(message.talkgroup);
-                if (call_talkgroup) {
-                  call_preferredNAC = call_talkgroup->get_preferredNAC();
-                }
 
                 if((call->get_system()->get_multiSiteSystemNumber() != 0 ) && (sys->get_multiSiteSystemNumber() != 0 ))
                 {
@@ -1185,7 +1145,10 @@ void handle_call_grant(TrunkMessage message, System *sys) {
 
     
     if(superseding_grant) {
-      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << original_call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36mSuperseding Grant. Original Call NAC: " << original_call->get_system()->get_nac() << " Grant Message NAC: " << sys->get_nac() << "\t State: " << format_state(original_call->get_state()) << "\u001b[0m";
+      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << original_call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36mSuperseding Grant." 
+      << " Original Call RFSS-SITE: " << std::setw(3) << std::setfill('0') << original_call->get_system()->get_sys_rfss() << "-" << std::setw(3) << std::setfill('0') << original_call->get_system()->get_sys_site_id()
+      << " Grant RFSS-SITE: " << std::setw(3) << std::setfill('0') << sys->get_sys_rfss() << "-" << std::setw(3) << std::setfill('0') << sys->get_sys_site_id()
+      << " Source: " << message.source << " Call: " << original_call->get_call_num() << "C State: " << format_state(original_call->get_state()) << "\u001b[0m";
 
       // Attempt to start a new call on the preferred NAC.
       recording_started = start_recorder(call, message, sys);

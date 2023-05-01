@@ -390,12 +390,12 @@ The Trunk Record program really only uses the priority information and the Dec T
 
 Here are the column headers and some sample data: NOTE: If you are adding the Priority to a RR csv, as well as changing order you must use a heading for the first column other than "Decimal" eg DEC for TR to detect you are supplying this layout.
 
-| DEC |	HEX |	Mode |	Alpha Tag	| Description	| Tag |	Group | Priority | PreferredNAC (optional) |
+| DEC |	HEX |	Mode |	Alpha Tag	| Description	| Tag |	Group | Priority | Preferred RFSS-SITE |
 |-----|-----|------|-----------|-------------|-----|-------|----------|----------|
-|101	| 065	| D	| DCFD 01 Disp	| 01 Dispatch |	Fire Dispatch |	Fire | 1 | 1000 |
-|2227 |	8b3	| D	| DC StcarYard	| Streetcar Yard |	Transportation |	Services | 3 | 1001 |
+|101	| 065	| D	| DCFD 01 Disp	| 01 Dispatch |	Fire Dispatch |	Fire | 1 | 001-001 |
+|2227 |	8b3	| D	| DC StcarYard	| Streetcar Yard |	Transportation |	Services | 3 | 001-002 |
 
- In Multi-Site mode, the preferred NAC for a specific talk group is used to specify the site you prefer the talk group to be recorded from.
+ In Multi-Site mode, the preferred RFSS-SITE for a specific talk group is used to specify the site you prefer the talk group to be recorded from. The format should be the RFSS-SITE where RFSS is the RFSS in decimal format and SITE is the Site ID in decimal format.
 
 ## channelFile
 
