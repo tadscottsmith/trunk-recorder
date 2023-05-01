@@ -36,6 +36,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <utility>
+#include <cmath>
 
 #include "./global_structs.h"
 #include "recorder_globals.h"
@@ -837,6 +838,15 @@ void print_status() {
     Source *source = *it;
     source->print_recorders();
   }
+
+    BOOST_LOG_TRIVIAL(info) << "Control Channel Decode Rates: ";
+      for (std::vector<System *>::iterator it = systems.begin(); it != systems.end(); ++it) {
+    System_impl *sys = (System_impl *)*it;
+
+      if ((sys->get_system_type() != "conventional") && (sys->get_system_type() != "conventionalP25") && (sys->get_system_type() != "conventionalDMR")) {
+        BOOST_LOG_TRIVIAL(info) << "[" << sys->get_short_name() << "] " << sys->get_decode_rate() << " msg/sec";
+      }
+      }
 }
 
 void manage_calls() {
@@ -934,7 +944,7 @@ void manage_calls() {
           continue;
         }*/
       } else {
-        BOOST_LOG_TRIVIAL(error) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Call set to Inactive, but has no recorder\u001b[0m";
+        BOOST_LOG_TRIVIAL(error) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Call set to Inactive, but has no recorder\u001b[0m";
       }
     }
 
@@ -1098,7 +1108,7 @@ void handle_call_grant(TrunkMessage message, System *sys) {
     if ((call->get_talkgroup() == message.talkgroup) && (call->get_sys_num() == message.sys_num) && (call->get_freq() == message.freq) && (call->get_tdma_slot() == message.tdma_slot) && (call->get_phase2_tdma() == message.phase2_tdma)) {
       call_found = true;
 
-      // BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m GRANT Message for existing Call\u001b[0m";
+      // BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m GRANT Message for existing Call\u001b[0m";
 
       if (call->get_state() == RECORDING) {
         call->set_record_more_transmissions(true);
@@ -1121,7 +1131,7 @@ void handle_call_grant(TrunkMessage message, System *sys) {
       if (recorder != NULL) {
         recorder_state = format_state(recorder->get_state());
       }
-      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36mStopping RECORDING call, Recorder State: " << recorder_state << " RX overlapping TG message Freq, TG:" << message.talkgroup << "\u001b[0m";
+      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36mStopping RECORDING call, Recorder State: " << recorder_state << " RX overlapping TG message Freq, TG:" << message.talkgroup << "\u001b[0m";
 
       call->set_state(COMPLETED);
       call->conclude_call();
@@ -1138,7 +1148,7 @@ void handle_call_grant(TrunkMessage message, System *sys) {
       if (recorder != NULL) {
         recorder_state = format_state(recorder->get_state());
       }
-      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36mStopping INACTIVE call, Recorder State: " << recorder_state << " RX overlapping TG message Freq TG:" << message.talkgroup << "\u001b[0m";
+      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36mStopping INACTIVE call, Recorder State: " << recorder_state << " RX overlapping TG message Freq TG:" << message.talkgroup << "\u001b[0m";
 
       call->set_state(COMPLETED);
       call->conclude_call();
@@ -1219,9 +1229,9 @@ void handle_call_update(TrunkMessage message, System *sys) {
         // Only a RECORDING call can be set to INACTIVE
         // We should be safe to set it to RECORDING if it starts to get UPDATE messages
         call->set_state(RECORDING);
-        BOOST_LOG_TRIVIAL(trace) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Reactivating an INACTIVE Call \u001b[0m";
+        BOOST_LOG_TRIVIAL(trace) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Reactivating an INACTIVE Call \u001b[0m";
       }
-      // BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Updating Call \u001b[0m";
+      // BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Updating Call \u001b[0m";
 
       // It is helpful to have both GRANT and UPDATE messages allow for new calls to be started
       // This is because GRANT message can be sometimes dropped if the control channel is not perfect
@@ -1410,7 +1420,8 @@ void check_message_count(float timeDiff) {
     System_impl *sys = (System_impl *)*it;
 
     if ((sys->get_system_type() != "conventional") && (sys->get_system_type() != "conventionalP25") && (sys->get_system_type() != "conventionalDMR")) {
-      float msgs_decoded_per_second = sys->message_count / timeDiff;
+      int msgs_decoded_per_second = std::floor(sys->message_count / timeDiff);
+      sys->set_decode_rate(msgs_decoded_per_second);
 
       if (msgs_decoded_per_second < 2) {
 
@@ -1448,8 +1459,8 @@ void monitor_messages() {
   int sys_num;
   System *sys;
 
-  time_t lastStatusTime = time(NULL);
-  time_t lastMsgCountTime = time(NULL);
+  time_t last_status_time = time(NULL);
+  time_t last_decode_rate_check = time(NULL);
   time_t management_timestamp = time(NULL);
   time_t current_time = time(NULL);
   std::vector<TrunkMessage> trunk_messages;
@@ -1521,11 +1532,11 @@ void monitor_messages() {
 
     current_time = time(NULL);
 
-    float timeDiff = current_time - lastMsgCountTime;
+    float decode_rate_check_time_diff = current_time - last_decode_rate_check;
 
-    if (timeDiff >= 3.0) {
-      check_message_count(timeDiff);
-      lastMsgCountTime = current_time;
+    if (decode_rate_check_time_diff >= 3.0) {
+      check_message_count(decode_rate_check_time_diff);
+      last_decode_rate_check = current_time;
       for (vector<System *>::iterator sys_it = systems.begin(); sys_it != systems.end(); sys_it++) {
         System *system = *sys_it;
         if (system->get_system_type() == "p25") {
@@ -1534,10 +1545,10 @@ void monitor_messages() {
       }
     }
 
-    float statusTimeDiff = current_time - lastStatusTime;
+    float print_status_time_diff = current_time - last_status_time;
 
-    if (statusTimeDiff > 200) {
-      lastStatusTime = current_time;
+    if (print_status_time_diff > 200) {
+      last_status_time = current_time;
       print_status();
     }
   }

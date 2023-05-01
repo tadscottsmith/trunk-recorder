@@ -100,6 +100,7 @@ System_impl::System_impl(int sys_num) {
   d_tps_enabled = false;
   retune_attempts = 0;
   message_count = 0;
+  decode_rate = 0;
 }
 
 void System_impl::set_xor_mask(unsigned long sys_id, unsigned long wacn, unsigned long nac) {
@@ -129,6 +130,7 @@ bool System_impl::update_status(TrunkMessage message) {
                             << std::hex << std::uppercase << message.sys_id 
                             << " WACN: " << std::hex << std::uppercase << message.wacn 
                             << " NAC: " << std::hex << std::uppercase << message.nac;
+
     if (sys_id && wacn && nac) {
       lfsr = new p25p2_lfsr(nac, sys_id, wacn);
       xor_mask = lfsr->getXorChars(xor_mask_len);
@@ -392,6 +394,15 @@ int System_impl::get_message_count() {
 void System_impl::set_message_count(int count) {
   message_count = count;
 }
+
+void System_impl::set_decode_rate(int rate) {
+  decode_rate = rate;
+}
+
+int System_impl::get_decode_rate() {
+  return decode_rate;
+}
+
 void System_impl::add_control_channel(double control_channel) {
   if (control_channels.size() == 0) {
     control_channels.push_back(control_channel);
