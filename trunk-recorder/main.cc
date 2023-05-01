@@ -953,6 +953,12 @@ void current_system_status(TrunkMessage message, System *sys) {
   }
 }
 
+void current_system_sysid(TrunkMessage message, System *sys) {
+  if (sys->update_sysid(message)) {
+    plugman_setup_system(sys);
+  }
+}
+
 void unit_registration(System *sys, long source_id) {
   plugman_unit_registration(sys, source_id);
 }
@@ -1017,9 +1023,10 @@ void handle_call_grant(TrunkMessage message, System *sys) {
     if ((call->get_talkgroup() == message.talkgroup) && (call->get_phase2_tdma() == message.phase2_tdma)) {
       if (call->get_sys_num() != message.sys_num) {
         if (call->get_system()->get_multiSite() && sys->get_multiSite()) {
+          // For P25 we can use the WACN, RFSS, and SITE ID TO find duplicates.
           if (call->get_system()->get_wacn() == sys->get_wacn()) {
-            // Default mode to match WACN and NAC and use a preferred NAC;
-            if (call->get_system()->get_nac() != sys->get_nac() && (call->get_system()->get_multiSiteSystemName() == "")) {
+            // If the RFSS does not match, we do not need to check the SITE ID.
+            if (call->get_system()->get_sys_rfss() != sys->get_sys_rfss()) {
               if (call->get_state() == RECORDING) {
 
                 duplicate_grant = true;
@@ -1038,7 +1045,29 @@ void handle_call_grant(TrunkMessage message, System *sys) {
 
               }
             }
-            // If a multiSiteSystemName has been manually entered;
+            // If the RFSS does match, we need to check the SITE ID.
+            else if (call->get_system()->get_sys_rfss() == sys->get_sys_rfss()) {
+              if(call->get_system()->get_sys_site_id() == sys->get_sys_site_id()){
+                if (call->get_state() == RECORDING) {
+
+                  duplicate_grant = true;
+                  original_call = call;
+
+                  unsigned long call_preferredNAC = 0;
+                  Talkgroup *call_talkgroup = call->get_system()->find_talkgroup(message.talkgroup);
+                  if (call_talkgroup) {
+                    call_preferredNAC = call_talkgroup->get_preferredNAC();
+            
+                  }
+
+                  if ((call_preferredNAC != call->get_system()->get_nac() ) && (message_preferredNAC == sys->get_nac())) {
+                    superseding_grant = true;
+                  }
+
+                }
+              }
+            }
+            // For SmartNet we need to manually enter multiSiteSytemName.
             // We already know that Call's system number does not match the message system number.
             // In this case, we check that the multiSiteSystemName is present, and that the Call and System multiSiteSystemNames are the same.
             else if ((call->get_system()->get_multiSiteSystemName() != "")  && (call->get_system()->get_multiSiteSystemName() == sys->get_multiSiteSystemName())) {
@@ -1253,6 +1282,7 @@ void handle_message(std::vector<TrunkMessage> messages, System *sys) {
       break;
 
     case SYSID:
+      current_system_sysid(message, sys);
       break;
 
     case STATUS:

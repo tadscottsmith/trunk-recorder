@@ -45,6 +45,8 @@ struct TrunkMessage {
   long source;
   int sys_num;
   unsigned long sys_id;
+  unsigned long sys_rfss;
+  unsigned long sys_site_id;
   unsigned long nac;
   unsigned long wacn;
   PatchData patch_data;

@@ -52,6 +52,14 @@ unsigned long Talkgroup::get_preferredNAC() {
   return preferredNAC;
 }
 
+int Talkgroup::get_preferred_sys_rfss(){
+  return sys_rfss;
+}
+
+int Talkgroup::get_preferred_sys_site_id(){
+  return sys_site_id;
+}
+
 void Talkgroup::set_priority(int new_priority) {
   priority = new_priority;
   return;
