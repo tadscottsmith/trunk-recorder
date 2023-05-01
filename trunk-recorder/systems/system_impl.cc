@@ -126,7 +126,7 @@ bool System_impl::update_status(TrunkMessage message) {
     sys_id = message.sys_id;
     wacn = message.wacn;
     nac = message.nac;
-    BOOST_LOG_TRIVIAL(error) << "[" << short_name << "]\tDecoding System_impl ID "
+    BOOST_LOG_TRIVIAL(error) << "[" << short_name << "]\tDecoding System ID "
                             << std::hex << std::uppercase << message.sys_id 
                             << " WACN: " << std::hex << std::uppercase << message.wacn 
                             << " NAC: " << std::hex << std::uppercase << message.nac;
@@ -150,8 +150,9 @@ bool System_impl::update_sysid(TrunkMessage message) {
     sys_rfss = message.sys_rfss;
     sys_site_id = message.sys_site_id;
     BOOST_LOG_TRIVIAL(error) << "[" << short_name << "]\tDecoding System Site"
-                            << " RFSS: " << std::hex << std::uppercase << message.sys_rfss
-                            << " SITE ID: " << std::hex << std::uppercase << message.sys_site_id;
+                            << " RFSS: " << std::setw(3) << std::setfill('0') << message.sys_rfss
+                            << " SITE ID: " << std::setw(3) << std::setfill('0') << message.sys_site_id
+                            << " (" << std::setw(3) << std::setfill('0') << message.sys_rfss << "-" << std::setw(3) << std::setfill('0') << message.sys_site_id << ")";
     return true;
   }
   return false;

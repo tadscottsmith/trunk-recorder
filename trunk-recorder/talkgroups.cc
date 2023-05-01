@@ -75,7 +75,7 @@ void Talkgroups::load_talkgroups(int sys_num, std::string filename) {
         continue;
       }
 
-      tg = new Talkgroup(sys_num, atoi(vec[0].c_str()), vec[3].c_str(), vec[2].c_str(), vec[4].c_str(), vec[5].c_str(), vec[6].c_str(), 1, 0);
+      tg = new Talkgroup(sys_num, atoi(vec[0].c_str()), vec[3].c_str(), vec[2].c_str(), vec[4].c_str(), vec[5].c_str(), vec[6].c_str(), 1, 0, 0);
 
     } else {
       // Talkgroup configuration columns:
@@ -96,9 +96,17 @@ void Talkgroups::load_talkgroups(int sys_num, std::string filename) {
       // TODO(nkw): more sanity checking here.
       priority = (vec.size() == 8) ? atoi(vec[7].c_str()) : 1;
 
-      unsigned long preferredNAC = (vec.size() == 9) ? atoi(vec[8].c_str()) : 0;
+      int preferred_sys_rfss = 0;
+      int preferred_sys_site_id = 0;
 
-      tg = new Talkgroup(sys_num, atoi(vec[0].c_str()), vec[2].c_str(), vec[3].c_str(), vec[4].c_str(), vec[5].c_str(), vec[6].c_str(), priority, preferredNAC);
+      std::string preferredRFSSID = (vec.size() == 9) ? vec[8].c_str() : "";
+      if(!preferredRFSSID.empty()) {
+        size_t hyphen_pos = preferredRFSSID.find("-");
+        preferred_sys_rfss = stoi(preferredRFSSID.substr(0, hyphen_pos)); 
+        preferred_sys_site_id = stoi(preferredRFSSID.substr(hyphen_pos+1));
+      }
+
+      tg = new Talkgroup(sys_num, atoi(vec[0].c_str()), vec[2].c_str(), vec[3].c_str(), vec[4].c_str(), vec[5].c_str(), vec[6].c_str(), priority, preferred_sys_rfss, preferred_sys_site_id);
 
     }
     talkgroups.push_back(tg);

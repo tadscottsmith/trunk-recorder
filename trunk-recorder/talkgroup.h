@@ -22,7 +22,7 @@ public:
   double freq;
   double tone;
 
-  Talkgroup(int sys_num, long num, std::string mode, std::string alpha_tag, std::string description, std::string tag, std::string group, int priority, unsigned long preferredNAC);
+  Talkgroup(int sys_num, long num, std::string mode, std::string alpha_tag, std::string description, std::string tag, std::string group, int priority, int preferred_sys_rfss, int preferred_sys_site_id);
   Talkgroup(int sys_num, long num, double freq, double tone, std::string alpha_tag, std::string description, std::string tag, std::string group);
 
   bool is_active();
@@ -36,8 +36,8 @@ public:
 
 private:
   unsigned long preferredNAC;
-  int sys_rfss;
-  int sys_site_id;
+  int preferred_sys_rfss;
+  int preferred_sys_site_id;
 
   bool active;
 };
