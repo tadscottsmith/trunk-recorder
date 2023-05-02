@@ -88,6 +88,10 @@ void Talkgroups::load_talkgroups(int sys_num, std::string filename) {
       // [5] - tag
       // [6] - group
       // [7] - priority
+      
+      if(lines_read == 1) {
+        continue;
+      }
 
       if (!((vec.size() == 9) || (vec.size() == 8) || (vec.size() == 7))) {
         BOOST_LOG_TRIVIAL(error) << "Malformed talkgroup entry at line " << lines_read << ".";
