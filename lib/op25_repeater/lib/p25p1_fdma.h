@@ -136,7 +136,11 @@ namespace gr {
                 long get_curr_grp_id();
                 void reset_rx_status();
                 bool get_call_terminated();
+<<<<<<< HEAD
                 bool get_transmission_terminated();
+=======
+                void reset_call_terminated();
+>>>>>>> d9b01be8c0dbbab9329a018106e271a155ef3c90
                 Rx_Status get_rx_status();
                 void clear();
 
