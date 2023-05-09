@@ -126,6 +126,7 @@ bool p25p2_tdma::rx_sym(uint8_t sym)
 {
 	symbols_received++;
 	terminate_call = false;
+	terminate_transmission = false;
 	src_id = -1;
 	grp_id = -1;
 	return p2framer.rx_sym(sym);
@@ -147,6 +148,10 @@ void p25p2_tdma::crypt_key(uint16_t keyid, uint8_t algid, const std::vector<uint
 
 bool p25p2_tdma::get_call_terminated() {
 	return terminate_call;
+}
+
+bool p25p2_tdma::get_transmission_terminated() {
+	return terminate_transmission;
 }
 
 long p25p2_tdma::get_ptt_src_id() {

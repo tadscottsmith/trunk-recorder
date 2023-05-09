@@ -49,7 +49,8 @@ private:
   int d_normalize_fac;
   bool d_conventional;
   bool d_first_work;
-  bool d_termination_flag;
+  bool d_terminate_transmission_flag;
+  bool d_terminate_call_flag;
   time_t d_start_time;
   time_t d_stop_time;
    std::chrono::time_point<std::chrono::steady_clock> d_last_write_time;

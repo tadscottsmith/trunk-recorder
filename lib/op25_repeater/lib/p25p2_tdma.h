@@ -57,6 +57,7 @@ public:
 	bool rx_sym(uint8_t sym);
 	int handle_frame(void) ;
   	bool get_call_terminated();
+	bool get_transmission_terminated();
 	long get_ptt_src_id();
 	long get_ptt_grp_id();
 private:
@@ -80,6 +81,7 @@ private:
 	int d_msgq_id;
 	bool d_do_audio_output;
 	bool terminate_call;
+	bool terminate_transmission;
 	long src_id;
 	long grp_id;
 	const op25_audio& op25audio;

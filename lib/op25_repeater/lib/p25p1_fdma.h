@@ -97,6 +97,7 @@ namespace gr {
                 long curr_src_id;
                 long curr_grp_id;
                 bool terminate_call;
+                bool terminate_transmission;
                 const char *d_udp_host;
                 int  d_port;
 
@@ -135,6 +136,7 @@ namespace gr {
                 long get_curr_grp_id();
                 void reset_rx_status();
                 bool get_call_terminated();
+                bool get_transmission_terminated();
                 Rx_Status get_rx_status();
                 void clear();
 

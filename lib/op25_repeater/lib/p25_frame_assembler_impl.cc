@@ -145,6 +145,7 @@ p25_frame_assembler_impl::general_work (int noutput_items,
 
   const uint8_t *in = (const uint8_t *) input_items[0];
 
+  bool terminate_transmission = false;
   bool terminate_call = false;
   long p2_ptt_src_id = -1;
   long p2_ptt_grp_id = -1;
@@ -153,6 +154,10 @@ p25_frame_assembler_impl::general_work (int noutput_items,
 	for (int i = 0; i < ninput_items[0]; i++) {
 		if(p2tdma.rx_sym(in[i])) {
 			int rc = p2tdma.handle_frame();
+      if (p2tdma.get_transmission_terminated()) {
+        terminate_transmission = true;
+      }
+
       if (p2tdma.get_call_terminated()) {
         terminate_call = true;
       }
@@ -167,6 +172,9 @@ p25_frame_assembler_impl::general_work (int noutput_items,
 		}
 	}
   } else {
+    if (p1fdma.get_transmission_terminated()) {
+      terminate_transmission = true;
+    }
     if (p1fdma.get_call_terminated()) {
       terminate_call = true;
     }
@@ -212,8 +220,12 @@ p25_frame_assembler_impl::general_work (int noutput_items,
           BOOST_LOG_TRIVIAL(trace) << "setting silence_frame_count " << silence_frame_count << " to d_silence_frames: " << d_silence_frames << std::endl;
           silence_frame_count = d_silence_frames;
         } else {
-            if (terminate_call) {
+            if (terminate_transmission) {
             add_item_tag(0, nitems_written(0), pmt::intern("terminate"), pmt::from_long(1), d_tag_src );
+
+            if(terminate_call){
+              add_item_tag(0, nitems_written(0), pmt::intern("terminate_call"), pmt::from_long(1), d_tag_src );
+            }
             
             Rx_Status status = p1fdma.get_rx_status();
             
