@@ -442,18 +442,29 @@ void Source::set_min_max() {
 }
 
 void Source::set_freq_error(double freq, int error){
-  //freq_errors[freq] += error;
-  freq_errors_count[freq] += 1;
-  //freq_errors_average[freq] = freq_errors[freq] / freq_errors_count[freq];
-  freq_errors_average[freq] = error;
+
+  freq_errors_queue[freq].push_front(error);
+
+  if(freq_errors_queue[freq].size() > 10)
+  {
+    freq_errors_queue[freq].pop_back();
+  }
+
 }
   
 int Source::get_freq_error(double freq){
-  return freq_errors_average[freq];
-}
+  int totalErrors = 0;
+  int totalMeasurements = freq_errors_queue[freq].size();
 
-int Source::get_freq_error_count(double freq){
-  return freq_errors_count[freq];
+  for(int n = 0; n < totalMeasurements; n++){
+    totalErrors += freq_errors_queue[freq][n];
+  }
+
+  if(totalMeasurements > 0){
+    return (int) totalErrors / totalMeasurements;
+  }
+
+  return 0;
 }
 
 Source::Source(double c, double r, double e, std::string drv, std::string dev, Config *cfg) {
