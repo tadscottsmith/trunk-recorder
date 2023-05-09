@@ -847,7 +847,7 @@ std::vector<TrunkMessage> P25Parser::decode_tsbk(boost::dynamic_bitset<> &tsbk, 
     unsigned long spac = bitset_shift_mask(tsbk, 48, 0x3ff);
     unsigned long freq = bitset_shift_mask(tsbk, 16, 0xffffffff);
     unsigned long toff_sign = (toff0 >> 8) & 1;
-    unsigned long toff = toff0 & 0xff;
+    long toff = toff0 & 0xff;
 
     if (toff_sign == 0) {
       toff = 0 - toff;
@@ -885,11 +885,11 @@ void printbincharpad(char c) {
   // std::cout << " | ";
 }
 
-std::vector<TrunkMessage> P25Parser::parse_message(gr::message::sptr msg) {
+std::vector<TrunkMessage> P25Parser::parse_message(gr::message::sptr msg, System *system) {
   std::vector<TrunkMessage> messages;
 
   long type = msg->type();
-  int sys_num = msg->arg1();
+  int sys_num = system->get_sys_num();
   TrunkMessage message;
   message.message_type = UNKNOWN;
   message.source = -1;

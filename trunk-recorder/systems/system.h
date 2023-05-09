@@ -4,6 +4,7 @@
 #include "../unit_tags.h"
 #include <boost/foreach.hpp>
 #include <boost/log/trivial.hpp>
+#include <gnuradio/msg_queue.h>
 #include <stdio.h>
 //#include "../source.h"
 #include "parser.h"
@@ -92,7 +93,7 @@ public:
   virtual int get_max_dev() = 0;
   virtual void set_filter_width(double f) = 0;
   virtual double get_filter_width() = 0;
-
+  virtual gr::msg_queue::sptr get_msg_queue() = 0;
   virtual std::string get_system_type() = 0;
   virtual unsigned long get_sys_id() = 0;
   virtual unsigned long get_wacn() = 0;
@@ -120,6 +121,8 @@ public:
   virtual int channel_count() = 0;
   virtual int get_message_count() = 0;
   virtual void set_message_count(int count) = 0;
+  virtual void set_decode_rate(int rate) = 0;
+  virtual int get_decode_rate() = 0;
   virtual void add_channel(double channel) = 0;
   virtual void add_conventional_recorder(analog_recorder_sptr rec) = 0;
   virtual std::vector<analog_recorder_sptr> get_conventional_recorders() = 0;
@@ -130,7 +133,6 @@ public:
   virtual std::vector<double> get_channels() = 0;
   virtual std::vector<double> get_control_channels() = 0;
   virtual std::vector<Talkgroup *> get_talkgroups() = 0;
-
   virtual void set_bandplan(std::string) = 0;
   virtual std::string get_bandplan() = 0;
   virtual void set_bandfreq(int) = 0;

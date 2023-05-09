@@ -65,16 +65,31 @@ namespace gr {
                 d_sync->sync_reset();
         }
 
+        void frame_assembler_impl::crypt_reset() {
+            if (d_sync)
+                d_sync->crypt_reset();
+        }
+
+        void frame_assembler_impl::crypt_key(uint16_t keyid, uint8_t algid, const std::vector<uint8_t> &key) {
+            if (d_sync) {
+                if (d_debug >= 10) {
+                    std::string k_str = uint8_vector_to_hex_string(key);
+                    fprintf(stderr, "%s frame_assembler_impl::crypt_key: setting keyid(0x%x), algid(0x%x), key(0x%s)\n", logts.get(d_msgq_id), keyid, algid, k_str.c_str());
+                }
+                d_sync->crypt_key(keyid, algid, key);
+            }
+        }
+
         void frame_assembler_impl::set_debug(int debug) {
             if (d_sync)
                 d_sync->set_debug(debug);
         }
 
         frame_assembler::sptr
-            frame_assembler::make(int sys_num, const char* options, int debug, int msgq_id, gr::msg_queue::sptr queue)
+            frame_assembler::make(const char* options, int debug, int msgq_id, gr::msg_queue::sptr queue)
             {
                 return gnuradio::get_initial_sptr
-                    (new frame_assembler_impl(sys_num, options, debug, msgq_id, queue));
+                    (new frame_assembler_impl(options, debug, msgq_id, queue));
             }
 
         /*
@@ -92,7 +107,7 @@ namespace gr {
         /*
          * The private constructor
          */
-        frame_assembler_impl::frame_assembler_impl(int sys_num, const char* options, int debug, int msgq_id, gr::msg_queue::sptr queue)
+        frame_assembler_impl::frame_assembler_impl(const char* options, int debug, int msgq_id, gr::msg_queue::sptr queue)
             : gr::block("frame_assembler",
                     gr::io_signature::make (MIN_IN, MAX_IN, sizeof (char)),
 	                gr::io_signature::make ( 2, 2, sizeof(int16_t))),
@@ -103,11 +118,11 @@ namespace gr {
             d_sync(NULL)
         {
             if (strcasecmp(options, "smartnet") == 0)
-                d_sync = new rx_smartnet(options, debug, msgq_id, queue);
+                d_sync = new rx_smartnet(options, logts, debug, msgq_id, queue);
             else if (strcasecmp(options, "subchannel") == 0)
-                d_sync = new rx_subchannel(options, debug, msgq_id, queue);
+                d_sync = new rx_subchannel(options, logts, debug, msgq_id, queue);
             else
-                d_sync = new rx_sync(sys_num, options, debug, msgq_id, queue, output_queue);
+                d_sync = new rx_sync(options, logts, debug, msgq_id, queue, output_queue);
         }
 
         int 

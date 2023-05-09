@@ -62,6 +62,7 @@ public:
   std::string upload_script;
   int bcfy_system_id;
   int message_count;
+  int decode_rate;
   int retune_attempts;
   time_t last_message_time;
   std::string bandplan;
@@ -150,7 +151,7 @@ public:
   int get_max_dev();
   void set_filter_width(double f);
   double get_filter_width();
-
+  gr::msg_queue::sptr get_msg_queue();
   std::string get_system_type();
   unsigned long get_sys_id();
   unsigned long get_wacn();
@@ -174,6 +175,8 @@ public:
   int control_channel_count();
   int get_message_count();
   void set_message_count(int count);
+  int get_decode_rate();
+  void set_decode_rate(int rate);
   void add_control_channel(double channel);
   double get_next_control_channel();
   double get_current_control_channel();
@@ -188,6 +191,7 @@ public:
   std::vector<double> get_channels();
   std::vector<double> get_control_channels();
   std::vector<Talkgroup *> get_talkgroups();
+  gr::msg_queue::sptr msg_queue;
   System_impl(int sys_id);
   void set_bandplan(std::string);
   std::string get_bandplan();

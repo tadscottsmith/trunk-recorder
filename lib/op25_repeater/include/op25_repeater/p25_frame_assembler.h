@@ -52,13 +52,15 @@ namespace gr {
        * class. op25_repeater::p25_frame_assembler::make is the public interface for
        * creating new instances.
        */
-      static sptr make(int sys_num, int silence_frames, const char* udp_host, int port, int debug, bool do_imbe, bool do_output, bool do_msgq, gr::msg_queue::sptr queue, bool do_audio_output, bool do_phase2_tdma, bool do_nocrypt);
+      static sptr make(int silence_frames, const char* udp_host, int port, int debug, bool do_imbe, bool do_output, bool do_msgq, gr::msg_queue::sptr queue, bool do_audio_output, bool do_phase2_tdma, bool do_nocrypt);
       virtual void set_xormask(const char*p) {}
       virtual void set_nac(int nac) {}
       virtual void set_slotid(int slotid) {}
       virtual void set_slotkey(int key) {}
       virtual void set_debug(int debug) {}
       virtual void reset_timer() {}
+      virtual void crypt_reset(void) {}
+      virtual void crypt_key(uint16_t keyid, uint8_t algid, const std::vector<uint8_t> &key) {}
       virtual void set_phase2_tdma(bool p) {}
       virtual void clear() {};
       virtual  void clear_silence_frame_count() {};

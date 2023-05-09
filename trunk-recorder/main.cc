@@ -36,6 +36,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <utility>
+#include <cmath>
 
 #include "./global_structs.h"
 #include "recorder_globals.h"
@@ -61,7 +62,6 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/message.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/top_block.h>
 #include <gnuradio/uhd/usrp_source.h>
 
@@ -82,9 +82,10 @@ std::map<long, long> unit_affiliations;
 std::vector<Call *> calls;
 
 gr::top_block_sptr tb;
-gr::msg_queue::sptr msg_queue;
+
 
 volatile sig_atomic_t exit_flag = 0;
+int exit_code = EXIT_SUCCESS;
 SmartnetParser *smartnet_parser;
 P25Parser *p25_parser;
 Config config;
@@ -645,7 +646,12 @@ bool start_recorder(Call *call, TrunkMessage message, System *sys) {
     call->set_state(MONITORING);
     call->set_monitoring_state(ENCRYPTED);
     if (sys->get_hideEncrypted() == false) {
-      BOOST_LOG_TRIVIAL(info) << "[" << sys->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[31mNot Recording: ENCRYPTED\u001b[0m ";
+      long unit_id = call->get_current_source_id();
+      std::string tag = sys->find_unit_tag(unit_id);
+      if (tag != "") {
+        tag = " (\033[0;34m" + tag + "\033[0m)";
+      }
+      BOOST_LOG_TRIVIAL(info) << "[" << sys->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[31mNot Recording: ENCRYPTED\u001b[0m - src: " << unit_id << tag;
     }
     return false;
   }
@@ -836,6 +842,15 @@ void print_status() {
     Source *source = *it;
     source->print_recorders();
   }
+
+    BOOST_LOG_TRIVIAL(info) << "Control Channel Decode Rates: ";
+      for (std::vector<System *>::iterator it = systems.begin(); it != systems.end(); ++it) {
+    System_impl *sys = (System_impl *)*it;
+
+      if ((sys->get_system_type() != "conventional") && (sys->get_system_type() != "conventionalP25") && (sys->get_system_type() != "conventionalDMR")) {
+        BOOST_LOG_TRIVIAL(info) << "[" << sys->get_short_name() << "] " << sys->get_decode_rate() << " msg/sec";
+      }
+      }
 }
 
 void manage_calls() {
@@ -933,7 +948,7 @@ void manage_calls() {
           continue;
         }*/
       } else {
-        BOOST_LOG_TRIVIAL(error) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Call set to Inactive, but has no recorder\u001b[0m";
+        BOOST_LOG_TRIVIAL(error) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Call set to Inactive, but has no recorder\u001b[0m";
       }
     }
 
@@ -1068,7 +1083,7 @@ void handle_call_grant(TrunkMessage message, System *sys) {
     if ((call->get_talkgroup() == message.talkgroup) && (call->get_sys_num() == message.sys_num) && (call->get_freq() == message.freq) && (call->get_tdma_slot() == message.tdma_slot) && (call->get_phase2_tdma() == message.phase2_tdma)) {
       call_found = true;
 
-      // BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m GRANT Message for existing Call\u001b[0m";
+      // BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m GRANT Message for existing Call\u001b[0m";
 
       if (call->get_state() == RECORDING) {
         call->set_record_more_transmissions(true);
@@ -1091,7 +1106,7 @@ void handle_call_grant(TrunkMessage message, System *sys) {
       if (recorder != NULL) {
         recorder_state = format_state(recorder->get_state());
       }
-      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36mStopping RECORDING call, Recorder State: " << recorder_state << " RX overlapping TG message Freq, TG:" << message.talkgroup << "\u001b[0m";
+      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36mStopping RECORDING call, Recorder State: " << recorder_state << " RX overlapping TG message Freq, TG:" << message.talkgroup << "\u001b[0m";
 
       call->set_state(COMPLETED);
       call->conclude_call();
@@ -1108,7 +1123,7 @@ void handle_call_grant(TrunkMessage message, System *sys) {
       if (recorder != NULL) {
         recorder_state = format_state(recorder->get_state());
       }
-      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36mStopping INACTIVE call, Recorder State: " << recorder_state << " RX overlapping TG message Freq TG:" << message.talkgroup << "\u001b[0m";
+      BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36mStopping INACTIVE call, Recorder State: " << recorder_state << " RX overlapping TG message Freq TG:" << message.talkgroup << "\u001b[0m";
 
       call->set_state(COMPLETED);
       call->conclude_call();
@@ -1189,9 +1204,9 @@ void handle_call_update(TrunkMessage message, System *sys) {
         // Only a RECORDING call can be set to INACTIVE
         // We should be safe to set it to RECORDING if it starts to get UPDATE messages
         call->set_state(RECORDING);
-        BOOST_LOG_TRIVIAL(trace) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Reactivating an INACTIVE Call \u001b[0m";
+        BOOST_LOG_TRIVIAL(trace) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Reactivating an INACTIVE Call \u001b[0m";
       }
-      // BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Updating Call \u001b[0m";
+      // BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << call->get_talkgroup_display() << "\tFreq: " << format_freq(call->get_freq()) << "\t\u001b[36m Updating Call \u001b[0m";
 
       // It is helpful to have both GRANT and UPDATE messages allow for new calls to be started
       // This is because GRANT message can be sometimes dropped if the control channel is not perfect
@@ -1379,23 +1394,28 @@ void check_message_count(float timeDiff) {
     System_impl *sys = (System_impl *)*it;
 
     if ((sys->get_system_type() != "conventional") && (sys->get_system_type() != "conventionalP25") && (sys->get_system_type() != "conventionalDMR")) {
-      float msgs_decoded_per_second = sys->message_count / timeDiff;
+      int msgs_decoded_per_second = std::floor(sys->message_count / timeDiff);
+      sys->set_decode_rate(msgs_decoded_per_second);
 
       if (msgs_decoded_per_second < 2) {
 
+        // if it loses track of the control channel, quit after a while
+        if (config.control_retune_limit > 0) {
+          sys->retune_attempts++;
+          if (sys->retune_attempts > config.control_retune_limit) {
+            BOOST_LOG_TRIVIAL(error) << "[" << sys->get_short_name() << "]\t" << "Control channel retune limit exceeded after " << sys->retune_attempts << " tries - Terminating trunk recorder";
+            exit_flag = 1;
+            exit_code = EXIT_FAILURE;
+            return;
+          }
+        }
         if (sys->control_channel_count() > 1) {
           retune_system(sys);
         } else {
           BOOST_LOG_TRIVIAL(error) << "[" << sys->get_short_name() << "]\tThere is only one control channel defined";
         }
 
-        // if it loses track of the control channel, quit after a while
-        if (config.control_retune_limit > 0) {
-          sys->retune_attempts++;
-          if (sys->retune_attempts > config.control_retune_limit) {
-            exit_flag = 1;
-          }
-        }
+
       } else {
         sys->retune_attempts = 0;
       }
@@ -1413,8 +1433,8 @@ void monitor_messages() {
   int sys_num;
   System *sys;
 
-  time_t lastStatusTime = time(NULL);
-  time_t lastMsgCountTime = time(NULL);
+  time_t last_status_time = time(NULL);
+  time_t last_decode_rate_check = time(NULL);
   time_t management_timestamp = time(NULL);
   time_t current_time = time(NULL);
   std::vector<TrunkMessage> trunk_messages;
@@ -1422,7 +1442,7 @@ void monitor_messages() {
   while (1) {
 
     if (exit_flag) { // my action when signal set it 1
-      BOOST_LOG_TRIVIAL(info) << "Caught Exit Signal...";
+      BOOST_LOG_TRIVIAL(info) << "Caught an Exit Signal...";
       for (vector<Call *>::iterator it = calls.begin(); it != calls.end();) {
         Call *call = *it;
 
@@ -1446,32 +1466,37 @@ void monitor_messages() {
 
     plugman_poll_one();
 
-    msg = msg_queue->delete_head_nowait();
 
-    if (msg != 0) {
-      sys_num = msg->arg1();
-      sys = find_system(sys_num);
+for (vector<System *>::iterator sys_it = systems.begin(); sys_it != systems.end(); sys_it++) {
+    System_impl *system = (System_impl *)*sys_it;
 
-      if (sys) {
-        sys->set_message_count(sys->get_message_count() + 1);
 
-        if (sys->get_system_type() == "smartnet") {
-          trunk_messages = smartnet_parser->parse_message(msg->to_string(), sys);
-          handle_message(trunk_messages, sys);
+    if ((system->get_system_type() == "p25") || (system->get_system_type() == "smartnet") ) {
+      msg.reset();
+      msg = system->get_msg_queue()->delete_head_nowait();
+    while (msg != 0) {
+        system->set_message_count(system->get_message_count() + 1);
+
+        if (system->get_system_type() == "smartnet") {
+          trunk_messages = smartnet_parser->parse_message(msg->to_string(), system);
+          handle_message(trunk_messages, system);
         }
 
-        if (sys->get_system_type() == "p25") {
-          trunk_messages = p25_parser->parse_message(msg);
-          handle_message(trunk_messages, sys);
+        if (system->get_system_type() == "p25") {
+          trunk_messages = p25_parser->parse_message(msg, system);
+          handle_message(trunk_messages, system);
         }
-      }
+      
 
       if (msg->type() == -1) {
-        BOOST_LOG_TRIVIAL(error) << "[" << sys->get_short_name() << "]\t process_data_unit timeout";
+        BOOST_LOG_TRIVIAL(error) << "[" << system->get_short_name() << "]\t process_data_unit timeout";
       }
 
       msg.reset();
-    } else {
+      msg = system->get_msg_queue()->delete_head_nowait();
+    } 
+    }
+}
       current_time = time(NULL);
 
       if ((current_time - management_timestamp) >= 1.0) {
@@ -1482,15 +1507,13 @@ void monitor_messages() {
 
       boost::this_thread::sleep(boost::posix_time::milliseconds(10));
       // usleep(1000 * 10);
-    }
+    
 
-    current_time = time(NULL);
+    float decode_rate_check_time_diff = current_time - last_decode_rate_check;
 
-    float timeDiff = current_time - lastMsgCountTime;
-
-    if (timeDiff >= 3.0) {
-      check_message_count(timeDiff);
-      lastMsgCountTime = current_time;
+    if (decode_rate_check_time_diff >= 3.0) {
+      check_message_count(decode_rate_check_time_diff);
+      last_decode_rate_check = current_time;
       for (vector<System *>::iterator sys_it = systems.begin(); sys_it != systems.end(); sys_it++) {
         System *system = *sys_it;
         if (system->get_system_type() == "p25") {
@@ -1499,10 +1522,10 @@ void monitor_messages() {
       }
     }
 
-    float statusTimeDiff = current_time - lastStatusTime;
+    float print_status_time_diff = current_time - last_status_time;
 
-    if (statusTimeDiff > 200) {
-      lastStatusTime = current_time;
+    if (print_status_time_diff > 200) {
+      last_status_time = current_time;
       print_status();
     }
   }
@@ -1636,7 +1659,7 @@ bool setup_systems() {
             system->smartnet_trunking = make_smartnet_trunking(control_channel_freq,
                                                                source->get_center(),
                                                                source->get_rate(),
-                                                               msg_queue,
+                                                               system->get_msg_queue(),
                                                                system->get_sys_num());
             tb->connect(source->get_src_block(), 0, system->smartnet_trunking, 0);
           }
@@ -1647,7 +1670,7 @@ bool setup_systems() {
             system->p25_trunking = make_p25_trunking(control_channel_freq,
                                                      source->get_center(),
                                                      source->get_rate(),
-                                                     msg_queue,
+                                                     system->get_msg_queue(),
                                                      system->get_qpsk_mod(),
                                                      system->get_sys_num());
             tb->connect(source->get_src_block(), 0, system->p25_trunking, 0);
@@ -1720,7 +1743,7 @@ int main(int argc, char **argv) {
   tb = gr::make_top_block("Trunking");
   tb->start();
   tb->lock();
-  msg_queue = gr::msg_queue::make(100);
+  
   smartnet_parser = new SmartnetParser(); // this has to eventually be generic;
   p25_parser = new P25Parser();
 
@@ -1763,5 +1786,5 @@ int main(int argc, char **argv) {
     BOOST_LOG_TRIVIAL(error) << "Unable to setup a System to record, exiting..." << std::endl;
   }
 
-  return 1;
+  return exit_code;
 }

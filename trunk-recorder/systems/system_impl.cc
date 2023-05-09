@@ -98,6 +98,8 @@ System_impl::System_impl(int sys_num) {
   d_tps_enabled = false;
   retune_attempts = 0;
   message_count = 0;
+  decode_rate = 0;
+  msg_queue = gr::msg_queue::make(100);
 }
 
 void System_impl::set_xor_mask(unsigned long sys_id, unsigned long wacn, unsigned long nac) {
@@ -122,7 +124,7 @@ bool System_impl::update_status(TrunkMessage message) {
     sys_id = message.sys_id;
     wacn = message.wacn;
     nac = message.nac;
-    BOOST_LOG_TRIVIAL(info) << "[" << short_name << "]\tDecoding System_impl ID "
+    BOOST_LOG_TRIVIAL(info) << "[" << short_name << "]\tDecoding System ID "
                             << std::hex << std::uppercase << message.sys_id << " WACN: "
                             << std::hex << std::uppercase << message.wacn << " NAC: " << std::hex << std::uppercase << message.nac;
     if (sys_id && wacn && nac) {
@@ -139,6 +141,10 @@ bool System_impl::update_status(TrunkMessage message) {
   return false;
 }
 
+ gr::msg_queue::sptr System_impl::get_msg_queue() {
+  return msg_queue;
+ }
+ 
 const char *System_impl::get_xor_mask() {
   return xor_mask;
 }
@@ -368,6 +374,15 @@ int System_impl::get_message_count() {
 void System_impl::set_message_count(int count) {
   message_count = count;
 }
+
+void System_impl::set_decode_rate(int rate) {
+  decode_rate = rate;
+}
+
+int System_impl::get_decode_rate() {
+  return decode_rate;
+}
+
 void System_impl::add_control_channel(double control_channel) {
   if (control_channels.size() == 0) {
     control_channels.push_back(control_channel);
