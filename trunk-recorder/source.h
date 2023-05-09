@@ -14,6 +14,11 @@
 #include "recorders/p25_recorder.h"
 #include "recorders/sigmf_recorder.h"
 
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
+
+using namespace boost::accumulators;
+
 struct Gain_Stage_t {
   std::string stage_name;
   int value;
@@ -64,8 +69,7 @@ class Source {
   void add_gain_stage(std::string stage_name, int value);
 
   std::map<double, int> freq_errors;
-  std::map<double, int> freq_errors_count;
-  std::map<double, int> freq_errors_average;
+  std::map<double, std::deque<int>> freq_errors_queue;
 
 public:
   int get_num_available_digital_recorders();
@@ -131,7 +135,6 @@ public:
 
   void set_freq_error(double freq, int error);
   int get_freq_error(double freq);
-  int get_freq_error_count(double freq);
 
 #if GNURADIO_VERSION < 0x030900
   inline osmosdr::source::sptr cast_to_osmo_sptr(gr::basic_block_sptr p) {
