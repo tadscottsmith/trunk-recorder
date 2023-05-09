@@ -14,11 +14,6 @@
 #include "recorders/p25_recorder.h"
 #include "recorders/sigmf_recorder.h"
 
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics.hpp>
-
-using namespace boost::accumulators;
-
 struct Gain_Stage_t {
   std::string stage_name;
   int value;
