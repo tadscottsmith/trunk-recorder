@@ -82,6 +82,8 @@ System_impl::System_impl(int sys_num) {
   sys_id = 0;
   wacn = 0;
   nac = 0;
+  sys_rfss = 0;
+  sys_site_id = 0;
   current_control_channel = 0;
   xor_mask_len = 0;
   xor_mask = NULL;
@@ -119,14 +121,17 @@ void System_impl::set_xor_mask(unsigned long sys_id, unsigned long wacn, unsigne
     }
   }
 }
+
 bool System_impl::update_status(TrunkMessage message) {
   if (!sys_id || !wacn || !nac) {
     sys_id = message.sys_id;
     wacn = message.wacn;
     nac = message.nac;
-    BOOST_LOG_TRIVIAL(info) << "[" << short_name << "]\tDecoding System ID "
-                            << std::hex << std::uppercase << message.sys_id << " WACN: "
-                            << std::hex << std::uppercase << message.wacn << " NAC: " << std::hex << std::uppercase << message.nac;
+    BOOST_LOG_TRIVIAL(error) << "[" << short_name << "]\tDecoding System ID "
+                            << std::hex << std::uppercase << message.sys_id 
+                            << " WACN: " << std::hex << std::uppercase << message.wacn 
+                            << " NAC: " << std::hex << std::uppercase << message.nac;
+
     if (sys_id && wacn && nac) {
       lfsr = new p25p2_lfsr(nac, sys_id, wacn);
       xor_mask = lfsr->getXorChars(xor_mask_len);
@@ -145,6 +150,19 @@ bool System_impl::update_status(TrunkMessage message) {
   return msg_queue;
  }
  
+bool System_impl::update_sysid(TrunkMessage message) {
+  if (!sys_rfss || !sys_site_id) {
+    sys_rfss = message.sys_rfss;
+    sys_site_id = message.sys_site_id;
+    BOOST_LOG_TRIVIAL(error) << "[" << short_name << "]\tDecoding System Site"
+                            << " RFSS: " << std::setw(3) << std::setfill('0') << message.sys_rfss
+                            << " SITE ID: " << std::setw(3) << std::setfill('0') << message.sys_site_id
+                            << " (" << std::setw(3) << std::setfill('0') << message.sys_rfss << "-" << std::setw(3) << std::setfill('0') << message.sys_site_id << ")";
+    return true;
+  }
+  return false;
+}
+
 const char *System_impl::get_xor_mask() {
   return xor_mask;
 }
@@ -163,6 +181,14 @@ unsigned long System_impl::get_nac() {
 
 unsigned long System_impl::get_wacn() {
   return this->wacn;
+}
+
+int System_impl::get_sys_rfss(){
+  return this->sys_rfss;
+}
+
+int System_impl::get_sys_site_id(){
+  return this->sys_site_id;
 }
 
 bool System_impl::get_call_log() {
