@@ -221,6 +221,11 @@ p25_frame_assembler_impl::general_work (int noutput_items,
         //BOOST_LOG_TRIVIAL(trace) << "P25 Frame Assembler -  output_queue: " << output_queue.size() << " noutput_items: " <<  noutput_items << " ninput_items: " << ninput_items[0];
 
         if (amt_produce > 0) {
+
+          if (terminate_call) {
+            BOOST_LOG_TRIVIAL(trace) << "P25 Frame Assembler -  Ignoring TERM!" << "\tTDMA Group: " << p2tdma.get_ptt_grp_id() << " TDMA Src: " << p2tdma.get_ptt_src_id() << " FDMA Group: " << p1fdma.get_curr_grp_id() << " FDMA Src: " << p1fdma.get_curr_src_id();
+          }
+
             if (amt_produce >= 32768) {
               BOOST_LOG_TRIVIAL(error) << "P25 Frame Assembler -  output_queue size: " << output_queue.size() << " max size: " << output_queue.max_size() << " limiting amt_produce to  32767 ";
               
@@ -238,6 +243,9 @@ p25_frame_assembler_impl::general_work (int noutput_items,
             silence_frame_count = d_silence_frames;
         } else {
               if (terminate_call) {
+                
+                BOOST_LOG_TRIVIAL(trace) << "P25 Frame Assembler -  Applying TERM!" << "\tTDMA Group: " << p2tdma.get_ptt_grp_id() << " TDMA Src: " << p2tdma.get_ptt_src_id() << " FDMA Group: " << p1fdma.get_curr_grp_id() << " FDMA Src: " << p1fdma.get_curr_src_id();
+
                 add_item_tag(0, nitems_written(0), pmt::intern("terminate"), pmt::from_long(1), d_tag_src );
                 
                 Rx_Status status = p1fdma.get_rx_status();
