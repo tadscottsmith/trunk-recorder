@@ -328,7 +328,7 @@ bool load_config(string config_file) {
             BOOST_LOG_TRIVIAL(error) << "Either \"channels\" or \"channelFile\" need to be defined for a conventional system!";
             return false;
           }
-          
+
           system->set_talkgroups_file(node.second.get<std::string>("talkgroupsFile", ""));
           BOOST_LOG_TRIVIAL(info) << "Talkgroups File: " << system->get_talkgroups_file();
 
@@ -1499,7 +1499,12 @@ bool setup_convetional_channel(System *system, double frequency, long channel_in
         call = new Call_conventional(tg->number, tg->freq, system, config);
         call->set_talkgroup_tag(tg->alpha_tag);
       } else {
-        call = new Call_conventional(-1, frequency, system, config);
+        if (system->get_system_type() == "conventionalDMR") {
+          call = new Call_conventional(-1, frequency, system, config);
+        }
+        else{
+          call = new Call_conventional(channel_index, frequency, system, config);
+        }
       }
       BOOST_LOG_TRIVIAL(info) << "[" << system->get_short_name() << "]\tMonitoring " << system->get_system_type() << " channel: " << format_freq(frequency) << " Talkgroup: " << channel_index;
       if (system->get_system_type() == "conventional") {

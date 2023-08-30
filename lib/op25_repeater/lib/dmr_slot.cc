@@ -573,7 +573,7 @@ dmr_slot::decode_vlch(uint8_t* vlch) {
 	d_src_id = get_lc_srcaddr();
 	d_grp_id = get_lc_dstaddr();
 
-	if (d_debug >= 0) {
+	if (d_debug >= 10) {
 		fprintf(stderr, "%s Slot(%d), CC(%x), VOICE LC PF(%d), FLCO(%02x), FID(%02x), SVCOPT(%02X), DSTADDR(%06x), SRCADDR(%06x), rs_errs=%d\n",  logts.get(d_msgq_id),	d_chan, get_slot_cc(), get_lc_pf(), get_lc_flco(), get_lc_fid(), get_lc_svcopt(), get_lc_dstaddr(), get_lc_srcaddr(), rs_errs);
 	}
 

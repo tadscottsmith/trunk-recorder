@@ -154,7 +154,7 @@ void dmr_recorder_impl::initialize(Source *src) {
   silence_frames = source->get_silence_frames();
   squelch_db = 0;
 
-  talkgroup = 0;
+  talkgroup = -1;
   d_phase2_tdma = true;
   rec_num = rec_counter++;
   recording_count = 0;
@@ -420,6 +420,7 @@ bool dmr_recorder_impl::start(Call *call) {
     timestamp = time(NULL);
     starttime = time(NULL);
 
+    call->update_talkgroup(-1);
     talkgroup = call->get_talkgroup();
     short_name = call->get_short_name();
     chan_freq = call->get_freq();
@@ -428,7 +429,7 @@ bool dmr_recorder_impl::start(Call *call) {
     squelch_db = system->get_squelch_db();
     squelch->set_threshold(squelch_db);
 
-    BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << this->call->get_talkgroup_display() << "\tFreq: " << format_freq(chan_freq) << "\t\u001b[32mStarting DMR Recorder Num [" << rec_num << "]\u001b[0m\tTDMA: " << call->get_phase2_tdma() << "\tSlot: " << call->get_tdma_slot();
+    BOOST_LOG_TRIVIAL(info) << "[" << call->get_short_name() << "]\t\033[0;34m" << call->get_call_num() << "C\033[0m\tTG: " << this->call->get_talkgroup_display() << "\tFreq: " << format_freq(chan_freq) << "\t\u001b[32mStarting DMR Recorder Num [" << rec_num << "]\u001b[0m\tTDMA: true";
 
     int offset_amount = (center_freq - chan_freq);
 
