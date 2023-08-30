@@ -72,7 +72,8 @@ public:
 	inline void set_slot_mask(int mask) { d_slot_mask = mask; };
 
 	/* For getting Src and Terminator for DMR Recorder */
-	int get_src_id(); 
+	int get_src_id();
+	int get_grp_id();  
 	bool get_terminated();
 
 private:
@@ -103,6 +104,7 @@ private:
 	int         d_chan;
 	int         d_slot_mask;
 	int			d_src_id;
+	int			d_grp_id;
 	bool		d_terminated;
         log_ts      logts;
 	CBPTC19696  bptc;

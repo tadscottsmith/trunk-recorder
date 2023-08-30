@@ -41,6 +41,7 @@ public:
 	inline int chan() { return d_chan; };
 	inline void set_slot_mask(int mask);
 	int get_src_id(int slot);
+	int get_grp_id(int slot);
 	bool get_terminated(int slot);
 
 private:

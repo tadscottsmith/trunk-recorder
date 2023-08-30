@@ -284,7 +284,7 @@ bool load_config(string config_file) {
         BOOST_LOG_TRIVIAL(info) << "System Type: " << system->get_system_type();
 
         // If it is a conventional System
-        if ((system->get_system_type() == "conventional") || (system->get_system_type() == "conventionalP25") || (system->get_system_type() == "conventionalDMR")) {
+        if ((system->get_system_type() == "conventional") || (system->get_system_type() == "conventionalP25")) {
 
           boost::optional<std::string> channel_file_exist = node.second.get_optional<std::string>("channelFile");
           boost::optional<boost::property_tree::ptree &> channels_exist = node.second.get_child_optional("channels");
@@ -310,6 +310,28 @@ bool load_config(string config_file) {
             BOOST_LOG_TRIVIAL(error) << "Either \"channels\" or \"channelFile\" need to be defined for a conventional system!";
             return false;
           }
+          // If it is a Conventional DMR System
+        } else if ((system->get_system_type() == "conventionalDMR")) {
+
+          boost::optional<boost::property_tree::ptree &> channels_exist = node.second.get_child_optional("channels");
+
+          if (channels_exist) {
+            BOOST_LOG_TRIVIAL(info) << "Conventional Channels: ";
+            BOOST_FOREACH (boost::property_tree::ptree::value_type &sub_node, node.second.get_child("channels")) {
+              double channel = sub_node.second.get<double>("", 0);
+
+              BOOST_LOG_TRIVIAL(info) << "  " << format_freq(channel);
+              system->add_channel(channel);
+            }
+          }
+          else {
+            BOOST_LOG_TRIVIAL(error) << "Either \"channels\" or \"channelFile\" need to be defined for a conventional system!";
+            return false;
+          }
+          
+          system->set_talkgroups_file(node.second.get<std::string>("talkgroupsFile", ""));
+          BOOST_LOG_TRIVIAL(info) << "Talkgroups File: " << system->get_talkgroups_file();
+
           // If it is a Trunked System
         } else if ((system->get_system_type() == "smartnet") || (system->get_system_type() == "p25")) {
           BOOST_LOG_TRIVIAL(info) << "Control Channels: ";
@@ -1477,7 +1499,7 @@ bool setup_convetional_channel(System *system, double frequency, long channel_in
         call = new Call_conventional(tg->number, tg->freq, system, config);
         call->set_talkgroup_tag(tg->alpha_tag);
       } else {
-        call = new Call_conventional(channel_index, frequency, system, config);
+        call = new Call_conventional(-1, frequency, system, config);
       }
       BOOST_LOG_TRIVIAL(info) << "[" << system->get_short_name() << "]\tMonitoring " << system->get_system_type() << " channel: " << format_freq(frequency) << " Talkgroup: " << channel_index;
       if (system->get_system_type() == "conventional") {

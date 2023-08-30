@@ -340,10 +340,19 @@ int transmission_sink::work(int noutput_items, gr_vector_const_void_star &input_
 
   for (unsigned int i = 0; i < tags.size(); i++) {
     // BOOST_LOG_TRIVIAL(info) << "TAG! " << tags[i].key;
-    if (pmt::eq(grp_id_key, tags[i].key)) {
+     if (pmt::eq(grp_id_key, tags[i].key)) {
       long grp_id = pmt::to_long(tags[i].value);
 
       if ((state == RECORDING) || (state == IDLE)) {
+        
+        // ConventionalDMR will have a TGID of -1 until metadata is received.
+        if(d_current_call_talkgroup_encoded == -1){
+          d_current_call->update_talkgroup(grp_id);
+          d_current_call_talkgroup = d_current_call->get_talkgroup();
+          d_current_call_talkgroup_display = d_current_call->get_talkgroup_display();
+          d_current_call_talkgroup_encoded = grp_id;
+        }
+
         if (d_current_call_talkgroup_encoded != grp_id) {
           if (!d_conventional) {
             BOOST_LOG_TRIVIAL(info) << "[" << d_current_call_short_name << "]\t\033[0;34m" << d_current_call_num << "C\033[0m\tTG: " << d_current_call_talkgroup_display << "\tFreq: " << format_freq(d_current_call_freq) << "\tGROUP MISMATCH -  Recorder TG: " << d_current_call_talkgroup_encoded << " Received TG: " << grp_id << " Recorder state: " << format_state(state) << " incoming: " << noutput_items;
@@ -358,6 +367,7 @@ int transmission_sink::work(int noutput_items, gr_vector_const_void_star &input_
         }
       }
     }
+
     if (pmt::eq(src_id_key, tags[i].key)) {
       long src_id = pmt::to_long(tags[i].value);
       pos = d_sample_count + (tags[i].offset - nitems_read(0));

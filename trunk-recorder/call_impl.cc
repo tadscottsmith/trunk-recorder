@@ -403,6 +403,11 @@ bool Call_impl::get_conversation_mode() {
   return sys->get_conversation_mode();
 }
 
+void Call_impl::update_talkgroup(long tg) {
+  talkgroup = tg;
+  this->update_talkgroup_display();
+}
+
 void Call_impl::update_talkgroup_display() {
   boost::trim(talkgroup_tag);
   if (talkgroup_tag.empty()) {

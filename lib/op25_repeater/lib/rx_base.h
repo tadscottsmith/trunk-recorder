@@ -38,6 +38,7 @@ namespace gr{
                 virtual void set_debug(int debug) = 0;
                 virtual void set_xormask(const char* p) = 0;
                 virtual int get_src_id(int slot) { return -1;};
+                virtual int get_grp_id(int slot) { return -1;};
 	            virtual bool get_terminated(int slot) { return false;};
                 rx_base(const char * options, log_ts& logger,int debug, int msgq_id, gr::msg_queue::sptr queue) { };
                 rx_base() {}; // default constructor called by derived classes

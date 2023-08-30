@@ -41,6 +41,7 @@ public:
   std::string get_temp_dir();
   void set_freq(double f);
   long get_talkgroup();
+  void update_talkgroup(long tg);
 
   bool update(TrunkMessage message);
   int get_idle_count();

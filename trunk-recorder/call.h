@@ -39,6 +39,7 @@ public:
   virtual std::string get_temp_dir() = 0;
   virtual void set_freq(double f) = 0;
   virtual long get_talkgroup() = 0;
+  virtual void update_talkgroup(long tg) = 0;
 
   virtual bool update(TrunkMessage message) = 0;
   virtual int get_idle_count() = 0;

@@ -159,10 +159,15 @@ namespace gr {
         for (int slot_id = 0; slot_id < 2; slot_id++) {
         int16_t *out = (int16_t *)output_items[slot_id];
         int src_id = d_sync->get_src_id(slot_id);
+        int grp_id = d_sync->get_grp_id(slot_id);
         bool terminated = d_sync->get_terminated(slot_id);
         if ((src_id != -1) && (src_id != 0)) {
-            BOOST_LOG_TRIVIAL(info) << "DMR Frame Assembler - sending src: " << src_id;
+            BOOST_LOG_TRIVIAL(trace) << "DMR Frame Assembler [" << slot_id << "] - sending src: " << src_id;
             add_item_tag(0, nitems_written(0), pmt::intern("src_id"), pmt::from_long(src_id), pmt::intern(name()));
+          }
+        if ((grp_id != -1) && (grp_id != 0)) {
+            BOOST_LOG_TRIVIAL(trace) << "DMR Frame Assembler [" << slot_id << "] - sending grp: " << grp_id;
+            add_item_tag(0, nitems_written(0), pmt::intern("grp_id"), pmt::from_long(grp_id), pmt::intern(name()));
           }
           /*
         if (terminated) {
