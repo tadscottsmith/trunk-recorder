@@ -87,6 +87,24 @@ public:
       source_list << "]";
     }
 
+    std::ostringstream patch_list;
+    std::string patch_list_string;
+    patch_list << std::fixed << std::setprecision(2);
+    patch_list << "[";
+
+    if (call_info.patched_talkgroups.size()>1){
+      for (unsigned long i = 0; i < call_info.patched_talkgroups.size(); i++) {
+        if (i!=0) { 
+          patch_list << ",";
+        }
+        patch_list << (int)call_info.patched_talkgroups[i];
+      }
+      patch_list << "]";
+    }
+    else {
+      patch_list << "]";
+    }
+
     char formattedTalkgroup[62];
     snprintf(formattedTalkgroup, 61, "%c[%dm%10ld%c[0m", 0x1B, 35, call_info.talkgroup, 0x1B);
     std::string talkgroup_display = boost::lexical_cast<std::string>(formattedTalkgroup);
@@ -101,6 +119,7 @@ public:
 
     source_list_string = source_list.str();
     call_length_string = call_length.str();
+    patch_list_string = patch_list.str();
 
     struct curl_httppost *formpost = NULL;
     struct curl_httppost *lastptr = NULL;
@@ -173,6 +192,12 @@ public:
                  &lastptr,
                  CURLFORM_COPYNAME, "source_list",
                  CURLFORM_COPYCONTENTS, source_list_string.c_str(),
+                 CURLFORM_END);
+
+    curl_formadd(&formpost,
+                 &lastptr,
+                 CURLFORM_COPYNAME, "patches",
+                 CURLFORM_COPYCONTENTS, patch_list_string.c_str(),
                  CURLFORM_END);
 
     curl = curl_easy_init();
