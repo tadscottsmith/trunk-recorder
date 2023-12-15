@@ -29,7 +29,7 @@ int pfb_channelizer::find_channel_number(double freq, double center, double rate
     }
     std::cout << "[ " << i << " ] Channel Freq: " << std::setprecision(9) << channel_freq << std::endl;
     if (i == rollover) {
-      channel_freq = center - (rate / 2);
+      channel_freq = center - (rate / 2 ) - 12500; // (25000Hz / 2) for center of channel
     } else {
       channel_freq += 25000;
     }
