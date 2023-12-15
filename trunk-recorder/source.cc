@@ -596,7 +596,7 @@ void Source::build_channel_freqs() {
     // std::cout << "[ " << i << " ] Freq: " << std::setprecision (15) << freq << std::endl;
     channel_freqs.push_back(freq);
     if (i == rollover) {
-      freq = center - (rate / 2);
+      freq = center - (rate / 2) - 12500; // (25000Hz / 2) for center of channel;
     } else {
       freq += 25000;
     }
