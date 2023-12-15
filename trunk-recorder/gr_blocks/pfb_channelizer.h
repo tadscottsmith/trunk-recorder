@@ -11,6 +11,7 @@
 #include <gnuradio/filter/filterbank_vcvcf.h>
 #include <gnuradio/filter/firdes.h>
 #include <gnuradio/hier_block2.h>
+#include <iomanip>
 
 class pfb_channelizer : public gr::hier_block2 {
 public:
