@@ -1,5 +1,6 @@
 #include "system_impl.h"
 #include "system.h"
+#include "site.h"
 
 System *System::make(int sys_num) {
   return (System *)new System_impl(sys_num);
@@ -140,6 +141,23 @@ bool System_impl::update_status(TrunkMessage message) {
     }
     return true;
   }
+  return false;
+}
+
+bool System_impl::update_adjacent_status(TrunkMessage message) {
+
+   //   message.sys_id = syid;
+    //message.sys_rfss = rfid;
+    //message.sys_site_id = stid;
+    //message.freq = f1;
+    //message.conventional = conventional;
+    //message.failed = failed;
+    //message.valid = valid;
+    //message.active = active;
+
+    BOOST_LOG_TRIVIAL(info) << "[" << short_name << "]\tAdjacent Site"
+                            << " RFSS: " << std::setw(3) << std::setfill('0') << message.sys_rfss
+                            << " SITE ID: " << std::setw(3) << std::setfill('0') << message.sys_site_id;
   return false;
 }
 

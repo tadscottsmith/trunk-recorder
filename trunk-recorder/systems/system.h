@@ -107,6 +107,7 @@ public:
   virtual void set_xor_mask(unsigned long sys_id, unsigned long wacn, unsigned long nac) = 0;
   virtual const char *get_xor_mask() = 0;
   virtual bool update_status(TrunkMessage message) = 0;
+  virtual bool update_adjacent_status(TrunkMessage message) = 0;
   virtual bool update_sysid(TrunkMessage message) = 0;
   virtual int get_sys_num() = 0;
   virtual void set_system_type(std::string) = 0;

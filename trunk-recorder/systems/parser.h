@@ -20,6 +20,7 @@ enum MessageType {
   UU_ANS_REQ = 13,
   UU_V_GRANT = 14,
   UU_V_UPDATE = 15,
+  ADJACENT_STATUS = 16,
   UNKNOWN = 99
 };
 
@@ -51,6 +52,10 @@ struct TrunkMessage {
   unsigned long wacn;
   PatchData patch_data;
   unsigned long opcode;
+  bool conventional;
+  bool failed;
+  bool valid;
+  bool active;
   
 };
 

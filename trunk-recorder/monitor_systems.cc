@@ -307,6 +307,10 @@ void current_system_status(TrunkMessage message, System *sys) {
   }
 }
 
+void adjacent_system_status(TrunkMessage message, System *sys) {
+  sys->update_adjacent_status(message);
+}
+
 void current_system_sysid(TrunkMessage message, System *sys) {
   if ((sys->get_system_type() == "p25") || (sys->get_system_type() == "conventionalP25")) {
     if (sys->update_sysid(message)) {
@@ -590,6 +594,10 @@ void handle_message(std::vector<TrunkMessage> messages, System *sys, Config &con
 
     case STATUS:
       current_system_status(message, sys);
+      break;
+
+    case ADJACENT_STATUS:
+      adjacent_system_status(message, sys);
       break;
 
     case LOCATION:

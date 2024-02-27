@@ -71,10 +71,13 @@ std::string P25Parser::channel_id_to_string(int chan_id, int sys_num) {
 unsigned long P25Parser::bitset_shift_mask(boost::dynamic_bitset<> &tsbk, int shift, unsigned long long mask) {
   boost::dynamic_bitset<> bitmask(tsbk.size(), mask);
   unsigned long result = ((tsbk >> shift) & bitmask).to_ulong();
+  //std::cout << "TSBK: " << tsbk << std::endl;
+  //std::cout << "BITS: " << (tsbk >> shift) << std::endl;
+  //std::cout << "MASK: " << bitmask << std::endl;
 
-  // std::cout << "    " << std::dec<< shift << " " << tsbk.size() << " [ " <<
-  // mask << " ]  = " << result << " - " << ((tsbk >> shift) & bitmask) <<
-  // std::endl;
+  //std::cout << "    " << std::dec<< shift << " " << tsbk.size() << " [ " <<
+  //mask << " ]  = " << result << " - " << ((tsbk >> shift) & bitmask) <<
+  //std::endl;
   return result;
 }
 
@@ -876,11 +879,28 @@ std::vector<TrunkMessage> P25Parser::decode_tsbk(boost::dynamic_bitset<> &tsbk, 
     }
     BOOST_LOG_TRIVIAL(debug) << "tsbk3b net stat: wacn " << std::dec << wacn << " syid " << syid << " ch1 " << ch1 << "(" << channel_id_to_string(ch1, sys_num) << ") ";
   } else if (opcode == 0x3c) { // adjacent status
+    unsigned long syid = bitset_shift_mask(tsbk, 56, 0xfff);
     unsigned long rfid = bitset_shift_mask(tsbk, 48, 0xff);
     unsigned long stid = bitset_shift_mask(tsbk, 40, 0xff);
     unsigned long ch1 = bitset_shift_mask(tsbk, 24, 0xffff);
     unsigned long f1 = channel_id_to_frequency(ch1, sys_num);
+
+    bool conventional = (bool)bitset_shift_mask(tsbk, 64, 0x80);
+    bool failed = (bool)bitset_shift_mask(tsbk, 64, 0x40);
+    bool valid = (bool)bitset_shift_mask(tsbk, 64, 0x20);
+    bool active = (bool)bitset_shift_mask(tsbk, 64, 0x10);
+
     BOOST_LOG_TRIVIAL(debug) << "tsbk3c\tAdjacent Status\t rfid " << std::dec << rfid << " stid " << stid << " ch1 " << ch1 << "(" << channel_id_to_string(ch1, sys_num) << ") ";
+
+    message.message_type = ADJACENT_STATUS;
+    message.sys_id = syid;
+    message.sys_rfss = rfid;
+    message.sys_site_id = stid;
+    message.freq = f1;
+    message.conventional = conventional;
+    message.failed = failed;
+    message.valid = valid;
+    message.active = active;
 
     if (f1) {
       it = channels[stid].find((ch1 >> 12) & 0xf);
@@ -891,9 +911,10 @@ std::vector<TrunkMessage> P25Parser::decode_tsbk(boost::dynamic_bitset<> &tsbk, 
         //			self.adjacent[f1] = 'rfid: %d stid:%d uplink:%f
         // tbl:%d' % (rfid, stid, (f1 + self.freq_table[table]['offset']) /
         // 1000000.0, table)
-        BOOST_LOG_TRIVIAL(debug) << "\ttsbk3c Chan " << temp_chan.frequency << "  " << temp_chan.step;
+        BOOST_LOG_TRIVIAL(error) << "\ttsbk3c Chan " << temp_chan.frequency << "  " << temp_chan.step;
       }
     }
+
   } else if (opcode == 0x3d) { // iden_up
     unsigned long iden = bitset_shift_mask(tsbk, 76, 0xf);
     unsigned long bw = bitset_shift_mask(tsbk, 67, 0x1ff);

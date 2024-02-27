@@ -10,6 +10,7 @@
 #include "parser.h"
 #include "smartnet_trunking.h"
 #include "system.h"
+#include "site.h"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -50,6 +51,7 @@ class System_impl : public System {
   unsigned long nac;
   int sys_rfss;
   int sys_site_id;
+  std::vector<site> adjacent_sites;
 
 public:
   Talkgroups *talkgroups;
@@ -167,6 +169,7 @@ public:
   void set_xor_mask(unsigned long sys_id, unsigned long wacn, unsigned long nac);
   const char *get_xor_mask();
   bool update_status(TrunkMessage message);
+  bool update_adjacent_status(TrunkMessage message);
   bool update_sysid(TrunkMessage message);
   int get_sys_num();
   void set_system_type(std::string);
