@@ -51,7 +51,7 @@ class System_impl : public System {
   unsigned long nac;
   int sys_rfss;
   int sys_site_id;
-  std::vector<site> adjacent_sites;
+  std::vector<site *> adjacent_sites;
 
 public:
   Talkgroups *talkgroups;

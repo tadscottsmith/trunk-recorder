@@ -146,6 +146,8 @@ bool System_impl::update_status(TrunkMessage message) {
 
 bool System_impl::update_adjacent_status(TrunkMessage message) {
 
+  return false;
+
    //   message.sys_id = syid;
     //message.sys_rfss = rfid;
     //message.sys_site_id = stid;
@@ -154,6 +156,15 @@ bool System_impl::update_adjacent_status(TrunkMessage message) {
     //message.failed = failed;
     //message.valid = valid;
     //message.active = active;
+
+    bool site_found = false;
+    for (std::vector<site *>::iterator it = adjacent_sites.begin(); it != adjacent_sites.end(); it++) {
+      site *site = *it;
+      if(site->get_sys_rfss() == message.sys_rfss && site->get_sys_site_id() == message.sys_site_id){
+        site_found = true;
+        BOOST_LOG_TRIVIAL(info) << "[" << short_name << "]\tAdjacent Site Found";
+      }
+    }
 
     BOOST_LOG_TRIVIAL(info) << "[" << short_name << "]\tAdjacent Site"
                             << " RFSS: " << std::setw(3) << std::setfill('0') << message.sys_rfss
