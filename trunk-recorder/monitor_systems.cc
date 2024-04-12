@@ -38,21 +38,6 @@ bool start_recorder(Call *call, TrunkMessage message, Config &config, System *sy
     call->set_talkgroup_tag("-");
   }
 
-  if (call->get_encrypted() == true || (talkgroup && (talkgroup->mode.compare("E") == 0 || talkgroup->mode.compare("TE") == 0 || talkgroup->mode.compare("DE") == 0))) {
-    call->set_state(MONITORING);
-    call->set_monitoring_state(ENCRYPTED);
-    if (sys->get_hideEncrypted() == false) {
-      long unit_id = call->get_current_source_id();
-      std::string tag = sys->find_unit_tag(unit_id);
-      if (tag != "") {
-        tag = " (\033[0;34m" + tag + "\033[0m)";
-      }
-      std::string loghdr = log_header( sys->get_short_name(), call->get_call_num(), call->get_talkgroup_display(), call->get_freq());
-      BOOST_LOG_TRIVIAL(info) << loghdr << "\u001b[31mNot Recording: ENCRYPTED\u001b[0m - src: " << unit_id << tag;
-    }
-    return false;
-  }
-
   for (vector<Source *>::iterator it = sources.begin(); it != sources.end(); it++) {
     Source *source = *it;
 
