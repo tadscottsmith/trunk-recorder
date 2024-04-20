@@ -38,6 +38,7 @@ public:
   void print_bitset(boost::dynamic_bitset<> &tsbk);
   void add_channel(int chan_id, Channel chan, int sys_num);
   double channel_id_to_frequency(int chan_id, int sys_num);
+  std::string channel_to_string(int chan_id, int chan_num, int sys_num);
   std::vector<TrunkMessage> parse_message(gr::message::sptr msg, System *system);
 };
 
