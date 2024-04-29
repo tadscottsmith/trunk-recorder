@@ -3,23 +3,24 @@
 
 P25Parser::P25Parser() {}
 
-void P25Parser::add_channel(int chan_id, Channel temp_chan, int sys_num) {
+void P25Parser::add_channel(int table_id, FrequencyTable table, int sys_num) {
   /*std::cout << "Add  - Channel id " << std::dec << chan_id << " freq " <<
-    temp_chan.frequency << " offset " << temp_chan.offset << " step " <<
-   temp_chan.step << " slots/carrier " << temp_chan.slots_per_carrier  << std::endl;
+    table.frequency << " offset " << table.offset << " step " <<
+   table.step << " slots/carrier " << table.slots_per_carrier  << std::endl;
 */
-  channels[sys_num][chan_id] = temp_chan;
+  freq_table[sys_num][table_id] = table;
 }
 
 long P25Parser::get_tdma_slot(int chan_id, int sys_num) {
+  long table = (chan_id >> 12) & 0xf
   long channel = chan_id & 0xfff;
 
-  it = channels[sys_num].find((chan_id >> 12) & 0xf);
+  it = freq_table[sys_num].find(table);
 
-  if (it != channels[sys_num].end()) {
-    Channel temp_chan = it->second;
+  if (it != freq_table[sys_num].end()) {
+    FrequencyTable table = it->second;
 
-    if (temp_chan.phase2_tdma) {
+    if (table.phase2_tdma) {
       return channel & 1;
     }
   }
@@ -28,11 +29,11 @@ long P25Parser::get_tdma_slot(int chan_id, int sys_num) {
 }
 
 double P25Parser::get_bandwidth(int chan_id, int sys_num) {
-  it = channels[sys_num].find((chan_id >> 12) & 0xf);
+  it = freq_table[sys_num].find((chan_id >> 12) & 0xf);
 
-  if (it != channels[sys_num].end()) {
-    Channel temp_chan = it->second;
-    return temp_chan.bandwidth;
+  if (it != freq_table[sys_num].end()) {
+    FrequencyTable table = it->second;
+    return table.bandwidth;
   }
 
   return 0;
@@ -42,15 +43,15 @@ double P25Parser::channel_id_to_frequency(int chan_id, int sys_num) {
   // long id      = (chan_id >> 12) & 0xf;
   long channel = chan_id & 0xfff;
 
-  it = channels[sys_num].find((chan_id >> 12) & 0xf);
+  it = freq_table[sys_num].find((chan_id >> 12) & 0xf);
 
-  if (it != channels[sys_num].end()) {
-    Channel temp_chan = it->second;
+  if (it != freq_table[sys_num].end()) {
+    FrequencyTable table = it->second;
 
-    if (temp_chan.phase2_tdma) {
-      return temp_chan.frequency + temp_chan.step * int(channel / temp_chan.slots_per_carrier);
+    if (table.phase2_tdma) {
+      return table.frequency + table.step * int(channel / table.slots_per_carrier);
     } else {
-      return temp_chan.frequency + temp_chan.step * channel;
+      return table.frequency + table.step * channel;
     }
   }
   return 0;
@@ -778,7 +779,7 @@ std::vector<TrunkMessage> P25Parser::decode_tsbk(boost::dynamic_bitset<> &tsbk, 
       } else {
         chan_tdma = false;
       }
-      Channel temp_chan = {
+      FrequencyTable table = {
           iden,              // id;
           toff * spac * 125, // offset;
           spac * 125,        // step;
@@ -786,8 +787,8 @@ std::vector<TrunkMessage> P25Parser::decode_tsbk(boost::dynamic_bitset<> &tsbk, 
           chan_tdma,
           slots_per_carrier[channel_type], // tdma;
           6.25};
-      add_channel(iden, temp_chan, sys_num);
-      BOOST_LOG_TRIVIAL(debug) << "tsbk33 iden up tdma id " << std::dec << iden << " f " << temp_chan.frequency << " offset " << temp_chan.offset << " spacing " << temp_chan.step << " slots/carrier " << temp_chan.slots_per_carrier;
+      add_channel(iden, table, sys_num);
+      BOOST_LOG_TRIVIAL(debug) << "tsbk33 iden up tdma id " << std::dec << iden << " f " << table.frequency << " offset " << table.offset << " spacing " << table.step << " slots/carrier " << table.slots_per_carrier;
     }
   } else if (opcode == 0x34) { // iden_up vhf uhf
     unsigned long iden = bitset_shift_mask(tsbk, 76, 0xf);
@@ -809,7 +810,7 @@ std::vector<TrunkMessage> P25Parser::decode_tsbk(boost::dynamic_bitset<> &tsbk, 
       toff = 0 - toff;
     }
     std::string txt[] = {"mob Tx-", "mob Tx+"};
-    Channel temp_chan = {
+    FrequencyTable table = {
         iden,              // id;
         toff * spac * 125, // offset;
         spac * 125,        // step;
@@ -817,7 +818,7 @@ std::vector<TrunkMessage> P25Parser::decode_tsbk(boost::dynamic_bitset<> &tsbk, 
         false,             // tdma;
         0,                 // slots
         bandwidth};
-    add_channel(iden, temp_chan, sys_num);
+    add_channel(iden, table, sys_num);
 
     BOOST_LOG_TRIVIAL(debug) << "tsbk34 iden vhf/uhf id " << std::dec << iden << " toff " << toff * spac * 0.125 * 1e-3 << " spac " << spac * 0.125 << " freq " << freq * 0.000005 << " [ " << txt[toff_sign] << "]";
   } else if (opcode == 0x35) { // Time and Date Announcement
@@ -883,15 +884,15 @@ std::vector<TrunkMessage> P25Parser::decode_tsbk(boost::dynamic_bitset<> &tsbk, 
     BOOST_LOG_TRIVIAL(debug) << "tsbk3c\tAdjacent Status\t rfid " << std::dec << rfid << " stid " << stid << " ch1 " << ch1 << "(" << channel_id_to_string(ch1, sys_num) << ") ";
 
     if (f1) {
-      it = channels[stid].find((ch1 >> 12) & 0xf);
+      it = freq_table[stid].find((ch1 >> 12) & 0xf);
 
-      if (it != channels[stid].end()) {
-        Channel temp_chan = it->second;
+      if (it != freq_table[stid].end()) {
+        FrequencyTable table = it->second;
 
         //			self.adjacent[f1] = 'rfid: %d stid:%d uplink:%f
         // tbl:%d' % (rfid, stid, (f1 + self.freq_table[table]['offset']) /
         // 1000000.0, table)
-        BOOST_LOG_TRIVIAL(debug) << "\ttsbk3c Chan " << temp_chan.frequency << "  " << temp_chan.step;
+        BOOST_LOG_TRIVIAL(debug) << "\ttsbk3c Chan " << table.frequency << "  " << table.step;
       }
     }
   } else if (opcode == 0x3d) { // iden_up
@@ -907,7 +908,7 @@ std::vector<TrunkMessage> P25Parser::decode_tsbk(boost::dynamic_bitset<> &tsbk, 
       toff = 0 - toff;
     }
 
-    Channel temp_chan = {
+    FrequencyTable table = {
         iden,          // id;
         toff * 250000, // offset;
         spac * 125,    // step;
@@ -915,7 +916,7 @@ std::vector<TrunkMessage> P25Parser::decode_tsbk(boost::dynamic_bitset<> &tsbk, 
         false,         // tdma;
         1,             // slots
         bw * .125};
-    add_channel(iden, temp_chan, sys_num);
+    add_channel(iden, table, sys_num);
     BOOST_LOG_TRIVIAL(debug) << "tsbk3d iden id " << std::dec << iden << " toff " << toff * 0.25 << " spac " << spac * 0.125 << " freq " << freq * 0.000005;
   } else {
     BOOST_LOG_TRIVIAL(debug) << "tsbk other " << std::hex << opcode;

@@ -12,7 +12,7 @@
 #include <map>
 #include <vector>
 
-struct Channel {
+struct FrequencyTable {
   unsigned long id;
   long offset;
   unsigned long step;
@@ -23,8 +23,8 @@ struct Channel {
 };
 
 class P25Parser : public TrunkParser {
-  std::map<int, std::map<int, Channel>> channels;
-  std::map<int, Channel>::iterator it;
+  std::map<int, std::map<int, FrequencyTable>> freq_table;
+  std::map<int, FrequencyTable>::iterator it;
 
 public:
   P25Parser();
@@ -36,7 +36,7 @@ public:
   unsigned long bitset_shift_left_mask(boost::dynamic_bitset<> &tsbk, int shift, unsigned long long mask);
   std::string channel_id_to_string(int chan_id, int sys_num);
   void print_bitset(boost::dynamic_bitset<> &tsbk);
-  void add_channel(int chan_id, Channel chan, int sys_num);
+  void add_channel(int chan_id, FrequencyTable chan, int sys_num);
   double channel_id_to_frequency(int chan_id, int sys_num);
   std::vector<TrunkMessage> parse_message(gr::message::sptr msg, System *system);
 };
