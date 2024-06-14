@@ -1,7 +1,78 @@
 #include "p25_parser.h"
 #include "../formatter.h"
 
-P25Parser::P25Parser() {}
+P25Parser::P25Parser() {
+
+/*
+  struct Freq_Table {
+  unsigned long id;
+  long offset;
+  unsigned long step;
+  unsigned long frequency;
+  bool phase2_tdma;
+  int slots_per_carrier;
+  double bandwidth;
+};
+*/
+
+  Freq_Table temp_table;
+
+  temp_table = {
+    0,          // id;
+    -45000000,  // offset;
+    6250,       // step;
+    851006250,  // frequency;
+    false,      // TDMA
+    1,          // slots per channel;
+    6.25};      // bandwidth
+
+  freq_tables[0][0] = temp_table;
+
+  temp_table = {
+    1,          // id;
+    30000000,   // offset;
+    12500,      // step;
+    762006250,  // frequency;
+    false,      // TDMA
+    1,          // slots per channel;
+    6.25};      // bandwidth
+
+  freq_tables[0][1] = temp_table;
+
+  temp_table = {
+    2,          // id;
+    -45000000,  // offset;
+    12500,      // step;
+    851006250,  // frequency;
+    true,       // TDMA
+    2,          // slots per channel;
+    12.5};      // bandwidth
+
+  freq_tables[0][2] = temp_table;
+
+  temp_table = {
+    3,          // id;
+    30000000,   // offset;
+    12500,      // step;
+    762006250,  // frequency;
+    true,      // TDMA
+    2,          // slots per channel;
+    12.5};      // bandwidth
+
+    freq_tables[0][3] = temp_table;
+
+  temp_table = {
+    4,          // id;
+    -45000000,   // offset;
+    12500,      // step;
+    851006250,  // frequency;
+    true,      // TDMA
+    2,          // slots per channel;
+    12.5};      // bandwidth
+
+    freq_tables[0][4] = temp_table;
+
+}
 
 void P25Parser::add_freq_table(int freq_table_id, Freq_Table temp_table, int sys_num) {
   /*std::cout << "Add  - Channel id " << std::dec << chan_id << " freq " <<
