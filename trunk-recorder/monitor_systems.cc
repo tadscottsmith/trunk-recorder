@@ -687,7 +687,7 @@ void retune_system(System *sys, gr::top_block_sptr &tb, std::vector<Source *> &s
         source_found = true;
         BOOST_LOG_TRIVIAL(info) << "\t - System Source " << source->get_num() << " - Min Freq: " << format_freq(source->get_min_hz()) << " Max Freq: " << format_freq(source->get_max_hz());
 
-        if (system->get_system_type() == "smartnet") {
+         if (system->get_system_type() == "smartnet") {
           system->set_source(source);
           // We must lock the flow graph in order to disconnect and reconnect blocks
           tb->lock();
@@ -697,13 +697,19 @@ void retune_system(System *sys, gr::top_block_sptr &tb, std::vector<Source *> &s
           tb->unlock();
           system->smartnet_trunking->reset();
         } else if (system->get_system_type() == "p25") {
+          BOOST_LOG_TRIVIAL(info) << "\t - Setting source";
           system->set_source(source);
           // We must lock the flow graph in order to disconnect and reconnect blocks
-          tb->stop();
+          BOOST_LOG_TRIVIAL(info) << "\t - Locking Block";
+          tb->lock(); //tb->stop();
+          BOOST_LOG_TRIVIAL(info) << "\t - Disconnecting Block";
           tb->disconnect(current_source->get_src_block(), 0, system->p25_trunking, 0);
+          BOOST_LOG_TRIVIAL(info) << "\t - Making Trunking";
           system->p25_trunking = make_p25_trunking(control_channel_freq, source->get_center(), source->get_rate(), system->get_msg_queue(), system->get_qpsk_mod(), system->get_sys_num());
+          BOOST_LOG_TRIVIAL(info) << "\t - Connecting Source";
           tb->connect(source->get_src_block(), 0, system->p25_trunking, 0);
-          tb->start();
+           BOOST_LOG_TRIVIAL(info) << "\t - Unlocking Block";
+          tb->unlock();//tb->start();
         } else {
           BOOST_LOG_TRIVIAL(error) << "\t - Unkown system type for Retune";
         }
