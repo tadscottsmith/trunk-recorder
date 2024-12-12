@@ -202,6 +202,8 @@ public:
       /* what URL that receives this POST */
       curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
+      curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+
       curl_easy_setopt(curl, CURLOPT_USERAGENT, "TrunkRecorder1.0");
       curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
       curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
