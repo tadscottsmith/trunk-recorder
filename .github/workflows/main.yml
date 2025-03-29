@@ -26,8 +26,6 @@ jobs:
         id: prepare
         run: |
           DOCKER_IMAGE='robotastic/trunk-recorder' 
-          #$(echo ${GITHUB_REPOSITORY} | tr '[:upper:]' '[:lower:]')
-          GHCR_IMAGE=ghcr.io/${DOCKER_IMAGE}
           DOCKER_PLATFORMS=linux/amd64,linux/arm64,linux/arm/v7
           VERSION=edge
 
@@ -44,20 +42,15 @@ jobs:
           fi
 
           TAGS="--tag ${DOCKER_IMAGE}:${VERSION}"
-          TAGS="$TAGS --tag ${GHCR_IMAGE}:${VERSION}"
           if [[ $VERSION =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
             TAGS="$TAGS --tag ${DOCKER_IMAGE}:latest"
-            TAGS="$TAGS --tag ${GHCR_IMAGE}:latest"
           fi
           if [[ $VERSION =~ ^v[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
             TAGS="$TAGS --tag ${DOCKER_IMAGE}:latest"
-            TAGS="$TAGS --tag ${GHCR_IMAGE}:latest"
           fi
           echo docker_image::${DOCKER_IMAGE}
-          echo ghcr_image::${GHCR_IMAGE}
           echo version::${VERSION}
           echo ::set-output name=docker_image::${DOCKER_IMAGE}
-          echo ::set-output name=ghcr_image::${GHCR_IMAGE}
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=buildx_args::--platform ${DOCKER_PLATFORMS} \
             --build-arg VERSION=${VERSION} \
