@@ -91,6 +91,7 @@ public:
 
   double get_center();
   double get_rate();
+  bool got_samples();
   std::string get_driver();
   std::string get_device();
   void set_antenna(std::string ant);

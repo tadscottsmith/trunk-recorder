@@ -34,11 +34,13 @@ class selector_impl : public selector {
 private:
   size_t d_itemsize;
   bool d_enabled;
+  bool d_got_samples;
   std::vector<bool> d_enabled_output_ports;
   unsigned int d_input_index, d_output_index;
   unsigned int d_num_inputs, d_num_outputs; // keep track of the topology
   const unsigned int d_max_port = 100;
   gr::thread::mutex d_mutex;
+
 
 public:
   selector_impl(size_t itemsize, unsigned int input_index, unsigned int output_index);
@@ -57,6 +59,8 @@ public:
 
   void set_output_index(unsigned int output_index);
   int output_index() const { return d_output_index; }
+
+  bool got_samples();
 
   int general_work(int noutput_items,
                    gr_vector_int &ninput_items,

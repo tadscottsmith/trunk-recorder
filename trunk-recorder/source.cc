@@ -276,6 +276,13 @@ double Source::get_rate() {
   return rate;
 }
 
+bool Source::got_samples() {
+  if (attached_selector) {
+    return recorder_selector->got_samples();
+  }
+  return true;
+}
+
 std::string Source::get_driver() {
   return driver;
 }

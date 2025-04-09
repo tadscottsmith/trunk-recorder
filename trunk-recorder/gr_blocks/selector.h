@@ -59,6 +59,7 @@ public:
   virtual int input_index() const = 0;
   virtual void set_output_index(unsigned int output_index) = 0;
   virtual int output_index() const = 0;
+  virtual bool got_samples() = 0;
 };
 
 } /* namespace blocks */

@@ -53,6 +53,12 @@ selector_impl::selector_impl(size_t itemsize,
 
 selector_impl::~selector_impl() {}
 
+bool selector_impl::got_samples() {
+  bool current_got_samples = d_got_samples;
+  d_got_samples = false;
+  return current_got_samples;
+}
+
 void selector_impl::set_input_index(unsigned int input_index) {
   gr::thread::scoped_lock l(d_mutex);
 
@@ -133,6 +139,10 @@ int selector_impl::general_work(int noutput_items,
   uint8_t **out = (uint8_t **)&output_items[0];
 
   gr::thread::scoped_lock l(d_mutex);
+
+  if (output_items.size() > 0) {
+    d_got_samples = true;
+  }
 
   for (size_t out_idx = 0; out_idx < output_items.size(); out_idx++) {
     if (d_enabled_output_ports[out_idx]) {
