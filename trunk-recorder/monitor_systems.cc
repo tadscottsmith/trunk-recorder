@@ -875,6 +875,13 @@ int monitor_messages(Config &config, gr::top_block_sptr &tb, std::vector<Source 
 
     if (decode_rate_check_time_diff >= 3.0) {
       check_message_count(decode_rate_check_time_diff, config, tb, sources, systems);
+      for (vector<Source *>::iterator src_it = sources.begin(); src_it != sources.end(); src_it++) {
+        Source *source = *src_it;
+        if (!source->got_samples()) {
+          BOOST_LOG_TRIVIAL(error) << "Source " << source->get_num() << " has stopped receiving samples - Terminating trunk recorder";
+          exit(1);
+        }
+      }
       last_decode_rate_check = current_time;
       for (vector<System *>::iterator sys_it = systems.begin(); sys_it != systems.end(); sys_it++) {
         System *system = *sys_it;
