@@ -18,7 +18,7 @@ struct plugin_t {
 };
 
 struct stream_t {
-  unsigned long TGID;
+  long TGID;
   long tcp_index;
   std::string address;
   std::string short_name;
@@ -65,23 +65,24 @@ class Simple_Stream : public Plugin_Api {
   int audio_stream(Call *call, Recorder *recorder, int16_t *samples, int sampleCount){
     //Call local_call = *call;
     System *call_system = call->get_system();
-    uint32_t call_tgid = call->get_talkgroup();
+    int32_t call_tgid = call->get_talkgroup();
     int32_t call_src = call->get_current_source_id();
     uint32_t call_freq = call->get_freq();
     std::string call_short_name = call->get_short_name();
     std::string call_src_tag = call_system->find_unit_tag(call_src);
     std::vector<unsigned long> patched_talkgroups = call_system->get_talkgroup_patch(call_tgid);
 
-    Recorder local_recorder = *recorder;
+    Recorder& local_recorder = *recorder;
     int recorder_id = local_recorder.get_num();
+    long wav_hz = local_recorder.get_wav_hz();
     boost::system::error_code error;
     BOOST_FOREACH (auto stream, streams){
       if (0==stream.short_name.compare(call_short_name) || (0==stream.short_name.compare(""))){ //Check if shortName matches or is not specified
         if (patched_talkgroups.size() == 0){
-          patched_talkgroups.push_back(call_tgid);
+          patched_talkgroups.push_back(static_cast<unsigned long>(call_tgid));  //call_info.talkgroup may be negative so cast for comparison (conventional system hack)
         }
         BOOST_FOREACH (auto TGID, patched_talkgroups){
-          if ((TGID==stream.TGID || stream.TGID==0)){  //setting TGID to 0 in the config file will stream everything
+          if ((TGID==static_cast<unsigned long>(stream.TGID)) || stream.TGID==0){  //setting TGID to 0 in the config file will stream everything
             BOOST_LOG_TRIVIAL(debug) << "got " <<sampleCount <<" samples - " <<sampleCount*2<<" bytes from recorder "<<recorder_id<<" for TGID "<<TGID;
             json json_object;
             std::string json_string;
@@ -95,7 +96,7 @@ class Simple_Stream : public Plugin_Api {
                  {"patched_talkgroups",patched_talkgroups},
                  {"freq", call_freq},
                  {"short_name", call_short_name},
-                 {"audio_sample_rate",local_recorder.get_wav_hz()},
+                 {"audio_sample_rate",wav_hz},
                  {"event","audio"},
               };
               json_string = json_object.dump();
@@ -125,7 +126,7 @@ class Simple_Stream : public Plugin_Api {
   int call_start(Call *call){
     boost::system::error_code error;
     System *call_system = call->get_system();
-    uint32_t call_tgid = call->get_talkgroup();
+    int32_t call_tgid = call->get_talkgroup();
     int32_t call_src = call->get_current_source_id();
     uint32_t call_freq = call->get_freq();
     std::string call_short_name = call->get_short_name();
@@ -137,7 +138,7 @@ class Simple_Stream : public Plugin_Api {
       if (stream.sendJSON == true && stream.sendCallStart == true){
         if (0==stream.short_name.compare(call_short_name) || (0==stream.short_name.compare(""))){ //Check if shortName matches or is not specified
           if (patched_talkgroups.size() == 0){
-            patched_talkgroups.push_back(call_tgid);
+            patched_talkgroups.push_back(static_cast<unsigned long>(call_tgid));  //call_info.talkgroup may be negative so cast for comparison (conventional system hack)
           }
           std::vector<std::string> patched_talkgroup_tags;
           BOOST_FOREACH (auto TGID, patched_talkgroups){
@@ -145,7 +146,7 @@ class Simple_Stream : public Plugin_Api {
             if (this_tg != nullptr) {
               patched_talkgroup_tags.push_back(this_tg->alpha_tag);
             }
-            if ((TGID==stream.TGID || stream.TGID==0)){  //setting TGID to 0 in the config file will stream everything
+            if ((TGID==static_cast<unsigned long>(stream.TGID)) || stream.TGID==0){  //setting TGID to 0 in the config file will stream everything
               json json_object;
               std::string json_string;
               std::vector<boost::asio::const_buffer> send_buffer;
@@ -188,10 +189,10 @@ class Simple_Stream : public Plugin_Api {
         if (0==stream.short_name.compare(call_info.short_name) || (0==stream.short_name.compare(""))){ //Check if shortName matches or is not specified
           std::vector<unsigned long> patched_talkgroups = call_info.patched_talkgroups;
           if (patched_talkgroups.size() == 0){
-            patched_talkgroups.push_back(call_info.talkgroup);
+            patched_talkgroups.push_back(static_cast<unsigned long>(call_info.talkgroup)); //call_info.talkgroup may be negative so cast for comparison (conventional system hack)
           }
           BOOST_FOREACH (auto TGID, patched_talkgroups){
-            if ((TGID==stream.TGID || stream.TGID==0)){  //setting TGID to 0 in the config file will stream everything
+            if ((TGID == static_cast<unsigned long>(stream.TGID)) || stream.TGID==0){  //setting TGID to 0 in the config file will stream everything
               json json_object;
               std::string json_string;
               std::vector<boost::asio::const_buffer> send_buffer;
