@@ -9,8 +9,9 @@
 //#include "../../trunk-recorder/systems/system.h"
 #include "../../trunk-recorder/plugin_manager/plugin_api.h"
 #include "../trunk-recorder/gr_blocks/decoder_wrapper.h"
-#include <boost/dll/alias.hpp> // for BOOST_DLL_ALIAS   
-#include <boost/property_tree/json_parser.hpp>
+#include <boost/dll/alias.hpp> // for BOOST_DLL_ALIAS  
+
+#include <json.hpp>
 
 typedef struct stat_plugin_t stat_plugin_t;
 
@@ -144,7 +145,7 @@ public:
       sys_node.put("squelch_db", sys->get_squelch_db());
       std::vector<double> channels;
 
-      if ((sys->get_system_type() == "conventional") || (sys->get_system_type() == "conventionalP25")) {
+      if ((sys->get_system_type() == "conventional") || (sys->get_system_type() == "conventionalP25") || (sys->get_system_type() == "conventionalDMR") || (sys->get_system_type() == "conventionalSIGMF") ) {
         channels = sys->get_channels();
       } else {
         channels = sys->get_control_channels();
@@ -508,7 +509,7 @@ public:
         );
     }
 
- int parse_config(boost::property_tree::ptree &cfg ){ return 0; }
+ int parse_config(json config_data ){ return 0; }
    int stop() { return 0; }
    int setup_sources(std::vector<Source *> sources) { return 0; }
 

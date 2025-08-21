@@ -119,6 +119,12 @@ void tps_decoder_sink_impl::process_message(gr::message::sptr msg) {
 
   std::string s = msg->to_string();
 
+ if (s.length() < 2) {
+    BOOST_LOG_TRIVIAL(error) << "TPS Decode error, Message: " << s << " Len: " << s.length() << " is < 2";
+    //messages.push_back(message);
+    return;
+  }
+
   // # nac is always 1st two bytes
   // ac = (ord(s[0]) << 8) + ord(s[1])
   uint8_t s0 = (int)s[0];
@@ -224,7 +230,8 @@ void tps_decoder_sink_impl::initialize_p25() {
   bool do_audio_output = 0;
   bool do_tdma = 0;
   bool do_crypt = 0;
-  op25_frame_assembler = gr::op25_repeater::p25_frame_assembler::make(silence_frames, wireshark_host, udp_port, verbosity, do_imbe, do_output, do_msgq, rx_queue, do_audio_output, do_tdma, do_crypt);
+  bool soft_vocoder = false;
+  op25_frame_assembler = gr::op25_repeater::p25_frame_assembler::make(silence_frames, soft_vocoder, wireshark_host, udp_port, verbosity, do_imbe, do_output, do_msgq, rx_queue, do_audio_output, do_tdma, do_crypt);
 
   connect(self(), 0, valve, 0);
   connect(valve, 0, slicer, 0);

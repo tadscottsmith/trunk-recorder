@@ -33,18 +33,18 @@ Plugin *setup_plugin(std::string plugin_lib, std::string plugin_name) {
   return plugin;
 }
 
-void initialize_plugins(boost::property_tree::ptree &cfg, Config *config, std::vector<Source *> sources, std::vector<System *> systems) {
+void initialize_plugins(json config_data, Config *config, std::vector<Source *> sources, std::vector<System *> systems) {
 
-  boost::optional<boost::property_tree::ptree &> plugins_exists = cfg.get_child_optional("plugins");
+  bool plugins_exists = config_data.contains("plugins");
 
   if (plugins_exists) {
-    BOOST_FOREACH (boost::property_tree::ptree::value_type &node, cfg.get_child("plugins")) {
-      std::string plugin_lib = node.second.get<std::string>("library", "");
-      std::string plugin_name = node.second.get<std::string>("name", "");
-      bool plugin_enabled = node.second.get<bool>("enabled", true);
+    for (json element : config_data["plugins"]) {
+      std::string plugin_lib = element.value("library", "");
+      std::string plugin_name = element.value("name", "");
+      bool plugin_enabled = element.value("enabled", true);
       if (plugin_enabled) {
         Plugin *plugin = setup_plugin(plugin_lib, plugin_name);
-        plugin->api->parse_config(node.second);
+        plugin->api->parse_config(element);
       }
     }
 
@@ -71,10 +71,10 @@ void initialize_plugins(boost::property_tree::ptree &cfg, Config *config, std::v
   }
 }
 
-void add_internal_plugin(std::string name, std::string library, boost::property_tree::ptree &cfg) {
+void add_internal_plugin(std::string name, std::string library, json config_data) {
 
   Plugin *plugin = setup_plugin(library, name);
-  plugin->api->parse_config(cfg);
+  plugin->api->parse_config(config_data);
 }
 
 void start_plugins(std::vector<Source *> sources, std::vector<System *> systems) {
@@ -168,19 +168,50 @@ int plugman_call_start(Call *call) {
   return error;
 }
 
-int plugman_call_end(Call_Data_t call_info) {
-  int total_error = 0;
-  for (std::vector<Plugin *>::iterator it = plugins.begin(); it != plugins.end(); it++) {
-    Plugin *plugin = *it;
-    if (plugin->state == PLUGIN_RUNNING) {
-      int plugin_error = plugin->api->call_end(call_info);
-      if (plugin_error) {
-        BOOST_LOG_TRIVIAL(error) << "Plugin Manager: call_end -  " << plugin->name << " failed";
+int plugman_call_end(Call_Data_t& call_info) {
+  std::vector<int> plugin_retry_list;
+  
+  std::stringstream logstream;
+  logstream << "[" << call_info.short_name << "]\t\033[0;34m" << call_info.call_num << "C\033[0m\tTG: " << call_info.talkgroup_display << "\tFreq: " << format_freq(call_info.freq) << "\t";
+  std::string loghdr = logstream.str();
+
+  // On INITIAL, run call_end for all active plugins and note failues 
+  if (call_info.status == INITIAL)
+  {
+    for (std::vector<Plugin *>::iterator it = plugins.begin(); it != plugins.end(); it++) {
+      Plugin *plugin = *it;
+      if (plugin->state == PLUGIN_RUNNING) {
+        int plugin_error = plugin->api->call_end(call_info);
+        if (plugin_error) {
+          BOOST_LOG_TRIVIAL(error) << loghdr << "Plugin Manager: call_end -  " << plugin->name << " failed.";
+          int plugin_index = std::distance(plugins.begin(), it );
+          plugin_retry_list.push_back(plugin_index);
+        }
       }
-      total_error = total_error + plugin_error;
+    }
+  } 
+  // On RETRY, run call_end only for plugins reporting previous failue
+  else if (call_info.status == RETRY)
+  {
+    for (std::vector<int>::iterator it = call_info.plugin_retry_list.begin(); it != call_info.plugin_retry_list.end(); it++) {
+      Plugin *plugin = plugins[*it];
+      if (plugin->state == PLUGIN_RUNNING) {
+        BOOST_LOG_TRIVIAL(info) << loghdr << "Plugin Manager: call_end - retry (" << call_info.retry_attempt << "/" << Call_Concluder::MAX_RETRY << ") - " << plugin->name;
+        int plugin_error = plugin->api->call_end(call_info);
+        if (plugin_error) {
+          BOOST_LOG_TRIVIAL(error) << loghdr << "Plugin Manager: call_end - retry (" << call_info.retry_attempt << "/" << Call_Concluder::MAX_RETRY << ") - " << plugin->name << " failed.";
+          plugin_retry_list.push_back(*it);
+        }
+      }
     }
   }
-  return total_error;
+
+  if (plugin_retry_list.size() == 0) {
+    return 0;
+  } else {
+    call_info.plugin_retry_list = plugin_retry_list;
+    return 1;
+  }
 }
 
 int plugman_calls_active(std::vector<Call *> calls) {

@@ -36,6 +36,7 @@ public:
   virtual int get_sys_num() = 0;
   virtual std::string get_short_name() = 0;
   virtual std::string get_capture_dir() = 0;
+  virtual std::string get_temp_dir() = 0;
   virtual void set_freq(double f) = 0;
   virtual long get_talkgroup() = 0;
 
@@ -70,6 +71,14 @@ public:
   virtual bool get_encrypted() = 0;
   virtual void set_emergency(bool m) = 0;
   virtual bool get_emergency() = 0;
+  virtual int get_priority() = 0;
+  virtual bool get_mode() = 0;
+  virtual bool get_duplex() = 0;
+  virtual double get_signal() = 0;
+  virtual double get_noise() = 0;
+  virtual int get_freq_error() = 0;
+  virtual void set_signal(double s) = 0;
+  virtual void set_noise(double n) = 0;
   virtual std::string get_talkgroup_display() = 0;
   virtual void set_talkgroup_tag(std::string tag) = 0;
   virtual void clear_transmission_list() = 0;

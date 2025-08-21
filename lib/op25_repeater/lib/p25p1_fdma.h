@@ -69,6 +69,7 @@ namespace gr {
                 void process_frame();
                 void check_timeout();
                 inline bool encrypted() { return (ess_algid != 0x80); }
+                inline void reset_ess() { ess_algid = 0x80; memset(ess_mi, 0, sizeof(ess_mi)); }
                 void send_msg(const std::string msg_str, long msg_type);
 
                 // internal instance variables and state
@@ -80,6 +81,7 @@ namespace gr {
                 bool d_do_msgq;
                 int  d_msgq_id;
                 bool d_do_audio_output;
+                bool d_soft_vocoder;
                 int d_nac;
                 gr::msg_queue::sptr d_msg_queue;
                 std::deque<int16_t> &output_queue;
@@ -96,7 +98,7 @@ namespace gr {
                 double error_history[20];
                 long curr_src_id;
                 long curr_grp_id;
-                bool terminate_call;
+                std::pair<bool,long> terminate_call;
                 const char *d_udp_host;
                 int  d_port;
 
@@ -115,10 +117,11 @@ namespace gr {
                 void set_debug(int debug);
                 void set_nac(int nac);
                 void reset_timer();
+                void call_end();
                 void crypt_reset();
                 void crypt_key(uint16_t keyid, uint8_t algid, const std::vector<uint8_t> &key);
                 void rx_sym (const uint8_t *syms, int nsyms);
-                p25p1_fdma(const op25_audio& udp,  log_ts& logger, int debug, bool do_imbe, bool do_output, bool do_msgq, gr::msg_queue::sptr queue, std::deque<int16_t> &output_queue, bool do_audio_output, int msgq_id = 0);
+                p25p1_fdma(const op25_audio& udp,  log_ts& logger, int debug, bool do_imbe, bool do_output, bool do_msgq, gr::msg_queue::sptr queue, std::deque<int16_t> &output_queue, bool do_audio_output, bool soft_vocoder, int msgq_id = 0);
                 ~p25p1_fdma();
                 uint32_t load_nid(const uint8_t *syms, int nsyms, const uint64_t fs);
                 bool load_body(const uint8_t * syms, int nsyms);
@@ -134,7 +137,7 @@ namespace gr {
                 long get_curr_src_id();
                 long get_curr_grp_id();
                 void reset_rx_status();
-                bool get_call_terminated();
+                std::pair<bool,long> get_call_terminated();
                 void reset_call_terminated();
                 Rx_Status get_rx_status();
                 void clear();

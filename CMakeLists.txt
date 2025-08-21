@@ -21,8 +21,10 @@
 # Project setup
 ########################################################################
 
-cmake_minimum_required(VERSION 3.2)
-project(Trunk-Recorder LANGUAGES CXX C VERSION "4.5.0")
+cmake_minimum_required(VERSION 3.12)
+
+project(Trunk-Recorder LANGUAGES CXX C VERSION "5.0.0")
+
 
 configure_file(cmake.h.in "${PROJECT_BINARY_DIR}/cmake.h" @ONLY)
 add_definitions(-DMANUAL_GITINFO="${MANUAL_GITINFO}")
@@ -219,12 +221,14 @@ link_directories(
     ${OPENSSL_ROOT_DIR}/lib
 )
 
-set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wno-unused-local-typedef -Wno-deprecated-declarations -Wno-error=deprecated-declarations -g3")
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wno-deprecated-declarations -Wno-error=deprecated-declarations -g3")
 
 SET(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wno-narrowing -fvisibility=hidden -fPIC")
+# The D_GLIBCXX_ASSERTIONS flag will cause a crash when an error is detected, making it easier to catch bugs
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wno-narrowing -fvisibility=hidden -fPIC -D_GLIBCXX_ASSERTIONS")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wno-narrowing -fvisibility=hidden -fPIC")
 
 
 list(APPEND trunk_recorder_sources
@@ -247,7 +251,11 @@ list(APPEND trunk_recorder_sources
   trunk-recorder/recorders/p25_recorder_fsk4_demod.cc
   trunk-recorder/recorders/p25_recorder_qpsk_demod.cc
   trunk-recorder/recorders/p25_recorder_decode.cc
+  trunk-recorder/sources/iq_file_source.cc
   trunk-recorder/csv_helper.cc
+  trunk-recorder/config.cc
+  trunk-recorder/setup_systems.cc
+  trunk-recorder/monitor_systems.cc
   trunk-recorder/talkgroup.cc
   trunk-recorder/talkgroups.cc
   trunk-recorder/unit_tag.cc
@@ -270,8 +278,13 @@ list(APPEND trunk_recorder_sources
   trunk-recorder/gr_blocks/decoder_wrapper_impl.cc
   trunk-recorder/gr_blocks/plugin_wrapper_impl.cc
   trunk-recorder/gr_blocks/selector_impl.cc
+  trunk-recorder/gr_blocks/pwr_squelch_cc_impl.cc
+  trunk-recorder/gr_blocks/squelch_base_cc_impl.cc
   trunk-recorder/gr_blocks/wavfile_gr3.8.cc
   trunk-recorder/gr_blocks/rms_agc.cc
+  trunk-recorder/gr_blocks/channelizer.cc
+    trunk-recorder/gr_blocks/xlat_channelizer.cc
+    trunk-recorder/gr_blocks/signal_detector_cvf_impl.cc
   )
 
 
@@ -279,6 +292,11 @@ list(APPEND trunk_recorder_sources
   list(APPEND trunk_recorder_headers
     trunk-recorder/call.h
     trunk-recorder/plugin_manager/plugin_api.h
+    #lib/nlohmann/json.hpp
+  )
+
+  list(APPEND 3p_headers
+    #lib/csv-parser/csv.hpp 
   )
 set_source_files_properties(lib/lfsr/lfsr.cxx COMPILE_FLAGS "-w")
 
@@ -311,12 +329,13 @@ set_property(
 
 
 set_target_properties(trunk_recorder_library PROPERTIES OUTPUT_NAME "trunk-recorder")
-set_target_properties(trunk_recorder_library PROPERTIES PUBLIC_HEADER "${trunk_recorder_headers}")
-
+#set_target_properties(trunk_recorder_library PROPERTIES PUBLIC_HEADER "${trunk_recorder_headers}")
+#set_target_properties(trunk_recorder_library PROPERTIES PRIVATE_HEADER "${3p_headers}")
 
 # Weird - when I add LIBRARY before the DESTINATION, it installs in the /usr/local/lib dir on a mac
 install(TARGETS trunk_recorder_library 
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/trunk-recorder
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/trunk-recorder
+    #PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/trunk-recorder
 )
     
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/trunk-recorder/" # source directory
@@ -325,22 +344,36 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/trunk-recorder/" # source directo
     PATTERN "*.h" # select header files
 )
 
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/lib/json.hpp" # source file
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/trunk-recorder" # target directory
+)
 
+# Add built-in plugins located in /plugins
 add_subdirectory(plugins/openmhz_uploader)
-
-add_subdirectory(plugins/stat_socket)
-
 add_subdirectory(plugins/broadcastify_uploader)
-
 add_subdirectory(plugins/unit_script)
-
 add_subdirectory(plugins/rdioscanner_uploader)
+#add_subdirectory(plugins/simplestream)
 
-add_subdirectory(plugins/simplestream)
+# Add user plugins located in /user_plugins
+# Matching: /user_plugins/${plugin_dir}/CMakeLists.txt
+file(GLOB plugin_dirs "user_plugins/*")
+foreach(plugin_dir ${plugin_dirs})
+  if(IS_DIRECTORY ${plugin_dir})
+    file(GLOB cmakelists "${plugin_dir}/CMakeLists.txt")
+    if(cmakelists)
+      add_subdirectory(${plugin_dir})
+      get_filename_component(dir_name ${plugin_dir} NAME)
+      message(STATUS "Added user plugin: ${dir_name}")
+    endif()
+  endif()
+endforeach()
 
 add_executable(trunk-recorder trunk-recorder/main.cc) # ${trunk_recorder_sources})
 
-target_link_libraries(trunk-recorder git trunk_recorder_library gnuradio-op25_repeater   ${CMAKE_DL_LIBS} ssl crypto ${CURL_LIBRARIES} ${Boost_LIBRARIES} ${GNURADIO_PMT_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} ${GNURADIO_DIGITAL_LIBRARIES} ${GNURADIO_ANALOG_LIBRARIES} ${GNURADIO_AUDIO_LIBRARIES} ${GNURADIO_UHD_LIBRARIES} ${UHD_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_OSMOSDR_LIBRARIES}  ) # gRPC::grpc++_reflection protobuf::libprotobuf)
+target_link_libraries(trunk-recorder git trunk_recorder_library gnuradio-op25_repeater   ${CMAKE_DL_LIBS} ssl crypto ${CURL_LIBRARIES} ${Boost_LIBRARIES} ${GNURADIO_PMT_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} ${GNURADIO_DIGITAL_LIBRARIES} ${GNURADIO_ANALOG_LIBRARIES} ${GNURADIO_AUDIO_LIBRARIES} ${GNURADIO_UHD_LIBRARIES} ${UHD_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_OSMOSDR_LIBRARIES} ) # gRPC::grpc++_reflection protobuf::libprotobuf)
+
+#target_link_libraries(trunk-recorder PRIVATE nlohmann_json::nlohmann_json )
 
 message(STATUS "All libraries:" ${GNURADIO_ALL_LIBRARIES})
 if(NOT Gnuradio_VERSION VERSION_LESS "3.8")

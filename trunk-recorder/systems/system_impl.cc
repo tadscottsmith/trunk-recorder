@@ -146,6 +146,19 @@ bool System_impl::update_status(TrunkMessage message) {
   return false;
 }
 
+bool System_impl::update_sysid(TrunkMessage message) {
+  if (!sys_rfss || !sys_site_id) {
+    sys_rfss = message.sys_rfss;
+    sys_site_id = message.sys_site_id;
+    BOOST_LOG_TRIVIAL(info) << "[" << short_name << "]\tDecoding System Site"
+                            << " RFSS: " << std::setw(3) << std::setfill('0') << message.sys_rfss
+                            << " SITE ID: " << std::setw(3) << std::setfill('0') << message.sys_site_id
+                            << " (" << std::setw(3) << std::setfill('0') << message.sys_rfss << "-" << std::setw(3) << std::setfill('0') << message.sys_site_id << ")";
+    return true;
+  }
+  return false;
+}
+
  gr::msg_queue::sptr System_impl::get_msg_queue() {
   return msg_queue;
  }
@@ -205,6 +218,14 @@ void System_impl::set_squelch_db(double s) {
 
 double System_impl::get_squelch_db() {
   return squelch_db;
+}
+
+void System_impl::set_tau(float t){
+  tau = t;
+}
+
+float System_impl::get_tau() const{
+  return tau;
 }
 
 void System_impl::set_filter_width(double filter_width) {
@@ -301,6 +322,9 @@ void System_impl::set_channel_file(std::string channel_file) {
   BOOST_LOG_TRIVIAL(info) << "Loading Talkgroups...";
   this->channel_file = channel_file;
   this->talkgroups->load_channels(sys_num, channel_file);
+  for (auto& tg : this->get_talkgroups()) {
+    this->add_channel(tg->freq);
+  }
 }
 
 bool System_impl::has_channel_file() {
@@ -321,6 +345,22 @@ void System_impl::set_unit_tags_file(std::string unit_tags_file) {
   BOOST_LOG_TRIVIAL(info) << "Loading Unit Tags...";
   this->unit_tags_file = unit_tags_file;
   this->unit_tags->load_unit_tags(unit_tags_file);
+}
+
+void System_impl::set_custom_freq_table_file(std::string custom_freq_table_file) {
+  this->custom_freq_table_file = custom_freq_table_file;
+}
+
+std::string System_impl::get_custom_freq_table_file(){
+  return this->custom_freq_table_file;
+}
+
+bool System_impl::has_custom_freq_table_file() {
+    if (this->custom_freq_table_file.length() > 0) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 Source *System_impl::get_source() {
@@ -366,6 +406,14 @@ void System_impl::add_conventionalP25_recorder(p25_recorder_sptr rec) {
 
 void System_impl::add_conventionalDMR_recorder(dmr_recorder_sptr rec) {
   conventionalDMR_recorders.push_back(rec);
+}
+
+void System_impl::add_conventionalSIGMF_recorder(sigmf_recorder_sptr rec) {
+  conventionalSIGMF_recorders.push_back(rec);
+}
+
+std::vector<sigmf_recorder_sptr> System_impl::get_conventionalSIGMF_recorders() {
+  return conventionalSIGMF_recorders;
 }
 
 std::vector<p25_recorder_sptr> System_impl::get_conventionalP25_recorders() {
@@ -568,7 +616,7 @@ void System_impl::update_active_talkgroup_patches(PatchData patch_data) {
   }
   if (new_flag == true) {
     // TGIDs from the Message were not found in an existing patch, so add them to a new one
-    // BOOST_LOG_TRIVIAL(debug) << "Adding a new patch";
+    BOOST_LOG_TRIVIAL(debug) << "tsbk00\tNew Motorola patch fround, \tsg: " << patch_data.sg << "\tga1: " << patch_data.ga1 << "\tga2: " << patch_data.ga2 << "\tga3: " << patch_data.ga3;
     std::map<unsigned long, std::time_t> new_patch;
     if (0 != patch_data.sg) {
       new_patch[patch_data.sg] = update_time;
@@ -631,6 +679,20 @@ void System_impl::clear_stale_talkgroup_patches() {
     }
     BOOST_LOG_TRIVIAL(debug) << "Active Patch of TGIDs" << printstring;
   }
+}
+
+void System_impl::print_active_talkgroup_patches() {
+  // Print out all active patches to the console
+  BOOST_LOG_TRIVIAL(info) << "[ " << short_name << " ] " << talkgroup_patches.size() << " active talkgroup patches:";
+  BOOST_FOREACH (auto &patch, talkgroup_patches) {
+    std::string printstring = " - ";
+    BOOST_FOREACH (auto &patch_element, patch.second) {
+      printstring += " ";
+      printstring += std::to_string(patch_element.first);
+    }
+    BOOST_LOG_TRIVIAL(info) << "Active Patch of TGIDs" << printstring;
+  }
+
 }
 
 bool System_impl::get_multiSite() {

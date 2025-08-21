@@ -3,9 +3,9 @@
 #include "../gr_blocks/plugin_wrapper_impl.h"
 #include "../plugin_manager/plugin_manager.h"
 
-p25_recorder_decode_sptr make_p25_recorder_decode(Recorder *recorder, int silence_frames) {
+p25_recorder_decode_sptr make_p25_recorder_decode(Recorder *recorder, int silence_frames, bool d_soft_vocoder) {
   p25_recorder_decode *decoder = new p25_recorder_decode(recorder);
-  decoder->initialize(silence_frames);
+  decoder->initialize(silence_frames, d_soft_vocoder);
   return gnuradio::get_initial_sptr(decoder);
 }
 
@@ -26,7 +26,13 @@ void p25_recorder_decode::stop() {
 
 void p25_recorder_decode::start(Call *call) {
   levels->set_k(call->get_system()->get_digital_levels());
-  wav_sink->start_recording(call);
+
+  if(call->get_phase2_tdma()){
+    wav_sink->start_recording(call, call->get_tdma_slot());
+  } else {
+    wav_sink->start_recording(call);
+  }
+  
   d_call = call;
 }
 
@@ -65,7 +71,7 @@ void p25_recorder_decode::switch_tdma(bool phase2_tdma) {
   op25_frame_assembler->set_phase2_tdma(phase2_tdma);
 }
 
-void p25_recorder_decode::initialize(int silence_frames) {
+void p25_recorder_decode::initialize(int silence_frames, bool d_soft_vocoder) {
   // OP25 Slicer
   const float l[] = {-2.0, 0.0, 2.0, 4.0};
   std::vector<float> slices(l, l + sizeof(l) / sizeof(l[0]));
@@ -91,7 +97,7 @@ void p25_recorder_decode::initialize(int silence_frames) {
   bool do_tdma = 0;
   bool do_nocrypt = 1;
 
-  op25_frame_assembler = gr::op25_repeater::p25_frame_assembler::make(silence_frames, udp_host, udp_port, verbosity, do_imbe, do_output, do_msgq, rx_queue, do_audio_output, do_tdma, do_nocrypt);
+  op25_frame_assembler = gr::op25_repeater::p25_frame_assembler::make(silence_frames, d_soft_vocoder, udp_host, udp_port, verbosity, do_imbe, do_output, do_msgq, rx_queue, do_audio_output, do_tdma, do_nocrypt);
   levels = gr::blocks::multiply_const_ss::make(1);
 
   if (use_streaming) {
@@ -123,15 +129,16 @@ void p25_recorder_decode::reset_block(gr::basic_block_sptr block) {
   gr::block_detail_sptr detail;
   gr::block_sptr grblock = cast_to_block_sptr(block);
   detail = grblock->detail();
-  detail->reset_nitem_counters();
+  //detail->reset_nitem_counters();
   detail->clear_tags();
 }
 
 void p25_recorder_decode::reset() {
-  reset_block(op25_frame_assembler);
+  /*reset_block(op25_frame_assembler);
   reset_block(slicer);
   reset_block(levels);
-  reset_block(wav_sink);
+  reset_block(wav_sink);*/
+  op25_frame_assembler->clear();
 }
 
 gr::op25_repeater::p25_frame_assembler::sptr p25_recorder_decode::get_transmission_sink() {

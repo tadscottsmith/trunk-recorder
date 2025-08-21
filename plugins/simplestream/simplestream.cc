@@ -3,6 +3,7 @@
 #include <boost/dll/alias.hpp> // for BOOST_DLL_ALIAS
 #include <boost/foreach.hpp>
 #include <boost/asio.hpp>
+#include <boost/array.hpp>
 
 using namespace boost::asio;
 
@@ -12,13 +13,12 @@ std::vector<stream_t> streams;
 io_service my_tcp_io_service;
 long max_tcp_index = 0;
 
-
 struct plugin_t {
   Config* config;
 };
 
 struct stream_t {
-  unsigned long TGID;
+  long TGID;
   long tcp_index;
   std::string address;
   std::string short_name;
@@ -26,6 +26,9 @@ struct stream_t {
   ip::udp::endpoint remote_endpoint;
   ip::tcp::socket *tcp_socket;
   bool sendTGID = false;
+  bool sendJSON = false;
+  bool sendCallStart = false;
+  bool sendCallEnd = false;
   bool tcp = false;
 };
 
@@ -40,16 +43,19 @@ class Simple_Stream : public Plugin_Api {
       
   }
 
-  int parse_config(boost::property_tree::ptree &cfg) {
-    BOOST_FOREACH (boost::property_tree::ptree::value_type &node, cfg.get_child("streams")) {
+ int parse_config(json config_data) {
+    for (json element : config_data["streams"]) {
       stream_t stream;
-      stream.TGID = node.second.get<unsigned long>("TGID");
-      stream.address = node.second.get<std::string>("address");
-      stream.port = node.second.get<long>("port");
+      stream.TGID = element["TGID"];
+      stream.address = element["address"];
+      stream.port = element["port"];
       stream.remote_endpoint = ip::udp::endpoint(ip::address::from_string(stream.address), stream.port);
-      stream.sendTGID = node.second.get<bool>("sendTGID",false);
-      stream.tcp = node.second.get<bool>("useTCP",false);
-      stream.short_name = node.second.get<std::string>("shortName", "");
+      stream.sendTGID = element.value("sendTGID",false);
+      stream.sendJSON = element.value("sendJSON",false);
+      stream.sendCallStart = element.value("sendCallStart",false);
+      stream.sendCallEnd = element.value("sendCallEnd",false);
+      stream.tcp = element.value("useTCP",false);
+      stream.short_name = element.value("shortName", "");
       BOOST_LOG_TRIVIAL(info) << "simplestreamer will stream audio from TGID " <<stream.TGID << " on System " <<stream.short_name << " to " << stream.address <<" on port " << stream.port << " tcp is "<<stream.tcp;
       streams.push_back(stream);
     }
@@ -57,37 +63,116 @@ class Simple_Stream : public Plugin_Api {
   }
   
   int audio_stream(Call *call, Recorder *recorder, int16_t *samples, int sampleCount){
-    int recorder_id = recorder->get_num();
+    //Call local_call = *call;
+    System *call_system = call->get_system();
+    int32_t call_tgid = call->get_talkgroup();
+    int32_t call_src = call->get_current_source_id();
+    uint32_t call_freq = call->get_freq();
+    std::string call_short_name = call->get_short_name();
+    std::string call_src_tag = call_system->find_unit_tag(call_src);
+    std::vector<unsigned long> patched_talkgroups = call_system->get_talkgroup_patch(call_tgid);
+
+    Recorder& local_recorder = *recorder;
+    int recorder_id = local_recorder.get_num();
+    long wav_hz = local_recorder.get_wav_hz();
     boost::system::error_code error;
-    BOOST_FOREACH (auto& stream, streams){
-      if (0==stream.short_name.compare(call->get_system()->get_short_name()) || (0==stream.short_name.compare(""))){ //Check if shortName matches or is not specified
-        std::vector<unsigned long> patched_talkgroups = call->get_system()->get_talkgroup_patch(call->get_talkgroup());
+    BOOST_FOREACH (auto stream, streams){
+      if (0==stream.short_name.compare(call_short_name) || (0==stream.short_name.compare(""))){ //Check if shortName matches or is not specified
         if (patched_talkgroups.size() == 0){
-          patched_talkgroups.push_back(call->get_talkgroup());
+          patched_talkgroups.push_back(static_cast<unsigned long>(call_tgid));  //call_info.talkgroup may be negative so cast for comparison (conventional system hack)
         }
-        BOOST_FOREACH (auto& TGID, patched_talkgroups){
-          if ((TGID==stream.TGID || stream.TGID==0)){  //setting TGID to 0 in the config file will stream everything
+        BOOST_FOREACH (auto TGID, patched_talkgroups){
+          if ((TGID==static_cast<unsigned long>(stream.TGID)) || stream.TGID==0){  //setting TGID to 0 in the config file will stream everything
             BOOST_LOG_TRIVIAL(debug) << "got " <<sampleCount <<" samples - " <<sampleCount*2<<" bytes from recorder "<<recorder_id<<" for TGID "<<TGID;
-            if (stream.sendTGID==true){
-              //prepend 4 byte long tgid to the audio data
-              boost::array<mutable_buffer, 2> buf1 = {
-                buffer(&TGID,4),
-                buffer(samples, sampleCount*2)
+            json json_object;
+            std::string json_string;
+            std::vector<boost::asio::const_buffer> send_buffer;
+            if (stream.sendJSON==true){
+              //create JSON metadata
+              json_object = {
+                 {"src", call_src},
+                 {"src_tag",call_src_tag},
+                 {"talkgroup", TGID},
+                 {"patched_talkgroups",patched_talkgroups},
+                 {"freq", call_freq},
+                 {"short_name", call_short_name},
+                 {"audio_sample_rate",wav_hz},
+                 {"event","audio"},
               };
-              if(stream.tcp==true){
-                stream.tcp_socket->send(buf1);
-              }
-              else{
-                my_socket.send_to(buf1, stream.remote_endpoint, 0, error);
-              }
+              json_string = json_object.dump();
+              uint32_t json_length = json_string.length();  //determine length in bytes
+              //BOOST_LOG_TRIVIAL(debug) << "json_length is " <<json_length <<" bytes";
+              send_buffer.push_back(buffer(&json_length,4));  //prepend length of the json data
+              send_buffer.push_back(buffer(json_string));  //prepend json data
+              //BOOST_LOG_TRIVIAL(debug) << "json_string is " <<json_string;
+            }
+            else if (stream.sendTGID==true){
+              send_buffer.push_back(buffer(&TGID,4));  //prepend 4 byte long tgid to the audio data
+            }
+            send_buffer.push_back(buffer(samples, sampleCount*2));
+            if(stream.tcp == true){
+              stream.tcp_socket->send(send_buffer);
             }
             else{
-              //just send the audio data
+              my_socket.send_to(send_buffer, stream.remote_endpoint, 0, error);
+            }
+          }
+        }
+      }
+    }
+    return 0;
+  }
+
+  int call_start(Call *call){
+    boost::system::error_code error;
+    System *call_system = call->get_system();
+    int32_t call_tgid = call->get_talkgroup();
+    int32_t call_src = call->get_current_source_id();
+    uint32_t call_freq = call->get_freq();
+    std::string call_short_name = call->get_short_name();
+    std::string call_src_tag = call_system->find_unit_tag(call_src);
+    std::string call_tgid_tag = call->get_talkgroup_tag();
+    std::vector<unsigned long> patched_talkgroups = call_system->get_talkgroup_patch(call_tgid);
+    
+    BOOST_FOREACH (auto stream, streams){
+      if (stream.sendJSON == true && stream.sendCallStart == true){
+        if (0==stream.short_name.compare(call_short_name) || (0==stream.short_name.compare(""))){ //Check if shortName matches or is not specified
+          if (patched_talkgroups.size() == 0){
+            patched_talkgroups.push_back(static_cast<unsigned long>(call_tgid));  //call_info.talkgroup may be negative so cast for comparison (conventional system hack)
+          }
+          std::vector<std::string> patched_talkgroup_tags;
+          BOOST_FOREACH (auto TGID, patched_talkgroups){
+            Talkgroup* this_tg = call_system->find_talkgroup(TGID);
+            if (this_tg != nullptr) {
+              patched_talkgroup_tags.push_back(this_tg->alpha_tag);
+            }
+            if ((TGID==static_cast<unsigned long>(stream.TGID)) || stream.TGID==0){  //setting TGID to 0 in the config file will stream everything
+              json json_object;
+              std::string json_string;
+              std::vector<boost::asio::const_buffer> send_buffer;
+              if (stream.sendJSON==true){
+                //create JSON metadata
+                json_object = {
+                   {"src", call_src},
+                   {"src_tag", call_src_tag},
+                   {"talkgroup", call_tgid},
+                   {"talkgroup_tag",call_tgid_tag},
+                   {"patched_talkgroups",patched_talkgroups},
+                   {"patched_talkgroup_tags",patched_talkgroup_tags},
+                   {"freq", call_freq},
+                   {"short_name", call_short_name},
+                   {"event","call_start"},
+                };
+                json_string = json_object.dump();
+                uint32_t json_length = json_string.length();  //determine length in bytes
+                send_buffer.push_back(buffer(&json_length,4));  //prepend length of the json data
+                send_buffer.push_back(buffer(json_string));  //prepend json data
+              }
               if(stream.tcp == true){
-                stream.tcp_socket->send(buffer(samples, sampleCount*2));
+                stream.tcp_socket->send(send_buffer);
               }
               else{
-                my_socket.send_to(buffer(samples, sampleCount*2), stream.remote_endpoint, 0, error);
+                my_socket.send_to(send_buffer, stream.remote_endpoint, 0, error);
               }
             }
           }
@@ -96,7 +181,49 @@ class Simple_Stream : public Plugin_Api {
     }
     return 0;
   }
-  
+
+  int call_end(Call_Data_t call_info) {
+    boost::system::error_code error;
+    BOOST_FOREACH (auto stream, streams){
+      if (stream.sendJSON == true && stream.sendCallEnd == true){
+        if (0==stream.short_name.compare(call_info.short_name) || (0==stream.short_name.compare(""))){ //Check if shortName matches or is not specified
+          std::vector<unsigned long> patched_talkgroups = call_info.patched_talkgroups;
+          if (patched_talkgroups.size() == 0){
+            patched_talkgroups.push_back(static_cast<unsigned long>(call_info.talkgroup)); //call_info.talkgroup may be negative so cast for comparison (conventional system hack)
+          }
+          BOOST_FOREACH (auto TGID, patched_talkgroups){
+            if ((TGID == static_cast<unsigned long>(stream.TGID)) || stream.TGID==0){  //setting TGID to 0 in the config file will stream everything
+              json json_object;
+              std::string json_string;
+              std::vector<boost::asio::const_buffer> send_buffer;
+              if (stream.sendJSON==true){
+                //create JSON metadata
+                json_object = {
+                   {"talkgroup", call_info.talkgroup},
+                   {"patched_talkgroups",patched_talkgroups},
+                   {"freq", call_info.freq},
+                   {"short_name", call_info.short_name},
+                   {"event","call_end"},
+                };
+                json_string = json_object.dump();
+                uint32_t json_length = json_string.length();  //determine length in bytes
+                send_buffer.push_back(buffer(&json_length,4));  //prepend length of the json data
+                send_buffer.push_back(buffer(json_string));  //prepend json data
+              }
+              if(stream.tcp == true){
+                stream.tcp_socket->send(send_buffer);
+              }
+              else{
+                my_socket.send_to(send_buffer, stream.remote_endpoint, 0, error);
+              }
+            }
+          }
+        }
+      }
+    }
+    return 0;
+  }
+
   int start(){
     BOOST_FOREACH (auto& stream, streams){
       if (stream.tcp == true){

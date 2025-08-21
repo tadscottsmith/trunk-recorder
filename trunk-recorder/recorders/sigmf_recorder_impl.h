@@ -51,6 +51,7 @@
 #endif
 #endif
 
+#include <gnuradio/digital/fll_band_edge_cc.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/filter/pfb_arb_resampler_ccf.h>
 
@@ -66,59 +67,75 @@
 #include <gnuradio/blocks/head.h>
 #include <gnuradio/message.h>
 #include <gnuradio/msg_queue.h>
-
-#include "../gr_blocks/freq_xlating_fft_filter.h"
+#include <json.hpp>
+#include "../gr_blocks/rms_agc.h"
+#include "../gr_blocks/channelizer.h"
+#include "../gr_blocks/xlat_channelizer.h"
 #include "recorder.h"
 
 #include "../source.h"
+#include "../call_conventional.h"
 
 class sigmf_recorder_impl : public sigmf_recorder {
 
 public:
-  sigmf_recorder_impl(Source *src);
-
-  void tune_offset(double f);
+  sigmf_recorder_impl(Source *src, Recorder_Type type);
   bool start(Call *call);
   void stop();
   double get_freq();
+  int get_freq_error();
   int get_num();
   double get_current_length();
+  void set_enabled(bool enabled);
+  bool is_enabled();
   bool is_active();
   State get_state();
   int lastupdate();
   long elapsed();
 
-  gr::msg_queue::sptr tune_queue;
-  gr::msg_queue::sptr traffic_queue;
-  gr::msg_queue::sptr rx_queue;
-  // void forecast(int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
   double center, freq;
   int silence_frames;
   long talkgroup;
+      long input_rate;
+
+  const int phase1_samples_per_symbol = 5;
+  const double phase1_symbol_rate = 4800;
+
+  double squelch_db;
   time_t timestamp;
   time_t starttime;
 
   Config *config;
   Source *source;
+  Call *call;
   char filename[255];
   // int num;
   State state;
 
-  // std::vector<gr_complex> lpf_coeffs;
-  std::vector<float> lpf_coeffs;
+  //channelizer::sptr prefilter;
+  xlat_channelizer::sptr prefilter;
   std::vector<float> arb_taps;
-  std::vector<float> sym_taps;
+  std::vector<gr_complex> bandpass_filter_coeffs;
+  std::vector<float> inital_lpf_taps;
+  std::vector<float> lowpass_filter_coeffs;
+  std::vector<float> cutoff_filter_coeffs;
+  std::vector<float> if_coeffs;
 
-  gr::filter::freq_xlating_fir_filter_ccf::sptr prefilter;
+  gr::analog::sig_source_c::sptr lo;
+  gr::analog::sig_source_c::sptr bfo;
+  gr::blocks::multiply_cc::sptr mixer;
 
-  gr::analog::quadrature_demod_cf::sptr fm_demod;
-  gr::analog::feedforward_agc_cc::sptr agc;
-  gr::analog::agc2_ff::sptr demod_agc;
-  gr::analog::agc2_cc::sptr pre_demod_agc;
+  gr::filter::fft_filter_ccc::sptr bandpass_filter;
+  gr::filter::fft_filter_ccf::sptr lowpass_filter;
+  gr::filter::fft_filter_ccf::sptr cutoff_filter;
+  gr::filter::freq_xlating_fir_filter<gr_complex, gr_complex, float>::sptr freq_xlat;
+  gr::filter::pfb_arb_resampler_ccf::sptr arb_resampler;
+  gr::digital::fll_band_edge_cc::sptr fll_band_edge;
+  gr::blocks::rms_agc::sptr rms_agc;
+  gr::analog::pwr_squelch_cc::sptr squelch;
   gr::blocks::file_sink::sptr raw_sink;
-  gr::blocks::short_to_float::sptr converter;
   gr::blocks::copy::sptr valve;
 };
 

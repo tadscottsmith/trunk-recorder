@@ -115,6 +115,7 @@ public:
 	void rx_sym(const uint8_t sym);
 	void sync_reset(void);
 	void reset_timer(void);
+	void call_end(void);
 	void crypt_reset(void);
 	void crypt_key(uint16_t keyid, uint8_t algid, const std::vector<uint8_t> &key);
 	void set_slot_mask(int mask);
@@ -123,7 +124,7 @@ public:
 	void set_nac(int nac);
 	void set_debug(int debug);
 	int get_src_id(int slot);
-	bool get_terminated(int slot);
+	std::pair<bool,long> get_terminated(int slot);
 	rx_sync(const char * options, log_ts& logger, int debug, int msgq_id, gr::msg_queue::sptr queue, std::array<std::deque<int16_t>, 2> &output_queue);
 	~rx_sync();
 

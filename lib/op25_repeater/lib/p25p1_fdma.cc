@@ -198,7 +198,7 @@ namespace gr {
                 fprintf(stderr, "%s p25p1_fdma::set_nac: 0x%03x\n", logts.get(d_msgq_id), d_nac);
         }
 
-        p25p1_fdma::p25p1_fdma(const op25_audio& udp, log_ts& logger, int debug, bool do_imbe, bool do_output, bool do_msgq, gr::msg_queue::sptr queue, std::deque<int16_t> &output_queue, bool do_audio_output, int msgq_id) :
+        p25p1_fdma::p25p1_fdma(const op25_audio& udp, log_ts& logger, int debug, bool do_imbe, bool do_output, bool do_msgq, gr::msg_queue::sptr queue, std::deque<int16_t> &output_queue, bool do_audio_output, bool soft_vocoder, int msgq_id) :
             write_bufp(0),
             d_debug(debug),
             d_do_imbe(do_imbe),
@@ -208,6 +208,7 @@ namespace gr {
             d_do_audio_output(do_audio_output),
             d_nac(0),
             d_msg_queue(queue),
+            d_soft_vocoder(soft_vocoder),
             output_queue(output_queue),
             framer(new p25_framer(logger, debug, msgq_id)),
             qtimer(op25_timer(TIMEOUT_THRESHOLD)),
@@ -217,7 +218,7 @@ namespace gr {
             ess_keyid(0),
             ess_algid(0x80),
             vf_tgid(0),
-			terminate_call(false),
+			terminate_call(std::pair<bool,long>(false,0)),
             p1voice_decode((debug > 0), udp, output_queue)
         {
 			rx_status.error_count = 0;
@@ -242,9 +243,9 @@ namespace gr {
 		}
 
         void p25p1_fdma::reset_call_terminated() {
-            terminate_call = false;
+            terminate_call = std::pair<bool,long>(false,0);
         }
-		bool p25p1_fdma::get_call_terminated() {
+		std::pair<bool,long> p25p1_fdma::get_call_terminated() {
 			return terminate_call;
 		}
         long p25p1_fdma::get_curr_grp_id() {
@@ -403,10 +404,11 @@ namespace gr {
 
         void p25p1_fdma::process_TTDU() {
             process_duid(framer->duid, framer->nac, NULL, 0);
+            reset_ess();
 
             if ((d_do_imbe || d_do_audio_output) && (framer->duid == 0x3 || framer->duid == 0xf)) {  // voice termination
                 op25audio.send_audio_flag(op25_audio::DRAIN);
-				terminate_call = true;
+				terminate_call = std::pair<bool,long>(true, output_queue.size());
             }
         }
 
@@ -582,7 +584,7 @@ namespace gr {
                 blks = deinterleave_buf[0][6] & 0x7f;
 
                 if ((sap == 61) && ((fmt == 0x17) || (fmt == 0x15))) { // Multi Block Trunking messages
-                    if (blks > deinterleave_buf.size())
+                    if ((blks > deinterleave_buf.size()) || (deinterleave_buf.size() == 1))
                         return; // insufficient blocks available
 
                     uint32_t crc1 = crc32(deinterleave_buf[1].data(), ((blks * 12) - 4) * 8);
@@ -653,7 +655,7 @@ namespace gr {
         void p25p1_fdma::process_voice(const bit_vector& A, const frame_type fr_type) {
             if (d_do_imbe || d_do_audio_output) {
                 if (encrypted())
-                    crypt_algs.prepare(ess_algid, ess_keyid, fr_type, ess_mi);
+                    crypt_algs.prepare(ess_algid, ess_keyid, PT_P25_PHASE1, ess_mi);
 
                 for(size_t i = 0; i < nof_voice_codewords; ++i) {
                     voice_codeword cw(voice_codeword_sz);
@@ -679,7 +681,7 @@ namespace gr {
                     if (encrypted()) {
                         packed_codeword ciphertext;
                         imbe_pack(ciphertext, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7]);
-                        audio_valid = crypt_algs.process(ciphertext);
+                        audio_valid = crypt_algs.process(ciphertext, fr_type, i);
                         imbe_unpack(ciphertext, u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7]);
                     }
 
@@ -723,27 +725,31 @@ namespace gr {
                     if (d_do_audio_output) {
                         if ( !encrypted()) {
                             // This is the Vocoder that OP25 currently uses.
-                            /*software_decoder.decode_fullrate(u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, ET);
-                            audio_samples *samples = software_decoder.audio();
-                            for (int i=0; i < SND_FRAME; i++) {
-                           	    if (samples->size() > 0) {
-                       		        snd[i] = (int16_t)(samples->front());
-                                    samples->pop_front();
-                                } else {
-                                    snd[i] = 0;
+
+                            if (d_soft_vocoder) {
+                                // This is vocoder that is for half-rate
+                                software_decoder.decode_fullrate(u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7], E0, ET);
+                                audio_samples *samples = software_decoder.audio();
+                                for (int i=0; i < SND_FRAME; i++) {
+                                    if (samples->size() > 0) {
+                                        snd[i] = (int16_t)(samples->front());
+                                        samples->pop_front();
+                                    } else {
+                                        snd[i] = 0;
+                                    }
                                 }
-                            }*/
+                            } else {
 
-                            // This is the older, fullrate vocoder
-                            // it was copied from p25p1_voice_decode.cc
-                            int16_t frame_vector[8];
+                                // This is the older, fullrate vocoder
+                                // it was copied from p25p1_voice_decode.cc
+                                int16_t frame_vector[8];
 
-                            for (int i=0; i < 8; i++) { // Ugh. For compatibility convert imbe params from uint32_t to int16_t
-                                frame_vector[i] = u[i];
+                                for (int i=0; i < 8; i++) { // Ugh. For compatibility convert imbe params from uint32_t to int16_t
+                                    frame_vector[i] = u[i];
+                                }
+                                frame_vector[7] >>= 1;
+                                vocoder.imbe_decode(frame_vector, snd);
                             }
-                            frame_vector[7] >>= 1;
-                            vocoder.imbe_decode(frame_vector, snd);
-
 
                             if (op25audio.enabled()) {      // decoded audio goes out via UDP (normal code path)
                                 op25audio.send_audio(snd, SND_FRAME * sizeof(int16_t));
@@ -770,6 +776,12 @@ namespace gr {
 
         void p25p1_fdma::reset_timer() {
             qtimer.reset();
+        }
+
+        void p25p1_fdma::call_end() {
+            if (d_do_audio_output)
+                op25audio.send_audio_flag(op25_audio::DRAIN);
+            reset_ess();
         }
 
         void p25p1_fdma::crypt_reset() {
@@ -852,7 +864,7 @@ namespace gr {
 					rx_status.error_count += framer->bch_errors;
 					rx_status.total_len += 64;
 					rx_status.last_update = time(NULL); //comment/remove if you don't care about non-voice frames
-					terminate_call = false;
+					terminate_call = std::pair<bool,long>(false,0);
 
                     process_frame();
                 }  // end of complete frame
