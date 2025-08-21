@@ -253,7 +253,7 @@ Call_Data_t upload_call_worker(Call_Data_t call_info) {
       shell_command << call_info.upload_script << " " << call_info.filename << " " << call_info.status_filename << " " << call_info.converted;
       shell_command_string = shell_command.str();
       std::string loghdr = log_header( call_info.short_name, call_info.call_num, call_info.talkgroup_display , call_info.freq);
-      BOOST_LOG_TRIVIAL(info) << loghdr << "C\033[0m \t Running upload script: " << shell_command_string;
+      BOOST_LOG_TRIVIAL(info) << loghdr << "Running upload script: " << shell_command_string;
 
       result = system(shell_command_string.c_str());
     }
