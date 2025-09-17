@@ -64,4 +64,6 @@ WORKDIR /app
 ENV HOME=/tmp
 
 #USER nobody
-CMD ["trunk-recorder", "--config=/app/config.json"]
+# We need to use this style of CMD or else it will leak zombie processes with Unit Script
+# See #539
+CMD trunk-recorder --config=/app/config.json
