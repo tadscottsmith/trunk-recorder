@@ -3,7 +3,7 @@ Plugin System
 
 The plugin system is designed to allow third parties to integrate their own features without changing the core code of trunk-recorder, and allow for features to be updated independently of the trunk-recorder code base. The current methods supported by the plugin system is loosely based on the Status uploader.
 
-*Unless otherwise noted, all fuctions need to return an int result (0 for successful, -1 for failure)*
+*Unless otherwise noted, all functions need to return an int result (0 for successful, -1 for failure)*
 
 Plugins need to implement the following methods:
 * `<name>_plugin_new`
@@ -18,7 +18,7 @@ Plugins can *optionally* implement the following methods, based on usage, or set
   * Called before init(plugin_t), and passed the Configuration information in the settings file for that plugin.
   
 * `start(plugin_t * const plugin)`
-  * Called after trunk-recorder has been setup and all configuraiton is loaded.
+  * Called after trunk-recorder has been setup and all configuration is loaded.
 
 * `stop(plugin_t * const plugin)`
   * Called after trunk-recorder has started shutting down, but the top-block is still running.

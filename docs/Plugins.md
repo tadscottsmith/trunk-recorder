@@ -190,7 +190,7 @@ Community plugins can extend the features of Trunk Recorder and allow customized
 > As new plugins are developed, authors are encouraged to add to the below tables by submitting a PR to this document.
 
 #### External Plugins
-Plugins that are built out-of-tree and installed seperately from Trunk Recorder:
+Plugins that are built out-of-tree and installed separately from Trunk Recorder:
 | Plugin Name / Link                                                                              | Description                                                                                                               |
 | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | [MQTT Status](https://github.com/robotastic/trunk-recorder-mqtt-status)                         | Publishes the current status of a Trunk Recorder instance over MQTT                                                       |
@@ -220,7 +220,7 @@ cd /user_plugins
 git submodule add https://github.com/tr_plugin_developer/my-tr-plugin.git
 ```
 
-2. Review plugin requrements, and ensure all dependencies have been met.
+2. Review plugin requirements, and ensure all dependencies have been met.
 
 3. Return to your 'build' directory, and resume from the `cmake` step: e.g.
 ```bash
@@ -232,7 +232,7 @@ cmake ../trunk-recorder
 -- Added user plugin: my-tr-plugin
 ```
 
-4. Contine to build and install Trunk Recorder with included plugins:
+4. Continue to build and install Trunk Recorder with included plugins:
 ```bash
 make
 sudo make install

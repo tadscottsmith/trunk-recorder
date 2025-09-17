@@ -7,7 +7,7 @@ sidebar_position: 1
 
 This page covers installing Trunk Recorder on a Linux box. I test everything on Ubuntu, but other flavors of Linux are supported. Instructions are also included for Arch Linux.
 
-## Install Prerequistes
+## Install Prerequisites
 To get started, install all of the required packages. Instructions for different versions are below:
 
 
@@ -63,7 +63,7 @@ If you are using a HackRF:
 sudo apt install -y hackrf libhackrf-dev libhackrf0
 ```
 
-### Older Ubuntu Verions...
+### Older Ubuntu Versions...
 
 These instructions should work on Ubuntu 16.x to 17.x, including Debian 9 and 10. 
 

@@ -185,8 +185,8 @@ There is a list of available Plugins [here](./Plugins.md).
 | Key              | Required | Default Value | Type                        | Description                                                  |
 | :--------------- | :------: | :-----------: | --------------------------- | ------------------------------------------------------------ |
 | driver           |    ✓     |               | **"sigmffile"**| Specify that you wish to use a SigMF based source block              |
-| sigmfMeta          |    ✓     |               | string                      | Path and filenme for the SigMF metadata File                            |
-| sigmfData          |    ✓     |               | string                      | Path and filenme for the SigMF data File                            |
+| sigmfMeta          |    ✓     |               | string                      | Path and filename for the SigMF metadata File                            |
+| sigmfData          |    ✓     |               | string                      | Path and filename for the SigMF data File                            |
 | repeat           |          |     false     | **true** / **false**        | whether to repeat playback of the IQ file when it reaches the end |
 | digitalRecorders |          |               | number                      | The number of Digital Recorders to have attached to this source. This is essentially the number of simultaneous calls you can record at the same time in the frequency range that this Source will be tuned to. It is limited by the CPU power of the machine. Some experimentation might be needed to find the appropriate number. *This is only required for Trunk systems. Channels in Conventional systems have dedicated recorders and do not need to be included here.* |
 | analogRecorders  |          |               | number                      | The number of Analog Recorder to have attached to this source. The same as Digital Recorders except for Analog Voice channels. *This is only required for Trunk systems. Channels in Conventional systems have dedicated recorders and do not need to be included here.* |
@@ -199,7 +199,7 @@ There is a list of available Plugins [here](./Plugins.md).
 | Key              | Required | Default Value | Type                        | Description                                                  |
 | :--------------- | :------: | :-----------: | --------------------------- | ------------------------------------------------------------ |
 | driver           |    ✓     |               | **"iqfile"**| Specify that you wish to use an IQ File based source block              |
-| iqfile           |    ✓     |               | string                      | Path and filenme for the IQ File                            |
+| iqfile           |    ✓     |               | string                      | Path and filename for the IQ File                            |
 | repeat           |          |     false     | **true** / **false**        | whether to repeat playback of the IQ file when it reaches the end |
 | center           |    ✓     |               | number                      | The center frequency in Hz to tune the SDR to                |
 | rate             |    ✓     |               | number                      | The sampling rate to set the SDR to, in samples / second     |
