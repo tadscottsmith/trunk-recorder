@@ -46,5 +46,5 @@ Once **gdb** loads up, use the *backtrace* command to review the execution histo
 
 `backtrace`
 
-Now you can create a [GitHub Issue](https://github.com/robotastic/trunk-recorder/issues), including the info from **gdb**, along with your config.json and as much info as possible on how to recreate the crash.
+Now you can create a [GitHub Issue](https://github.com/TrunkRecorder/trunk-recorder/issues), including the info from **gdb**, along with your config.json and as much info as possible on how to recreate the crash.
 

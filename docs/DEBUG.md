@@ -26,7 +26,7 @@ make
 gdb trunk-recorder core
 ```
 
-6. *gdb* is a powerful debugging platform. However, all we need is a trace of the crash. After *gdb* has finished loading, type in `bt full` to get a trace. Copy all of the output from *gdb* into a new [GitHub Issue](https://github.com/robotastic/trunk-recorder/issues/new), along with as much information as possible on what maybe causing the crash.
+6. *gdb* is a powerful debugging platform. However, all we need is a trace of the crash. After *gdb* has finished loading, type in `bt full` to get a trace. Copy all of the output from *gdb* into a new [GitHub Issue](https://github.com/TrunkRecorder/trunk-recorder/issues/new), along with as much information as possible on what maybe causing the crash.
 
 
 # How to Capture an IQ Sample
@@ -67,7 +67,7 @@ Use the settings from the source you are interested in from your config.json fil
 
 you would use: `rtl_sdr -f 855700000 -s 2048000 -g 39 -d 41 debug.iq`
 
-The file that rtl_sdr generates is in a compact format... which is great but it can't easily be opened by other program. There is a good write-up on it from here (from 2014!). Luckily, some wrote a small program to convert it into a more standard format (complex IQ). I have included it in the /utils folder: [rtlsdr-to-iq.c](https://github.com/robotastic/trunk-recorder/blob/master/utils/rtlsdr-to-iq.c). Compile the program and then copy it to the directory with your recordings and run it against them. Note - the conversion will cause the filesize to increase 4x, so make sure you have enough space.
+The file that rtl_sdr generates is in a compact format... which is great but it can't easily be opened by other program. There is a good write-up on it from here (from 2014!). Luckily, some wrote a small program to convert it into a more standard format (complex IQ). I have included it in the /utils folder: [rtlsdr-to-iq.c](https://github.com/TrunkRecorder/trunk-recorder/blob/master/utils/rtlsdr-to-iq.c). Compile the program and then copy it to the directory with your recordings and run it against them. Note - the conversion will cause the filesize to increase 4x, so make sure you have enough space.
 
 
 ## Playback in GQRX
@@ -81,4 +81,4 @@ You are then going to need a device string with the correct options. Update this
 
 ## Playing an IQ File as a Source in Trunk Recorder
 
-Check out the [config-iq-file.json](https://github.com/robotastic/trunk-recorder/blob/master/examples/config-iq-file.json) config as an example of how to playback an IQ file as a Source. You will probably need to have the `repeat` parameter turned on, unless you have a really long file. 
+Check out the [config-iq-file.json](https://github.com/TrunkRecorder/trunk-recorder/blob/master/examples/config-iq-file.json) config as an example of how to playback an IQ file as a Source. You will probably need to have the `repeat` parameter turned on, unless you have a really long file. 

@@ -53,5 +53,5 @@ Currently, Docker image builds are triggered by the following events:
 
 * After every push to the `master` branch the `edge` tag is built and pushed to Docker Hub.
 * Every day at 10 AM UTC the `nightly` tag is built and pushed to Docker Hub.
-* When a new [release](https://github.com/robotastic/trunk-recorder/releases) happens the `<version>` and `latest` tags are built and pushed to Docker Hub.
+* When a new [release](https://github.com/TrunkRecorder/trunk-recorder/releases) happens the `<version>` and `latest` tags are built and pushed to Docker Hub.
 

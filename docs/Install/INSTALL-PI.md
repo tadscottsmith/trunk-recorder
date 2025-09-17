@@ -142,7 +142,7 @@ In order to keep your copy of the Trunk Recorder source code free of build artif
 ```bash
 cd ~
 mkdir trunk-build
-git clone https://github.com/robotastic/trunk-recorder.git
+git clone https://github.com/TrunkRecorder/trunk-recorder.git
 cd trunk-build
 cmake ../trunk-recorder
 make -j1
@@ -191,7 +191,7 @@ Assuming you are in the desired directory to place both trunk-recorder and trunk
 ```bash
 cd ~
 mkdir trunk-build
-git clone https://github.com/robotastic/trunk-recorder.git
+git clone https://github.com/TrunkRecorder/trunk-recorder.git
 cd trunk-build
 cmake ../trunk-recorder
 make -j `nproc`
@@ -210,7 +210,7 @@ The next step is to [configure Trunk Recorder](CONFIGURE.md) for the system you 
 
 ## Running trunk recorder. 
 
-If all goes well you should now have the executable named `trunk-recorder`, and created the `config.json` configuration file as described in the [Wiki](https://github.com/robotastic/trunk-recorder/wiki/Configuring-a-System) and [README](https://github.com/robotastic/trunk-recorder/blob/master/README.md#configure).
+If all goes well you should now have the executable named `trunk-recorder`, and created the `config.json` configuration file as described in the [Wiki](https://github.com/TrunkRecorder/trunk-recorder/wiki/Configuring-a-System) and [README](https://github.com/TrunkRecorder/trunk-recorder/blob/master/README.md#configure).
 
 From your build directory (e.g. `trunk-build`) you can now run
 `./trunk-recorder`

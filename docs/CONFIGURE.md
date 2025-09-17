@@ -41,7 +41,7 @@ Center Frequency Calculators:
 Configuration File:
 - https://www.radioetcetera.site/trunk-recorder-config-editor/ - tool for using a GUI to create config.json files
 - https://github.com/AlertPageSDR/tr_configurator - If you have a Radio Reference Premium account, you can use this tool to automatically generate a config.json based on the RR data for a given system (or systems)
-- https://github.com/robotastic/trunk-recorder-configs - example configurations for different systems
+- https://github.com/TrunkRecorder/trunk-recorder-configs - example configurations for different systems
 
 ### Gain
 

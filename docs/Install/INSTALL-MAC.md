@@ -58,7 +58,7 @@ This path in Homebrew will differ by system (Apple Silicon:`/opt/homebrew/opt/op
 #### Building Trunk Recorder
 ```bash
 mkdir trunk-recorder && cd trunk-recorder
-git clone https://github.com/robotastic/trunk-recorder.git source
+git clone https://github.com/TrunkRecorder/trunk-recorder.git source
 mkdir build && cd build
 cmake ../source -DOPENSSL_ROOT_DIR=$(brew --prefix openssl@3)
 make -j
