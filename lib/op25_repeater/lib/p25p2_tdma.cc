@@ -89,7 +89,7 @@ static const uint8_t mac_msg_len[256] = {
 	28,  0,  0, 14, 17, 14,  0,  0, 16,  8, 11,  0, 13, 19,  0,  0, 
 	 0,  0, 16, 14,  0,  0, 12,  0, 22,  0, 11, 13, 11,  0, 15,  0 };
 
-p25p2_tdma::p25p2_tdma(const op25_audio& udp, log_ts& logger, int slotid, int debug, bool do_msgq, gr::msg_queue::sptr queue, std::deque<int16_t> &qptr, bool do_audio_output, int msgq_id) :	// constructor
+p25p2_tdma::p25p2_tdma(const op25_audio& udp, log_ts& logger, int slotid, int debug, bool do_msgq, gr::msg_queue::sptr queue, std::deque<int16_t> &qptr, bool do_audio_output, bool soft_vocoder, int msgq_id) :	// constructor
 	tdma_xormask(new uint8_t[SUPERFRAME_SIZE]),
 	symbols_received(0),
 	packets(0),
@@ -103,6 +103,7 @@ p25p2_tdma::p25p2_tdma(const op25_audio& udp, log_ts& logger, int slotid, int de
 	d_do_msgq(do_msgq),
 	d_msgq_id(msgq_id),
 	d_do_audio_output(do_audio_output),
+	d_soft_vocoder(soft_vocoder),
 	op25audio(udp),
     logts(logger),
 	d_nac(0),
@@ -526,6 +527,8 @@ void p25p2_tdma::handle_voice_frame(const uint8_t dibits[], int slot, int voice_
 {
 	static const int NSAMP_OUTPUT=160;
 	audio_samples *samples = NULL;
+	int16_t samples_buf[NSAMP_OUTPUT];
+	bool use_samples_buf = false;
 	packed_codeword p_cw;
     bool audio_valid = !encrypted();
 	int u[4];
@@ -607,12 +610,15 @@ void p25p2_tdma::handle_voice_frame(const uint8_t dibits[], int slot, int voice_
 		if (tone_frame) {
 			software_decoder.decode_tone(tone_mp.ID, tone_mp.AD, &tone_mp.n);
 			samples = software_decoder.audio();
-		} else {
+		} else if(d_soft_vocoder) {
 			K = 12;
 			if (cur_mp.L <= 36)
 				K = int(float(cur_mp.L + 2.0) / 3.0);
 			software_decoder.decode_tap(cur_mp.L, K, cur_mp.w0, &cur_mp.Vl[1], &cur_mp.Ml[1]);
 			samples = software_decoder.audio();
+		} else {
+			vocoder.decode_tap(samples_buf, cur_mp.L, cur_mp.w0, &cur_mp.Vl[1], &cur_mp.Ml[1]);
+			use_samples_buf = true;
 		}
 	}
 
@@ -622,6 +628,8 @@ void p25p2_tdma::handle_voice_frame(const uint8_t dibits[], int slot, int voice_
 		if (samples && (samples->size() > 0)) {
 			snd = (int16_t)(samples->front());
 			samples->pop_front();
+		} else if (use_samples_buf) {
+			snd = samples_buf[i];
 		} else {
 			snd = 0;
 		}
