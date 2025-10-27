@@ -1,0 +1,87 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 5.x.x)'
+        required: true
+        type: string
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+      
+      -
+        name: Validate Version
+        id: validate
+        run: |
+          REQUESTED_VERSION="${{ github.event.inputs.version }}"
+          echo "Requested version: $REQUESTED_VERSION"
+          
+          # Extract version from CMakeLists.txt PROJECT() line
+          # Matches: project(Trunk-Recorder LANGUAGES CXX C VERSION "5.0.2")
+          CMAKE_VERSION=$(grep -i "project(" CMakeLists.txt | grep -oP 'VERSION\s+"\K[0-9.]+(?=")')
+          echo "CMakeLists.txt version: $CMAKE_VERSION"
+          
+          # Check if version was found
+          if [ -z "$CMAKE_VERSION" ]; then
+            echo "ERROR: Could not find VERSION in CMakeLists.txt PROJECT() section"
+            exit 1
+          fi
+          
+          # Compare versions
+          if [ "$REQUESTED_VERSION" != "$CMAKE_VERSION" ]; then
+            echo " ERROR: Version mismatch!"
+            echo "  Requested version: $REQUESTED_VERSION"
+            echo "  CMakeLists.txt version: $CMAKE_VERSION"
+            echo ""
+            echo "Please update the VERSION in CMakeLists.txt to '$REQUESTED_VERSION' before creating this release."
+            exit 1
+          fi
+          
+          echo "Version validation passed: $REQUESTED_VERSION"
+          echo "version=$REQUESTED_VERSION" >> $GITHUB_OUTPUT
+      
+      -
+        name: Create Tag
+        run: |
+          VERSION="${{ steps.validate.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${VERSION}" -m "Release version ${VERSION}"
+          git push origin "v${VERSION}"
+          echo "Created and pushed tag: v${VERSION}"
+      
+      -
+        name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.validate.outputs.version }}
+          release_name: Release v${{ steps.validate.outputs.version }}
+          body: |
+            Release version ${{ steps.validate.outputs.version }}
+        
+          draft: false
+          prerelease: false
+      
+      -
+        name: Trigger Build Workflow
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ steps.validate.outputs.version }}';
+            console.log(`Triggering buildx workflow for v${version}`);
+            
+            // The buildx workflow will automatically trigger on the new tag
+            // This step just confirms the tag was created successfully
+            console.log('Tag created. The buildx workflow should start automatically.');
