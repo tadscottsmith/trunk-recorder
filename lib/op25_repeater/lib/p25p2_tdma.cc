@@ -372,12 +372,38 @@ void p25p2_tdma::decode_mac_msg(const uint8_t byte_buf[], const unsigned int len
 			case 0x08: // Null Avoid Zero Bias Message
 				msg_len = byte_buf[msg_ptr+1] & 0x3f;
 				break;
+            case 0x01: // Group Voice Channel User - Abbreviated
+				if(b1b2 == 0x0) {
+					msg_len = 7;
+
+					grpaddr = (byte_buf[msg_ptr+2] << 8) + byte_buf[msg_ptr+3];
+					srcaddr = (byte_buf[msg_ptr+4] << 16) + (byte_buf[msg_ptr+5] << 8) + byte_buf[msg_ptr+6];
+
+					src_id = srcaddr;
+					grp_id = grpaddr;
+				}
+				break;
 			case 0x11: // Indirect Group Paging without Priority
 				msg_len = (((byte_buf[msg_ptr+1] & 0x3) + 1) * 2) + 2;
 				break;
 			case 0x12: // Individual Paging with Priority
 				msg_len = (((byte_buf[msg_ptr+1] & 0x3) + 1) * 3) + 2;
 				break;
+            case 0x21: // Group Voice Channel User - Extended
+				if(b1b2 == 0x0) {
+					msg_len = 14;
+
+					grpaddr = (byte_buf[msg_ptr+2] << 8) + byte_buf[msg_ptr+3];
+					wacn = ((byte_buf[msg_ptr+7] << 12) + (byte_buf[msg_ptr+8] << 4) + (byte_buf[msg_ptr+9] >> 4)) & 0xFFFFF;
+					sysid = ((byte_buf[msg_ptr+9] & 0x0F) << 8) + byte_buf[msg_ptr+10];
+					srcaddr = (byte_buf[msg_ptr+11] << 16) + (byte_buf[msg_ptr+12] << 8) + byte_buf[msg_ptr+13];
+
+					// Need to discuss what to do for fully qualified radio IDs.
+					// Currently this uses only the Radio ID portion from Roaming Units.
+					src_id = srcaddr;
+					grp_id = grpaddr;
+				}
+                break;
 			default:
 				if (b1b2 == 0x2) {				// Manufacturer-specific ops have len field
 					mfid = byte_buf[msg_ptr+1];
