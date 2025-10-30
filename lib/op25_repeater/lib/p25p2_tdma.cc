@@ -303,11 +303,6 @@ void p25p2_tdma::handle_mac_end_ptt(const uint8_t byte_buf[], const unsigned int
 
         if (d_debug >= 10)
                 fprintf(stderr, "%s MAC_END_PTT: colorcd=0x%03x, srcaddr=%u, grpaddr=%u, rs_errs=%d\n", logts.get(d_msgq_id), colorcd, srcaddr, grpaddr, rs_errs);
-
-        op25audio.send_audio_flag(op25_audio::DRAIN);
-		terminate_call = std::pair<bool,long>(true, output_queue_decode.size());
-		// reset crypto parameters
-        reset_ess();
 }
 
 void p25p2_tdma::handle_mac_idle(const uint8_t byte_buf[], const unsigned int len, const int rs_errs) 
@@ -343,6 +338,13 @@ void p25p2_tdma::handle_mac_hangtime(const uint8_t byte_buf[], const unsigned in
 
         if (d_debug >= 10)
                 fprintf(stderr, ", rs_errs=%d\n", rs_errs);
+
+		// P25 P2 is guaranteed to send MAC_HANGTIME at transmission termination.
+		// Relying on MAC_END_PTT can be insufficient, as it will not start a new transmission during call continuation scenarios.
+        op25audio.send_audio_flag(op25_audio::DRAIN);
+		terminate_call = std::pair<bool,long>(true, output_queue_decode.size());
+		// reset crypto parameters
+        reset_ess();
 }
 
 
