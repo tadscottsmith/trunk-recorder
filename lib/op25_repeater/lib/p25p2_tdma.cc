@@ -364,6 +364,12 @@ void p25p2_tdma::decode_mac_msg(const uint8_t byte_buf[], const unsigned int len
         op   = (b1b2 << 6) + mco;
 		mfid = 0;
 
+		// Variables need to be defined outside of the Switch.
+		uint16_t grpaddr;
+		uint32_t srcaddr;
+		uint32_t wacn;
+		uint32_t sysid;
+
 		// Find message length using opcode handlers or lookup table
 		switch (op) {
 			case 0x00: // Null Information
