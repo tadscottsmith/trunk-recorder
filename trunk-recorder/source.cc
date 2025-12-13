@@ -314,11 +314,15 @@ double Source::get_error() {
 
 /* -- Gain -- */
 
-void Source::set_gain(int r) {
+void Source::set_gain(double r) {
   if (driver == "osmosdr") {
     gain = r;
     cast_to_osmo_sptr(source_block)->set_gain(gain);
-    BOOST_LOG_TRIVIAL(info) << "Gain set to: " << cast_to_osmo_sptr(source_block)->get_gain();
+    double current_gain = cast_to_osmo_sptr(source_block)->get_gain();
+    if (current_gain != gain) {
+      BOOST_LOG_TRIVIAL(error) << "Requested Gain of " << gain << " not supported, driver using: " << current_gain;
+    } 
+    BOOST_LOG_TRIVIAL(info) << "Gain set to: " << current_gain;
   }
 
   if (driver == "usrp") {
@@ -327,7 +331,7 @@ void Source::set_gain(int r) {
   }
 }
 
-void Source::add_gain_stage(std::string stage_name, int value) {
+void Source::add_gain_stage(std::string stage_name, double value) {
   Gain_Stage_t stage = {stage_name, value};
   gain_stages.push_back(stage);
 }
@@ -336,13 +340,17 @@ std::vector<Gain_Stage_t> Source::get_gain_stages() {
   return gain_stages;
 }
 
-void Source::set_gain_by_name(std::string name, int new_gain) {
+void Source::set_gain_by_name(std::string name, double new_gain) {
   if (driver == "osmosdr") {
     cast_to_osmo_sptr(source_block)->set_gain(new_gain, name);
-    BOOST_LOG_TRIVIAL(info) << name << " Gain set to: " << cast_to_osmo_sptr(source_block)->get_gain(name);
+    double current_gain = cast_to_osmo_sptr(source_block)->get_gain(name);
+    if (current_gain != new_gain) {
+      BOOST_LOG_TRIVIAL(error) << "Requested " << name << " Gain of " << new_gain << " not supported, driver using: " << current_gain;
+    }
+    BOOST_LOG_TRIVIAL(info) << name << " Gain set to: " << current_gain;
     add_gain_stage(name, new_gain);
   } else {
-    BOOST_LOG_TRIVIAL(error) << "Unable to set Gain by Name for SDR drive: " << driver;
+    BOOST_LOG_TRIVIAL(error) << "Unable to set Gain by Name for SDR driver: " << driver;
   }
 }
 
@@ -359,7 +367,7 @@ int Source::get_gain_by_name(std::string name) {
   return -1;
 }
 
-int Source::get_gain() {
+double Source::get_gain() {
   return gain;
 }
 
@@ -375,8 +383,36 @@ void Source::set_gain_mode(bool m) {
   }
 }
 
-int Source::get_if_gain() {
+double Source::get_if_gain() {
   return if_gain;
+}
+
+double Source::get_bb_gain() {
+  return bb_gain;
+}
+
+double Source::get_mix_gain() {
+  return mix_gain;
+}
+
+double Source::get_lna_gain() {
+  return lna_gain;
+}
+
+double Source::get_tia_gain() {
+  return tia_gain;
+}
+
+double Source::get_pga_gain() {
+  return pga_gain;
+}
+
+double Source::get_vga1_gain() {
+  return vga1_gain;
+}
+
+double Source::get_vga2_gain() {
+  return vga2_gain;
 }
 
 void Source::add_autotune_error_measurement(int error, int offset){
